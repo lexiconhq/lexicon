@@ -54,6 +54,11 @@ Configuring it to point at your own Discourse site will take additional configur
 
 You can learn more about this in the [Lexicon Documentation](https://docs.lexicon.is/quick-start).
 
+
+## Professional Support
+
+With official support, you get expert help straight from the core team. We provide dedicated support, prioritize feature requests, deployment strategies, advice on best practices, design decisions, and team augmentation. Reach out to us for consulting at support@kodefox.com.
+
 ## Documentation
 
 The full documentation for Lexicon is located at [docs.lexicon.is](https://docs.lexicon.is).
