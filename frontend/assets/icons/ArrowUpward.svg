@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+  <g>
+    <path fill="currentColor" d="M14 0A14 14 0 1 1 0 14 14 14 0 0 1 14 0z" transform="translate(-317 -829) translate(317 829)"/>
+    <g>
+      <path fill="none" d="M0 0h20v20H0z" transform="translate(-317 -829) translate(321 833)"/>
+      <path fill="#fff" d="M11.568 16.57V7.261l4.067 4.067a.84.84 0 0 0 1.183 0 .83.83 0 0 0 0-1.175l-5.492-5.492a.83.83 0 0 0-1.175 0l-5.5 5.483a.831.831 0 1 0 1.175 1.176L9.9 7.261v9.309a.833.833 0 1 0 1.667 0z" transform="translate(-317 -829) translate(321 833) translate(-.735 -.736)"/>
+    </g>
+  </g>
+</svg>

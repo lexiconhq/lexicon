@@ -1,0 +1,109 @@
+{
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "quickstart": "MOBILE_PROSE_HOST=http://127.0.0.1 MOBILE_PROSE_PORT=8929 expo start",
+    "typecheck": "tsc --noEmit -p .",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
+    "format:generated": "prettier --write \"src/generated/**/*.{ts,tsx}\"",
+    "lint": "eslint --max-warnings 0 \"src/**/*.{ts,tsx}\"",
+    "jest": "MOBILE_PROSE_HOST=http://localhost jest --coverage --passWithNoTests",
+    "test": "yarn apollo:generate && yarn lint && yarn typecheck && yarn format:check && yarn jest",
+    "eject": "expo eject",
+    "apollo:generate": "yarn create-generated-folder && yarn clean-generated-folder && yarn apollo:typegen-server && yarn format:generated",
+    "apollo:typegen-server": "apollo client:codegen src/generated/server --target typescript --includes=src/graphql/server/*.ts --localSchemaFile=../api/src/generated/schema.graphql --tagName gql --outputFlat",
+    "create-generated-folder": "cd src/generated || mkdir src/generated ",
+    "clean-generated-folder": "if find src/generated/*; then  rm -r src/generated/*; fi"
+  },
+  "dependencies": {
+    "@apollo/client": "^3.1.2",
+    "@react-native-async-storage/async-storage": "~1.15.0",
+    "@react-native-community/datetimepicker": "3.5.2",
+    "@react-native-community/masked-view": "0.1.10",
+    "@react-navigation/bottom-tabs": "^5.8.0",
+    "@react-navigation/native": "^5.8.10",
+    "@react-navigation/stack": "^5.9.0",
+    "apollo-upload-client": "^14.1.2",
+    "expo": "^42.0.0",
+    "expo-constants": "~11.0.1",
+    "expo-crypto": "~9.2.0",
+    "expo-file-system": "~11.1.3",
+    "expo-image-picker": "~10.2.2",
+    "expo-localization": "~10.2.0",
+    "expo-permissions": "~12.1.1",
+    "expo-status-bar": "~1.0.4",
+    "graphql": "^15.3.0",
+    "intl": "^1.2.5",
+    "markdown-it-flowdock": "^0.3.8",
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
+    "react-hook-form": "^6.8.3",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-42.0.0.tar.gz",
+    "react-native-appearance": "~0.3.3",
+    "react-native-auto-grow-textinput": "^1.2.1",
+    "react-native-dotenv": "^2.4.1",
+    "react-native-gesture-handler": "~1.10.2",
+    "react-native-image-viewing": "^0.2.0",
+    "react-native-image-zoom-viewer": "^3.0.1",
+    "react-native-keyboard-accessory": "^0.1.12",
+    "react-native-keyboard-aware-scroll-view": "^0.9.4",
+    "react-native-markdown-display": "6.1.1",
+    "react-native-parsed-text": "^0.0.22",
+    "react-native-reanimated": "~2.2.0",
+    "react-native-safe-area-context": "3.2.0",
+    "react-native-screens": "~3.4.0",
+    "react-native-svg": "12.1.1",
+    "react-native-web": "~0.13.12",
+    "use-debounce": "^6.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "~7.9.0",
+    "@types/apollo-upload-client": "^14.1.0",
+    "@types/jest": "^26.0.9",
+    "@types/react": "~16.9.35",
+    "@types/react-native": "~0.63.2",
+    "@types/react-native-dotenv": "^0.2.0",
+    "@types/react-test-renderer": "^16.9.2",
+    "apollo": "^2.31.0",
+    "eslint": "^7.6.0",
+    "eslint-config-kodefox": "^0.2.2",
+    "eslint-plugin-styles": "^0.1.0",
+    "eslint-plugin-t": "^1.2.1",
+    "jest": "^26.2.2",
+    "jest-expo": "^42.0.0",
+    "prettier": "^2.0.5",
+    "react-native-svg-transformer": "^0.14.3",
+    "react-native-testing-library": "^6.0.0",
+    "react-test-renderer": "^16.13.1",
+    "runtypes": "^5.0.1",
+    "ts-jest": "^26.1.4",
+    "typescript": "^3.9.7"
+  },
+  "jest": {
+    "preset": "jest-expo",
+    "setupFiles": [
+      "<rootDir>/src/__mocks__/setup.js"
+    ],
+    "moduleNameMapper": {
+      "\\.svg$": "<rootDir>/src/__mocks__/svgMock.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "kodefox/react-native",
+    "plugins": [
+      "t",
+      "styles"
+    ],
+    "rules": {
+      "t/string-literal": 1,
+      "styles/style-maker-no-unused": 1
+    }
+  },
+  "prettier": {
+    "singleQuote": true,
+    "trailingComma": "all",
+    "arrowParens": "always"
+  },
+  "private": true
+}
