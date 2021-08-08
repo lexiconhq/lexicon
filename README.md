@@ -35,6 +35,25 @@ $ yarn && yarn generate
 
 - Then it will create a new folder called `generated` in the `frontend` directory. This contains the GraphQL query and mutation types based on the schema generated above. Click [here](https://github.com/apollographql/apollo-tooling#apollo-clientcodegen-output) to learn more about this process.
 
+## Quick Start
+
+You can run the Lexicon Mobile App and test it out by running this command from the project root:
+
+```
+$ npm run quickstart
+```
+
+This will simultaneously launch two processes:
+
+- The Prose GraphQL API Server
+- The local Expo dev server, which will enable you to launch the React Native app from your device
+
+The `quickstart` commands are designed to point at an existing Discourse server, [Discourse Meta](https://meta.discourse.org).
+
+Configuring it to point at your own Discourse site will take additional configuration.
+
+You can learn more about this in the [Lexicon Documentation](https://docs.lexicon.is/quick-start).
+
 ## Documentation
 
 The full documentation for Lexicon is located at [docs.lexicon.is](https://docs.lexicon.is).
