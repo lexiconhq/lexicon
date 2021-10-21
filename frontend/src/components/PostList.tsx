@@ -8,6 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 
 import { makeStyles, useTheme } from '../theme';
 import { Post } from '../types';
+import { useUserEvent } from '../utils';
 
 import { PostItem } from './PostItem';
 
@@ -19,7 +20,6 @@ type Props = Omit<VirtualizedListProps<Post>, 'data' | 'renderItem'> & {
   prevScreen?: string;
   onPressReply?: (postId: number) => void;
   likedTopic?: Array<number>;
-  slide?: boolean;
   showLabel?: boolean;
   currentUser?: string;
   onRefresh?: () => void;
@@ -35,6 +35,8 @@ export const PostList = forwardRef<Ref, Props>((props, ref) => {
   const styles = useStyles();
   const { colors } = useTheme();
 
+  const { onStartScroll, onStopScroll } = useUserEvent();
+
   const {
     data,
     showLabel,
@@ -47,7 +49,6 @@ export const PostList = forwardRef<Ref, Props>((props, ref) => {
     onPressReply,
     refreshing,
     onRefresh,
-    slide,
     likedTopic,
     progressViewOffset = 0,
     ...otherProps
@@ -73,7 +74,6 @@ export const PostList = forwardRef<Ref, Props>((props, ref) => {
       hasFooter={hasFooter}
       showImageRow={showImageRow}
       style={styles.item}
-      slide={slide}
       numberOfLines={numberOfLines}
       prevScreen={prevScreen}
       onPressReply={onPressReply}
@@ -94,6 +94,8 @@ export const PostList = forwardRef<Ref, Props>((props, ref) => {
           progressViewOffset={progressViewOffset}
         />
       }
+      onScrollBeginDrag={onStartScroll}
+      onScrollEndDrag={onStopScroll}
       keyExtractor={keyExtractor}
       getItem={getItem}
       getItemCount={getItemCount}

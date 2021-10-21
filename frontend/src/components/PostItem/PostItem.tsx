@@ -26,7 +26,6 @@ type Props = ViewProps & {
   prevScreen?: string;
   onPressReply?: (postId: number) => void;
   likedTopic?: Array<number>;
-  slide?: boolean;
   onPressAuthor?: (username: string) => void;
   content?: string;
   images?: Array<string>;
@@ -53,7 +52,6 @@ export function PostItem(props: Props) {
     style,
     prevScreen,
     onPressReply,
-    slide,
     likedTopic,
     onPressAuthor,
     content: contentFromPrevScreen,
@@ -167,7 +165,7 @@ export function PostItem(props: Props) {
   );
 
   const imageContent = images && showImageRow && (
-    <CustomImage slide={slide} src={images[0]} style={styles.images} />
+    <CustomImage src={images[0]} style={styles.images} />
   );
 
   const wrappedMainContent = !nonclickable ? (
@@ -222,7 +220,6 @@ export function PostItem(props: Props) {
           style={styles.spacingTop}
           onPressView={onPressPost}
           title={title}
-          slide={slide}
           likedTopic={likedTopic}
         />
       )}

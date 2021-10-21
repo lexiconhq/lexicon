@@ -21,7 +21,6 @@ const variantSize = {
 
 type Props = Omit<ImageBackgroundProps, 'source' | 'style'> & {
   src: string;
-  slide?: boolean;
   size?: keyof typeof variantSize;
   square?: boolean;
   style?: StyleProp<ViewStyle>;

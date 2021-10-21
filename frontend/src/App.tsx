@@ -7,7 +7,7 @@ import { client } from './graphql/client';
 import { StorageProvider } from './helpers';
 import AppNavigator from './navigation/AppNavigator';
 import { AppearanceProvider, ThemeProvider } from './theme';
-import { ModalProvider, PostProvider } from './utils';
+import { ModalProvider, PostProvider, UserEventProvider } from './utils';
 
 if (Platform.OS === 'android') {
   require('intl');
@@ -23,7 +23,9 @@ export default function App() {
             <ThemeProvider>
               <PostProvider>
                 <ModalProvider>
-                  <AppNavigator />
+                  <UserEventProvider>
+                    <AppNavigator />
+                  </UserEventProvider>
                 </ModalProvider>
               </PostProvider>
             </ThemeProvider>

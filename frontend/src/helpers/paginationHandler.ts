@@ -66,11 +66,20 @@ export function appendPagination<T = Reference>(
 
       switch (screen) {
         case 'HOME':
+          page = args?.page || 0;
           incoming.users = handleDuplicateRef(existing.users, incoming.users);
-          incoming.topicList.topics = handleDuplicateRef(
-            existing.topicList.topics,
-            incoming.topicList.topics,
-          );
+          if (page > 0) {
+            incoming.topicList.topics = handleDuplicateRef(
+              existing.topicList.topics,
+              incoming.topicList.topics,
+            );
+          } else {
+            incoming.topicList.topics = handleDuplicateRef(
+              incoming.topicList.topics,
+              existing.topicList.topics,
+            );
+          }
+
           break;
         case 'SEARCH':
           page = args?.page || 1;

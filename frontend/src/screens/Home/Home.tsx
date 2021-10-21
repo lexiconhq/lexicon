@@ -27,7 +27,6 @@ import {
   errorHandlerAlert,
   getImage,
   getToken,
-  handleDuplicatePost,
   LoginError,
   removeToken,
   setToken,
@@ -120,7 +119,6 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [activityLoading, setActivityLoading] = useState(false);
   const [selectedChannelId, setSelectedChannelId] = useState(999);
-  const [slide, setSlide] = useState(false);
   const [dataReady, setDataReady] = useState(false);
   const [page, setPage] = useState(FIRST_PAGE);
   const [hasOlderTopics, setHasOlderTopics] = useState(false);
@@ -284,36 +282,10 @@ export default function Home() {
       } else {
         setHasOlderTopics(true);
       }
-      if (sortState === 'LATEST') {
-        let sortedDuplicatePost = handleDuplicatePost(
-          topicsData,
-          normalizedTopicsData,
-        ).sort((a, b) => {
-          if (a.createdAt === b.createdAt) {
-            return 0;
-          }
-          if (a.pinned === true) {
-            return -1;
-          }
-          if (b.pinned === true) {
-            return 1;
-          }
-
-          if (a.createdAt > b.createdAt) {
-            return -1;
-          }
-          if (a.createdAt < b.createdAt) {
-            return 1;
-          }
-          return 0;
-        });
-        setTopicsData(sortedDuplicatePost);
-      } else {
-        setTopicsData(handleDuplicatePost(topicsData, normalizedTopicsData));
-      }
+      setTopicsData(normalizedTopicsData);
       setDataReady(true);
     },
-    [allTopicCount, setTopicsData, storage, topicsData, sortState],
+    [allTopicCount, setTopicsData, storage],
   );
 
   const getData = useCallback(
@@ -366,7 +338,6 @@ export default function Home() {
 
     return unsubscribe;
   }, [
-    setTopicsData,
     getRefreshToken,
     getAbout,
     getActivity,
@@ -539,10 +510,7 @@ export default function Home() {
         numberOfLines={5}
         prevScreen={'Home'}
         likedTopic={likedTopic}
-        slide={slide}
         scrollEventThrottle={16}
-        onScrollBeginDrag={() => setSlide(true)}
-        onScrollEndDrag={() => setSlide(false)}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: headerY } } }],
           { useNativeDriver: false },

@@ -4,7 +4,7 @@ import { View, ViewProps } from 'react-native';
 import { ActivityIndicator, Divider } from '../../core-ui';
 import { useLikePost } from '../../hooks';
 import { makeStyles, useTheme } from '../../theme';
-import { usePost } from '../../utils';
+import { usePost, useUserEvent } from '../../utils';
 
 import { MetricItem } from './MetricItem';
 
@@ -21,7 +21,6 @@ type Props = ViewProps & {
   onPressView?: () => void;
   title?: string;
   likedTopic?: Array<number>;
-  slide?: boolean;
   nestedComment?: boolean;
 };
 
@@ -31,6 +30,7 @@ export function Metrics(props: Props) {
   const { onLikedStatusChanged, likedTopic } = usePost();
   const styles = useStyles();
   const { colors } = useTheme();
+  const { isScrolled } = useUserEvent();
 
   const {
     postId,
@@ -45,7 +45,6 @@ export function Metrics(props: Props) {
     style,
     onPressView,
     title,
-    slide,
     nestedComment = false,
     ...otherProps
   } = props;
@@ -82,7 +81,7 @@ export function Metrics(props: Props) {
   );
 
   const onPressLike = () => {
-    if (!slide && !nestedComment) {
+    if (!isScrolled && !nestedComment) {
       if (!likedTopic.includes(topicId)) {
         setPastRequest(false);
         onLikedStatusChanged(topicId, true);
@@ -136,7 +135,7 @@ export function Metrics(props: Props) {
             onPress={onPressLike}
             onPressOut={() => {
               if (
-                !slide &&
+                !isScrolled &&
                 postList &&
                 likedTopic.includes(topicId) !== pastRequest
               ) {
