@@ -1,6 +1,6 @@
 ## Lexicon
 
-Lexicon is a customizable, open source mobile app that provides an elegant mobile discussions experience. Built on top of [Discourse](#what-is-discourse), a platform for communities.
+Lexicon is a customizable, open source mobile **App Template** that provides an elegant mobile discussions experience. Built on top of [Discourse](#what-is-discourse), a platform for communities.
 
 ### Benefits
 
