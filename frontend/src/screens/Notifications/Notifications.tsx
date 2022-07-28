@@ -157,16 +157,8 @@ export default function Notifications() {
   const keyExtractor = ({ id }: NotificationDataType) => `notif-${id}`;
 
   function renderItem({ item }: { item: NotificationDataType }) {
-    const {
-      id,
-      topicId,
-      name,
-      message,
-      createdAt,
-      hasIcon,
-      seen,
-      onPress,
-    } = item;
+    const { id, topicId, name, message, createdAt, hasIcon, seen, onPress } =
+      item;
 
     return (
       <NotificationItem

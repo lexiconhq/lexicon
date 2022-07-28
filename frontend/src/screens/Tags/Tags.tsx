@@ -6,17 +6,13 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 
 import { CustomHeader, HeaderItem, ModalHeader } from '../../components';
 import { Button, Text } from '../../core-ui';
-import {
-  SearchTags,
-  SearchTagsVariables,
-  SearchTags_searchTag as Tag,
-} from '../../generated/server/SearchTags';
+import { SearchTags, SearchTagsVariables } from '../../generated/server/Search';
 import { client } from '../../graphql/client';
 import { SEARCH_TAGS } from '../../graphql/server/search';
 import { formatTag } from '../../helpers';
 import { useSiteSettings, useTags } from '../../hooks';
 import { makeStyles } from '../../theme';
-import { RootStackNavProp, RootStackRouteProp } from '../../types';
+import { RootStackNavProp, RootStackRouteProp, Tag } from '../../types';
 
 import { AvailableTags, SearchBar, SelectedTags } from './components';
 
@@ -39,16 +35,19 @@ export default function Tags() {
   const [loading, setLoading] = useState(true);
   const [searchValue, setSearchValue] = useState('');
   const [tags, setTags] = useState<Array<Tag>>([]);
-  const [currentTagsIds, setCurrentTagsIds] = useState<Array<string>>(
-    selectedTagsIds,
-  );
+  const [currentTagsIds, setCurrentTagsIds] =
+    useState<Array<string>>(selectedTagsIds);
   const [error, setError] = useState<string | null>(null);
 
   const close = useRef(false);
 
   const ios = Platform.OS === 'ios';
 
-  const { getTags, loading: tagsLoading, refetch } = useTags({
+  const {
+    getTags,
+    loading: tagsLoading,
+    refetch,
+  } = useTags({
     variables: { q: searchValue, selectedTags: currentTagsIds },
     onCompleted: ({ searchTag }) => {
       setTags([...searchTag]);

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Keyboard, Platform, SafeAreaView, View } from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import useDebouncedCallback from 'use-debounce/lib/useDebouncedCallback';
+import { useDebouncedCallback } from 'use-debounce';
 
 import {
   BottomMenu,
@@ -15,7 +15,7 @@ import {
   TextArea,
 } from '../components';
 import { Divider, IconWithLabel, TextInputType } from '../core-ui';
-import { UploadTypeEnum } from '../generated/server/globalTypes';
+import { UploadTypeEnum } from '../generated/server/types';
 import {
   bottomMenu,
   createReactNativeFile,
@@ -97,9 +97,8 @@ export default function PostReply() {
   const [mentionLoading, setMentionLoading] = useState(false);
   const [mentionKeyword, setMentionKeyword] = useState('');
 
-  const { control, handleSubmit, setValue, getValues, formState } = useForm<
-    Form
-  >({ mode: 'onChange' });
+  const { control, handleSubmit, setValue, getValues, formState } =
+    useForm<Form>({ mode: 'onChange' });
 
   const [imagesArray, setImagesArray] = useState<Array<Image>>([]);
   const [uri, setUri] = useState('');
@@ -158,7 +157,7 @@ export default function PostReply() {
       variables: {
         file: reactNativeFile,
         userId: user.id || 0,
-        type: UploadTypeEnum.composer,
+        type: UploadTypeEnum.Composer,
         token: currentUploadToken,
       },
     });

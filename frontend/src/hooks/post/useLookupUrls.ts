@@ -1,9 +1,6 @@
 import { LazyQueryHookOptions } from '@apollo/client';
 
-import {
-  LookupUrls,
-  LookupUrlsVariables,
-} from '../../generated/server/LookupUrls';
+import { LookupUrls, LookupUrlsVariables } from '../../generated/server/Topics';
 import { LOOKUP_URLS } from '../../graphql/server/topics';
 import { useLazyQuery } from '../../utils';
 

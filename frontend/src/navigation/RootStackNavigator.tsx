@@ -27,8 +27,7 @@ export default function RootStackNavigator() {
 
   return (
     <RootStack.Navigator
-      mode="modal"
-      screenOptions={{ ...navHeader, ...navModal }}
+      screenOptions={{ ...navHeader, ...navModal, presentation: 'modal' }}
     >
       <RootStack.Screen
         name="Main"

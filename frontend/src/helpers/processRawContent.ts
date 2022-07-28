@@ -67,11 +67,13 @@ type MarkdownWithImage = {
 export function anchorToMarkdown(rawContent: string): MarkdownWithImage {
   //used in activity scene, all images and url are rendered in anchor tag, while emojis are rendered in image tags
   //image
-  const imgRegex = /<a[^>]*? href="([^>]+(?:jpe?g|png|gif|heic|heif))".*?>(.*?)<\/a>/g;
+  const imgRegex =
+    /<a[^>]*? href="([^>]+(?:jpe?g|png|gif|heic|heif))".*?>(.*?)<\/a>/g;
   let content = rawContent.replace(imgRegex, '');
 
   //image in a square bracket
-  const sqBracketImgRegex = /\[\w*\-?\w*\.?(jpe?g|png|gif|heic|heif)?\|\d*\sx\s\d*\]/g;
+  const sqBracketImgRegex =
+    /\[\w*\-?\w*\.?(jpe?g|png|gif|heic|heif)?\|\d*\sx\s\d*\]/g;
   content = content.replace(sqBracketImgRegex, '');
 
   //mention
@@ -92,7 +94,8 @@ export function anchorToMarkdown(rawContent: string): MarkdownWithImage {
   content = content.replace(emojiRegex, '$1');
 
   //img tag other than emoji
-  const imgRegex2 = /<img.*? src="(\S+(?:jpe?g|png|gif|heic|heif))".*? alt="(.*?)".*?>/g;
+  const imgRegex2 =
+    /<img.*? src="(\S+(?:jpe?g|png|gif|heic|heif))".*? alt="(.*?)".*?>/g;
   content = content.replace(imgRegex2, '');
 
   //anchor empty tag

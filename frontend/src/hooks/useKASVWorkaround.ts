@@ -48,7 +48,7 @@ export function useKASVWorkaround() {
       return;
     }
 
-    const refWithWorkAround = (ref as unknown) as KASVRef;
+    const refWithWorkAround = ref as unknown as KASVRef;
 
     const { getScrollResponder } = refWithWorkAround;
     if (!getScrollResponder) {

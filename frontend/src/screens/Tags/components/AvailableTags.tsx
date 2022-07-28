@@ -3,8 +3,8 @@ import { View, ViewProps } from 'react-native';
 
 import { LoadingOrError } from '../../../components';
 import { Text } from '../../../core-ui';
-import { SearchTags_searchTag as Tag } from '../../../generated/server/SearchTags';
 import { makeStyles } from '../../../theme';
+import { Tag } from '../../../types';
 
 import { TagItem } from './TagItem';
 

@@ -49,15 +49,8 @@ type LabelOnlyProps = Omit<HeaderItemProps, 'icon'>;
 function LabelWithIcon(props: LabelWithIcon) {
   const styles = useStyles();
 
-  const {
-    fontStyles,
-    onPressItem,
-    left,
-    style,
-    label,
-    icon,
-    ...otherProps
-  } = props;
+  const { fontStyles, onPressItem, left, style, label, icon, ...otherProps } =
+    props;
 
   return (
     <IconWithLabel

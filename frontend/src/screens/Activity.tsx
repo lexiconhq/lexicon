@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import { LoadingOrError, PostList } from '../components';
 import { DEFAULT_CHANNEL } from '../constants';
 import { Text } from '../core-ui';
-import { TopicsSortEnum } from '../generated/server/globalTypes';
+import { TopicsSortEnum } from '../generated/server/types';
 import {
   anchorToMarkdown,
   errorHandler,
@@ -28,7 +28,7 @@ export default function Activity() {
     loading: topicsLoading,
     error: topicsError,
   } = useTopicList({
-    variables: { sort: TopicsSortEnum.LATEST },
+    variables: { sort: TopicsSortEnum.Latest },
   });
 
   const { data, loading, error, refetch, fetchMore } = useActivity({

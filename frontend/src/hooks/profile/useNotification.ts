@@ -3,8 +3,6 @@ import { MutationHookOptions, QueryHookOptions } from '@apollo/client';
 import {
   MarkRead as MarkReadType,
   MarkReadVariables,
-} from '../../generated/server/MarkRead';
-import {
   Notification as NotificationQueryType,
   NotificationVariables,
 } from '../../generated/server/Notification';

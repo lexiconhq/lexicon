@@ -9,7 +9,7 @@ import { EXIT_CODE_INVALID_ARGUMENT } from './exitCodes';
 // of the test suite.
 const shouldValidate = process.env.SKIP_VALIDATION === undefined;
 
-const DEFAULT_PROSE_APP_HOSTNAME = 'localhost';
+const DEFAULT_PROSE_APP_HOSTNAME = '0.0.0.0';
 const DEFAULT_PROSE_APP_PORT = 80;
 
 // Per Express's requirement, ensure that the hostname does not have the scheme (http://, etc.)

@@ -11,13 +11,13 @@
     "serve": "docusaurus serve"
   },
   "dependencies": {
-    "@docusaurus/core": "2.0.0-beta.1",
-    "@docusaurus/preset-classic": "2.0.0-beta.1",
-    "@mdx-js/react": "^1.5.8",
-    "clsx": "^1.1.1",
-    "react": "^16.8.4",
-    "react-bootstrap": "^1.6.0",
-    "react-dom": "^16.8.4"
+    "@docusaurus/core": "^2.0.0-rc.1",
+    "@docusaurus/preset-classic": "^2.0.0-rc.1",
+    "@mdx-js/react": "^1.6.22",
+    "clsx": "^1.2.1",
+    "react": "^18.2.0",
+    "react-bootstrap": "^2.4.0",
+    "react-dom": "^18.2.0"
   },
   "browserslist": {
     "production": [

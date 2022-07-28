@@ -4,11 +4,10 @@ import { useNavigation } from '@react-navigation/native';
 
 import { CustomHeader } from '../components';
 import { Button, Text } from '../core-ui';
-import { Profile_userProfile_user_UserDetail as UserDetail } from '../generated/server/Profile';
 import { useStorage } from '../helpers';
 import { useChangePassword, useProfile } from '../hooks';
 import { makeStyles } from '../theme';
-import { StackNavProp } from '../types';
+import { StackNavProp, UserDetail } from '../types';
 
 export default function ChangePassword() {
   const storage = useStorage();

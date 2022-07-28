@@ -3,7 +3,7 @@ import { MutationHookOptions } from '@apollo/client';
 import {
   EditTopic as EditTopicType,
   EditTopicVariables,
-} from '../../generated/server/EditTopic';
+} from '../../generated/server/GetTopicDetail';
 import { EDIT_TOPIC } from '../../graphql/server/getTopicDetail';
 import { useMutation } from '../../utils';
 

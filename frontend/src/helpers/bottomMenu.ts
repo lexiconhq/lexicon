@@ -32,8 +32,9 @@ export function bottomMenu(
         imageUri,
         prevScreen,
       });
-    } catch (error) {
-      errorHandlerAlert(error);
+    } catch (unknownError) {
+      // TODO: Eventually fix this so the type can resolve to ApolloError as well
+      errorHandlerAlert(unknownError as string);
     }
     return;
   };

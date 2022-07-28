@@ -20,6 +20,7 @@ type JsonValue =
 
 type Reviver<T> = (parsed: JsonValue) => T;
 
+// eslint-disable-next-line @typescript-eslint/ban-types
 type DataStore<T extends object> = {
   getItem: <Key extends keyof T>(key: Key) => T[Key] | null;
   setItem: <Key extends keyof T>(key: Key, value: T[Key]) => void;
@@ -27,13 +28,14 @@ type DataStore<T extends object> = {
 };
 
 export function createCachedStorage<
+  // eslint-disable-next-line @typescript-eslint/ban-types
   Obj extends object,
   Schema extends {
     [K in keyof Obj]: Obj[K] extends Reviver<infer T> ? Reviver<T> : never;
   },
   Data extends {
     [K in keyof Schema]: Schema[K] extends Reviver<infer T> ? T : never;
-  }
+  },
 >(schema: Schema, prefix = '') {
   const Context = createContext<DataStore<Data> | undefined>(undefined);
 
@@ -45,7 +47,7 @@ export function createCachedStorage<
       let data = dataRef.current;
       let load = async () => {
         for (let key of Object.keys(schema) as Array<keyof Schema>) {
-          let value = await AsyncStorage.getItem(prefix + key);
+          let value = await AsyncStorage.getItem(prefix + String(key));
           if (value != null) {
             let reviver = schema[key];
             try {
@@ -69,11 +71,11 @@ export function createCachedStorage<
           data[key] = value;
           // TODO: Throttle this so if we write in rapid succession (such as
           // onScroll saving scroll position) we won't thrash the disk.
-          AsyncStorage.setItem(prefix + key, JSON.stringify(value));
+          AsyncStorage.setItem(prefix + String(key), JSON.stringify(value));
         },
         removeItem: (key) => {
           data[key] = undefined;
-          AsyncStorage.removeItem(prefix + key);
+          AsyncStorage.removeItem(prefix + String(key));
         },
       } as DataStore<Data>;
     }, []);

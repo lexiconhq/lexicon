@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import { FieldResolver, mutationField, stringArg } from '@nexus/schema';
 
-import { CONTENT_JSON } from '../../constants';
+import { ACCEPTED_LANGUAGE, CONTENT_JSON } from '../../constants';
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';
 
@@ -11,6 +11,7 @@ export let pushNotificationMutation: FieldResolver<
 > = async (_, { expoPnToken, applicationName, platform }, context: Context) => {
   const config = {
     headers: {
+      'Accept-Language': ACCEPTED_LANGUAGE,
       'Content-Type': CONTENT_JSON,
     },
   };

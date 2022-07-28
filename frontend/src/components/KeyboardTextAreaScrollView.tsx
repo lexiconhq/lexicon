@@ -16,12 +16,8 @@ type Props = {
 export function KeyboardTextAreaScrollView(props: Props) {
   const styles = useStyles();
 
-  const {
-    children,
-    bottomMenu,
-    bottomMenuAlwaysVisible,
-    ...otherProps
-  } = props;
+  const { children, bottomMenu, bottomMenuAlwaysVisible, ...otherProps } =
+    props;
 
   return (
     <>

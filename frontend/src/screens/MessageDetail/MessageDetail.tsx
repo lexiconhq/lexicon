@@ -189,6 +189,10 @@ export default function MessageDetail() {
       topicDetail: { postStream, details },
     } = baseData;
 
+    if (!details) {
+      return;
+    }
+
     const {
       data: tempData,
       hasNewerMessage: newMessage,
@@ -335,8 +339,9 @@ export default function MessageDetail() {
         postPointer: stream.length,
         message,
       });
-    } catch (error) {
-      errorHandlerAlert(error);
+    } catch (unknownError) {
+      // TODO: Eventually fix this so the type can resolve to ApolloError as well
+      errorHandlerAlert(unknownError as string);
     }
     return;
   };

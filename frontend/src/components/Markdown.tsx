@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
 /* eslint-disable styles/style-maker-no-unused */
 import React from 'react';
 import { Alert, Platform, StyleProp, View, ViewStyle } from 'react-native';
@@ -15,6 +14,7 @@ import { NO_USERNAME_ALERT, NO_USERNAME_SUB_ALERT } from '../constants';
 import { CustomImage } from '../core-ui/CustomImage';
 import { Text } from '../core-ui/Text';
 import { makeStyles } from '../theme';
+import { StackNavProp } from '../types';
 
 type Props = Omit<MarkdownProps, 'rules' | 'style'> & {
   content: string;
@@ -29,7 +29,7 @@ type Props = Omit<MarkdownProps, 'rules' | 'style'> & {
 const ios = Platform.OS === 'ios';
 
 export function Markdown(props: Props) {
-  const { navigate } = useNavigation();
+  const { navigate } = useNavigation<StackNavProp<'UserInformation'>>();
   let styles = useStyles();
 
   let {

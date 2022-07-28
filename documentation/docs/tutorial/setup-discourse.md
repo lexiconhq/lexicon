@@ -8,7 +8,7 @@ For this step, you actually have a few options:
 
 #### Option 1: Setup a Local Discourse Instance
 
-The first option is to [setup a development instance](<(#setup-discourse-locally)>) of Discourse locally on your development machine. This takes a bit of time and can get a bit technical.
+The first option is to [setup a development instance](#setup-discourse-locally) of Discourse locally on your development machine. This takes a bit of time and can get a bit technical.
 
 #### Option 2: Buy a Discourse Instance or Use your Existing One
 

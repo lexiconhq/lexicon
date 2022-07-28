@@ -1,6 +1,6 @@
 import { FieldResolver, mutationField, intArg } from '@nexus/schema';
 
-import { CONTENT_JSON } from '../../constants';
+import { ACCEPTED_LANGUAGE, CONTENT_JSON } from '../../constants';
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';
 
@@ -11,6 +11,7 @@ export let markReadMutation: FieldResolver<'Mutation', 'markRead'> = async (
 ) => {
   const config = {
     headers: {
+      'Accept-Language': ACCEPTED_LANGUAGE,
       'Content-Type': CONTENT_JSON,
     },
   };

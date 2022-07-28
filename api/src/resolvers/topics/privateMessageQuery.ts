@@ -3,12 +3,16 @@ import { FieldResolver, queryField, intArg, stringArg } from '@nexus/schema';
 
 import { errorHandler, privateMessagesMerger } from '../../helpers';
 import { Context, PMOutput } from '../../types';
+import { ACCEPTED_LANGUAGE } from '../../constants';
 
 let privateMessageQueryResolver: FieldResolver<
   'Query',
   'privateMessage'
 > = async (_, { username, page = 0 }, context: Context) => {
   const config = {
+    headers: {
+      'Accept-Language': ACCEPTED_LANGUAGE,
+    },
     params: {
       page,
     },

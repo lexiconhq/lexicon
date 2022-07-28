@@ -268,7 +268,7 @@ If you later want to deploy an update to your version of the Lexicon Mobile App,
 
 Once published, the new version will be available to your users the next time they open it.
 
-For more details on this process—including publishing to the App Store and Google Play Store—follow the instructions in [Publishing your App](publishing-app).
+For more details on this process—including publishing to the App Store and Google Play Store—follow the instructions in [Publishing your App](publish-app).
 
 #### Configure the GraphQL API with Your Discourse Server
 

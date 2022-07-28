@@ -3,7 +3,7 @@ import { LazyQueryHookOptions } from '@apollo/client';
 import {
   SearchTags as TagsType,
   SearchTagsVariables as TagsVariables,
-} from '../../generated/server/SearchTags';
+} from '../../generated/server/Search';
 import { SEARCH_TAGS } from '../../graphql/server/search';
 import { useLazyQuery } from '../../utils';
 

@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { ActivityIndicator, Text } from '../core-ui';
 import { removeToken, showLogoutAlert, useStorage } from '../helpers';
 import { makeStyles } from '../theme';
+import { StackNavProp } from '../types';
 
 type Props = {
   message?: string;
@@ -12,7 +13,7 @@ type Props = {
 };
 
 export function LoadingOrError(props: Props) {
-  const { reset } = useNavigation();
+  const { reset } = useNavigation<StackNavProp<'Login'>>();
   const storage = useStorage();
   const styles = useStyles();
 

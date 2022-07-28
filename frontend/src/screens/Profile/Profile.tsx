@@ -5,12 +5,11 @@ import Constants from 'expo-constants';
 
 import { Markdown, ShowImageModal } from '../../components';
 import { Avatar, Button, Divider, Text } from '../../core-ui';
-import { Profile_userProfile_user_UserDetail as UserDetail } from '../../generated/server/Profile';
 import { client } from '../../graphql/client';
 import { getImage, removeToken, useStorage } from '../../helpers';
 import { useLazyProfile, useLogout } from '../../hooks';
 import { makeStyles, useTheme } from '../../theme';
-import { StackNavProp } from '../../types';
+import { StackNavProp, UserDetail } from '../../types';
 
 import MenuItem from './components/MenuItem';
 

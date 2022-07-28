@@ -18,13 +18,8 @@ export function PostHidden(props: Props) {
   const { navigate } = useNavigation<StackNavProp<'PostDetail'>>();
   const styles = useStyles();
 
-  const {
-    style,
-    loading,
-    author,
-    numberOfLines,
-    onPressViewIgnoredContent,
-  } = props;
+  const { style, loading, author, numberOfLines, onPressViewIgnoredContent } =
+    props;
 
   return loading ? (
     <ActivityIndicator style={styles.spacingBottom} />

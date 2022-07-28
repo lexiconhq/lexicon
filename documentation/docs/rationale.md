@@ -60,7 +60,7 @@ You can think of it like a template that you can use to build your own mobile ap
 
 If you're interested in customizing the Lexicon Mobile app, you can learn more about that in the [White Labeling](white-labeling) section.
 
-And when you're finished, you can publish it to the Apple App Store or Google Play Store, which we cover in [Publishing your App](app-store.)
+And when you're finished, you can publish it to the Apple App Store or Google Play Store, which we cover in [Publishing your App](app-store).
 
 ### FOSS Mindset
 

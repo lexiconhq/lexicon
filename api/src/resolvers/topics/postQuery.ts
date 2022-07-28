@@ -3,6 +3,7 @@ import { FieldResolver, queryField, intArg } from '@nexus/schema';
 
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';
+import { ACCEPTED_LANGUAGE } from '../../constants';
 
 export let postQueryResolver: FieldResolver<'Query', 'post'> = async (
   _,
@@ -10,6 +11,9 @@ export let postQueryResolver: FieldResolver<'Query', 'post'> = async (
   context: Context,
 ) => {
   const config = {
+    headers: {
+      'Accept-Language': ACCEPTED_LANGUAGE,
+    },
     params: {
       // eslint-disable-next-line @typescript-eslint/camelcase
       include_raw: true,

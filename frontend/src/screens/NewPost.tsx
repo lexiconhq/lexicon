@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Controller, useForm } from 'react-hook-form';
-import useDebouncedCallback from 'use-debounce/lib/useDebouncedCallback';
+import { useDebouncedCallback } from 'use-debounce';
 
 import {
   BottomMenu,
@@ -29,7 +29,7 @@ import {
   TextInput,
   TextInputType,
 } from '../core-ui';
-import { UploadTypeEnum } from '../generated/server/globalTypes';
+import { UploadTypeEnum } from '../generated/server/types';
 import {
   bottomMenu,
   createReactNativeFile,
@@ -58,6 +58,7 @@ import {
   RootStackRouteProp,
 } from '../types';
 import { useModal } from '../utils';
+import { isNoChannelFilter } from '../constants';
 
 type Form = {
   title: string;
@@ -130,14 +131,8 @@ export default function NewPost() {
     }
   }, 1500);
 
-  const {
-    control,
-    handleSubmit,
-    errors,
-    setValue,
-    getValues,
-    formState,
-  } = useForm<Form>({ mode: 'onChange', reValidateMode: 'onChange' });
+  const { control, handleSubmit, errors, setValue, getValues, formState } =
+    useForm<Form>({ mode: 'onChange', reValidateMode: 'onChange' });
 
   const kasv = useKASVWorkaround();
 
@@ -159,7 +154,7 @@ export default function NewPost() {
 
   useEffect(() => {
     setSelectedChannel(
-      selectedChannelId === 999
+      isNoChannelFilter(selectedChannelId)
         ? uncategorizedCategoryId || 1
         : selectedChannelId,
     );
@@ -248,7 +243,7 @@ export default function NewPost() {
       variables: {
         file: reactNativeFile,
         userId: user.id || 0,
-        type: UploadTypeEnum.composer,
+        type: UploadTypeEnum.Composer,
         token: currentUploadToken,
       },
     });

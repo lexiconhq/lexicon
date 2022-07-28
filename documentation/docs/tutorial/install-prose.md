@@ -207,7 +207,7 @@ First, as you'd expect, you'll need to install `pm2` on your machine.
 $ npm install -g pm2
 ```
 
-Once it's installed, you'll also need to use `pm2` to install [Typescript](typescriptlang.org/).
+Once it's installed, you'll also need to use `pm2` to install [Typescript](https://typescriptlang.org/).
 
 This is because Prose is written in Typescript, and this allows PM2 to run the Typescript files directly for us (as opposed to transpiling them and outputting them as JS first).
 

@@ -75,6 +75,12 @@ export type PMOutput = {
   users?: Array<UserIcon> | null;
 };
 
+type DiscoursePMGroup = number | { id: number; name: string };
+
+export type DiscoursePMInput = Omit<PMOutput, 'primaryGroups'> & {
+  primaryGroups?: Array<DiscoursePMGroup> | null;
+};
+
 type Notif = {
   read: boolean;
 };

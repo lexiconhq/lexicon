@@ -1,7 +1,7 @@
 import camelcaseKeys from 'camelcase-keys';
 import { FieldResolver, queryField, stringArg } from '@nexus/schema';
 
-import { CONTENT_JSON } from '../../constants';
+import { ACCEPTED_LANGUAGE, CONTENT_JSON } from '../../constants';
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';
 
@@ -16,6 +16,7 @@ let lookupUrlsQueryResolver: FieldResolver<'Query', 'lookupUrls'> = async (
   };
   const config = {
     headers: {
+      'Accept-Language': ACCEPTED_LANGUAGE,
       'Content-Type': CONTENT_JSON,
     },
   };

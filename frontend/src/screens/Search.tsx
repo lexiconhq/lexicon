@@ -171,33 +171,42 @@ export default function Search() {
     );
   };
 
-  const onChangeValue = (text: string) => {
-    setPage(1);
-    setSearchValue(text);
-  };
+  const onChangeValue = React.useCallback(
+    (text: string) => {
+      setPage(1);
+      setSearchValue(text);
+    },
+    [setPage, setSearchValue],
+  );
 
-  const onPressCancel = () => setSearchValue('');
+  const onPressCancel = React.useCallback(
+    () => setSearchValue(''),
+    [setSearchValue],
+  );
 
-  const search = (
-    <View style={styles.searchContainer}>
-      {ios && <Icon name="Search" color={colors.textLighter} />}
-      <TextInput
-        autoFocus={true}
-        style={styles.searchTextInput}
-        value={searchValue}
-        onChangeText={onChangeValue}
-        placeholder={t('Search for ...')}
-        placeholderTextColor={colors.textLighter}
-      />
-      {searchValue !== '' && (
-        <TouchableOpacity
-          onPress={onPressCancel}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Icon name="Cancel" size="m" color={colors.textLighter} />
-        </TouchableOpacity>
-      )}
-    </View>
+  const search = React.useMemo(
+    () => (
+      <View style={styles.searchContainer}>
+        {ios && <Icon name="Search" color={colors.textLighter} />}
+        <TextInput
+          autoFocus={true}
+          style={styles.searchTextInput}
+          value={searchValue}
+          onChangeText={onChangeValue}
+          placeholder={t('Search for ...')}
+          placeholderTextColor={colors.textLighter}
+        />
+        {searchValue !== '' && (
+          <TouchableOpacity
+            onPress={onPressCancel}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Icon name="Cancel" size="m" color={colors.textLighter} />
+          </TouchableOpacity>
+        )}
+      </View>
+    ),
+    [searchValue, onChangeValue, onPressCancel, colors, styles],
   );
 
   const content = error ? (

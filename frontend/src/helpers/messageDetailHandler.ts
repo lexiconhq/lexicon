@@ -1,8 +1,9 @@
 import {
-  GetTopicDetail_topicDetail_postStream as PostStream,
-  GetTopicDetail_topicDetail_details as TopicDetail,
-} from '../generated/server/GetTopicDetail';
-import { Message, MessageContent } from '../types';
+  Message,
+  MessageContent,
+  PostStream,
+  TopicDetailInner as TopicDetail,
+} from '../types';
 
 import { formatRelativeTime } from './formatRelativeTime';
 import { getImage } from './getUserImage';
@@ -79,9 +80,9 @@ function getSortedContent(postStream: PostStream, details: TopicDetail | null) {
           time,
           message: getMessageContent(
             username,
-            raw,
-            actionCode,
-            actionCodeWho,
+            raw ?? null,
+            actionCode ?? null,
+            actionCodeWho ?? null,
             time,
           ),
           images: images || undefined,
@@ -110,9 +111,9 @@ function getSortedContent(postStream: PostStream, details: TopicDetail | null) {
           time,
           message: getMessageContent(
             username,
-            raw,
-            actionCode,
-            actionCodeWho,
+            raw ?? null,
+            actionCode ?? null,
+            actionCodeWho ?? null,
             time,
           ),
           images: images || undefined,

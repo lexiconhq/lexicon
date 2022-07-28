@@ -11,7 +11,7 @@ import {
 } from '../components';
 import { DEFAULT_CHANNEL } from '../constants';
 import { Avatar, Button, Text } from '../core-ui';
-import { TopicsSortEnum } from '../generated/server/globalTypes';
+import { TopicsSortEnum } from '../generated/server/types';
 import {
   anchorToMarkdown,
   errorHandler,
@@ -59,21 +59,12 @@ export default function UserInformation() {
     loading: topicsLoading,
     error: topicsError,
   } = useTopicList({
-    variables: { sort: TopicsSortEnum.LATEST },
+    variables: { sort: TopicsSortEnum.Latest },
     fetchPolicy: 'network-only',
   });
 
-  const {
-    data,
-    loading,
-    error,
-    networkStatus,
-    refetch,
-    fetchMore,
-  } = useActivity(
-    { variables: { username: username, offset: 0 } },
-    'HIDE_ALERT',
-  );
+  const { data, loading, error, networkStatus, refetch, fetchMore } =
+    useActivity({ variables: { username: username, offset: 0 } }, 'HIDE_ALERT');
 
   const activities = data?.userActivity ?? [];
   let postActivities: Array<Post> = activities.map((activity) => {

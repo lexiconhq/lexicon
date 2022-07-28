@@ -29,12 +29,18 @@ export function MessageCard(props: Props) {
   const {
     id,
     message,
-    messageParticipants: { participantsToShow },
+    messageParticipants,
     date,
     seen: seenProps,
     allowedUserCount,
     postPointer,
   } = props;
+
+  const { participantsToShow } = messageParticipants ?? {
+    participantsToShow: [],
+  };
+
+  const firstParticipant = participantsToShow[0] ?? { username: '' };
 
   const { navigate } = useNavigation<StackNavProp<'MessageDetail'>>();
 
@@ -67,7 +73,7 @@ export function MessageCard(props: Props) {
         }))}
       />
       <MessageContent
-        username={participantsToShow[0].username}
+        username={firstParticipant.username}
         participantCount={(allowedUserCount || 1) - 1}
         message={message}
       />

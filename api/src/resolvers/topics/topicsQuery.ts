@@ -9,6 +9,7 @@ import {
 
 import { errorHandler, parseTopicUrl } from '../../helpers';
 import { Context } from '../../types';
+import { ACCEPTED_LANGUAGE } from '../../constants';
 
 let topicsQueryResolver: FieldResolver<'Query', 'topics'> = async (
   _,
@@ -16,6 +17,9 @@ let topicsQueryResolver: FieldResolver<'Query', 'topics'> = async (
   context: Context,
 ) => {
   const config = {
+    headers: {
+      'Accept-Language': ACCEPTED_LANGUAGE,
+    },
     params: {
       page: page || 0,
     },

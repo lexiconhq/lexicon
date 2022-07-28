@@ -3,7 +3,7 @@ import { QueryHookOptions } from '@apollo/client';
 import {
   SearchUser as SearchUserType,
   SearchUserVariables,
-} from '../../generated/server/SearchUser';
+} from '../../generated/server/Search';
 import { SEARCH_USER } from '../../graphql/server/search';
 import { ErrorAlertOptionType } from '../../types';
 import { useQuery } from '../../utils';

@@ -3,7 +3,7 @@ import { Platform, SafeAreaView, ScrollView } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
 import { CustomHeader, HeaderItem, ModalHeader } from '../../components';
-import { ALL_CHANNEL } from '../../constants';
+import { isNoChannelFilter, NO_CHANNEL_FILTER } from '../../constants';
 import { useStorage } from '../../helpers';
 import { makeStyles } from '../../theme';
 import { RootStackNavProp, RootStackRouteProp } from '../../types';
@@ -53,9 +53,9 @@ export default function Channels() {
       <ScrollView>
         {prevScreen === 'Home' && (
           <ChannelItem
-            isSelected={selectedChannelId === ALL_CHANNEL.id}
-            channel={ALL_CHANNEL}
-            onPress={() => onPress(ALL_CHANNEL.id)}
+            isSelected={isNoChannelFilter(selectedChannelId)}
+            channel={NO_CHANNEL_FILTER}
+            onPress={() => onPress(NO_CHANNEL_FILTER.id)}
           />
         )}
         {channels?.map((channel) => {

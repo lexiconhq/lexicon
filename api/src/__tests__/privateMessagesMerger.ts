@@ -1,377 +1,101 @@
 import { privateMessagesMerger } from '../helpers';
+import { DiscoursePMInput, PMOutput } from '../types';
 
-it('Have merge all topic and user without duplicate', () => {
-  const topicsInbox = [
-    {
-      id: 1429,
-      title: "Who are you! I don't know you",
-      fancyTitle: 'Who are you! I don&rsquo;t know you',
-      slug: 'who-are-you-i-dont-know-you',
-      postsCount: 2,
-      replyCount: 0,
-      highestPostNumber: 2,
-      imageUrl: null,
-      createdAt: '2020-10-06T07:58:10.669Z',
-      lastPostedAt: '2020-10-06T08:06:30.499Z',
-      bumped: true,
-      bumpedAt: '2020-10-06T08:06:30.499Z',
-      archetype: 'private_message',
-      unseen: false,
-      lastReadPostNumber: 1,
-      unread: 0,
-      newPosts: 1,
-      pinned: false,
-      unpinned: null,
-      visible: true,
-      closed: false,
-      archived: false,
-      notificationLevel: 3,
-      bookmarked: false,
-      liked: false,
-      views: 2,
-      likeCount: 0,
-      hasSummary: false,
-      lastPosterUsername: 'crewmate',
-      categoryId: null,
-      pinnedGlobally: false,
-      featuredLink: null,
-      allowedUserCount: 2,
-      hasAcceptedAnswer: false,
-      voteCount: 0,
-      canVote: false,
-      userVoted: false,
-      posters: [],
-      participants: [],
-    },
-    {
-      id: 1430,
-      title: 'Who do you think I am?',
-      fancyTitle: 'Who do you think I am?',
-      slug: 'who-do-you-think-i-am',
-      postsCount: 1,
-      replyCount: 0,
-      highestPostNumber: 1,
-      imageUrl: null,
-      createdAt: '2020-10-06T08:01:27.090Z',
-      lastPostedAt: '2020-10-06T08:01:27.132Z',
-      bumped: true,
-      bumpedAt: '2020-10-06T08:01:27.132Z',
-      archetype: 'private_message',
-      unseen: true,
-      lastReadPostNumber: null,
-      unread: 0,
-      newPosts: 0,
-      pinned: false,
-      unpinned: null,
-      visible: true,
-      closed: false,
-      archived: false,
-      notificationLevel: 3,
-      bookmarked: false,
-      liked: false,
-      views: 1,
-      likeCount: 0,
-      hasSummary: false,
-      lastPosterUsername: 'crewmate',
-      categoryId: null,
-      pinnedGlobally: false,
-      featuredLink: null,
-      allowedUserCount: 2,
-      hasAcceptedAnswer: false,
-      voteCount: 0,
-      canVote: false,
-      userVoted: false,
-      posters: [],
-      participants: [],
-    },
-  ];
-  const pmInbox = {
-    users: [
-      {
-        id: 152,
-        username: 'Impostor',
-        name: '',
-        avatarTemplate:
-          'https://avatars.discourse-cdn.com/v4/letter/i/ac8455/{size}.png',
-      },
-      {
-        id: 154,
-        username: 'crewmate',
-        name: '',
-        avatarTemplate:
-          'https://avatars.discourse-cdn.com/v4/letter/c/7ba0ec/{size}.png',
-      },
-    ],
-    primaryGroups: [],
-    topicList: {
-      canCreateTopic: true,
-      draft: null,
-      draftKey: 'new_topic',
-      draftSequence: 4,
-      perPage: 30,
-      topTags: ['document', 'code', 'tag', 'art', 'product'],
-      topics: topicsInbox,
-    },
-  };
-  const topicsSent = [
-    {
-      id: 1429,
-      title: "Who are you! I don't know you",
-      fancyTitle: 'Who are you! I don&rsquo;t know you',
-      slug: 'who-are-you-i-dont-know-you',
-      postsCount: 2,
-      replyCount: 0,
-      highestPostNumber: 2,
-      imageUrl: null,
-      createdAt: '2020-10-06T07:58:10.669Z',
-      lastPostedAt: '2020-10-06T08:06:30.499Z',
-      bumped: true,
-      bumpedAt: '2020-10-06T08:06:30.499Z',
-      archetype: 'private_message',
-      unseen: false,
-      lastReadPostNumber: 1,
-      unread: 0,
-      newPosts: 1,
-      pinned: false,
-      unpinned: null,
-      visible: true,
-      closed: false,
-      archived: false,
-      notificationLevel: 3,
-      bookmarked: false,
-      liked: false,
-      views: 2,
-      likeCount: 0,
-      hasSummary: false,
-      lastPosterUsername: 'crewmate',
-      categoryId: null,
-      pinnedGlobally: false,
-      featuredLink: null,
-      allowedUserCount: 2,
-      hasAcceptedAnswer: false,
-      voteCount: 0,
-      canVote: false,
-      userVoted: false,
-      posters: [],
-      participants: [],
-    },
-    {
-      id: 1428,
-      title: 'You not doing your task',
-      fancyTitle: 'You not doing your task',
-      slug: 'you-not-doing-your-task',
-      postsCount: 2,
-      replyCount: 0,
-      highestPostNumber: 2,
-      imageUrl: null,
-      createdAt: '2020-10-06T07:57:21.179Z',
-      lastPostedAt: '2020-10-06T08:02:34.769Z',
-      bumped: true,
-      bumpedAt: '2020-10-06T08:02:34.769Z',
-      archetype: 'private_message',
-      unseen: false,
-      lastReadPostNumber: 2,
-      unread: 0,
-      newPosts: 0,
-      pinned: false,
-      unpinned: null,
-      visible: true,
-      closed: false,
-      archived: false,
-      notificationLevel: 3,
-      bookmarked: false,
-      liked: false,
-      views: 2,
-      likeCount: 0,
-      hasSummary: false,
-      lastPosterUsername: 'Impostor',
-      categoryId: null,
-      pinnedGlobally: false,
-      featuredLink: null,
-      allowedUserCount: 2,
-      hasAcceptedAnswer: false,
-      voteCount: 0,
-      canVote: false,
-      userVoted: false,
-      posters: [],
-      participants: [],
-    },
-  ];
-  const pmSent = {
-    users: [
-      {
-        id: 152,
-        username: 'Impostor',
-        name: '',
-        avatarTemplate:
-          'https://avatars.discourse-cdn.com/v4/letter/i/ac8455/{size}.png',
-      },
-    ],
-    primaryGroups: [],
-    topicList: {
-      canCreateTopic: true,
-      draft: null,
-      draftKey: 'new_topic',
-      draftSequence: 4,
-      perPage: 30,
-      topTags: ['document', 'code', 'tag', 'art', 'product'],
-      topics: topicsSent,
-    },
-  };
-  const expectedTopics = [
-    {
-      id: 1429,
-      title: "Who are you! I don't know you",
-      fancyTitle: 'Who are you! I don&rsquo;t know you',
-      slug: 'who-are-you-i-dont-know-you',
-      postsCount: 2,
-      replyCount: 0,
-      highestPostNumber: 2,
-      imageUrl: null,
-      createdAt: '2020-10-06T07:58:10.669Z',
-      lastPostedAt: '2020-10-06T08:06:30.499Z',
-      bumped: true,
-      bumpedAt: '2020-10-06T08:06:30.499Z',
-      archetype: 'private_message',
-      unseen: false,
-      lastReadPostNumber: 1,
-      unread: 0,
-      newPosts: 1,
-      pinned: false,
-      unpinned: null,
-      visible: true,
-      closed: false,
-      archived: false,
-      notificationLevel: 3,
-      bookmarked: false,
-      liked: false,
-      views: 2,
-      likeCount: 0,
-      hasSummary: false,
-      lastPosterUsername: 'crewmate',
-      categoryId: null,
-      pinnedGlobally: false,
-      featuredLink: null,
-      allowedUserCount: 2,
-      hasAcceptedAnswer: false,
-      voteCount: 0,
-      canVote: false,
-      userVoted: false,
-      posters: [],
-      participants: [],
-    },
-    {
-      id: 1428,
-      title: 'You not doing your task',
-      fancyTitle: 'You not doing your task',
-      slug: 'you-not-doing-your-task',
-      postsCount: 2,
-      replyCount: 0,
-      highestPostNumber: 2,
-      imageUrl: null,
-      createdAt: '2020-10-06T07:57:21.179Z',
-      lastPostedAt: '2020-10-06T08:02:34.769Z',
-      bumped: true,
-      bumpedAt: '2020-10-06T08:02:34.769Z',
-      archetype: 'private_message',
-      unseen: false,
-      lastReadPostNumber: 2,
-      unread: 0,
-      newPosts: 0,
-      pinned: false,
-      unpinned: null,
-      visible: true,
-      closed: false,
-      archived: false,
-      notificationLevel: 3,
-      bookmarked: false,
-      liked: false,
-      views: 2,
-      likeCount: 0,
-      hasSummary: false,
-      lastPosterUsername: 'Impostor',
-      categoryId: null,
-      pinnedGlobally: false,
-      featuredLink: null,
-      allowedUserCount: 2,
-      hasAcceptedAnswer: false,
-      voteCount: 0,
-      canVote: false,
-      userVoted: false,
-      posters: [],
-      participants: [],
-    },
-    {
-      id: 1430,
-      title: 'Who do you think I am?',
-      fancyTitle: 'Who do you think I am?',
-      slug: 'who-do-you-think-i-am',
-      postsCount: 1,
-      replyCount: 0,
-      highestPostNumber: 1,
-      imageUrl: null,
-      createdAt: '2020-10-06T08:01:27.090Z',
-      lastPostedAt: '2020-10-06T08:01:27.132Z',
-      bumped: true,
-      bumpedAt: '2020-10-06T08:01:27.132Z',
-      archetype: 'private_message',
-      unseen: true,
-      lastReadPostNumber: null,
-      unread: 0,
-      newPosts: 0,
-      pinned: false,
-      unpinned: null,
-      visible: true,
-      closed: false,
-      archived: false,
-      notificationLevel: 3,
-      bookmarked: false,
-      liked: false,
-      views: 1,
-      likeCount: 0,
-      hasSummary: false,
-      lastPosterUsername: 'crewmate',
-      categoryId: null,
-      pinnedGlobally: false,
-      featuredLink: null,
-      allowedUserCount: 2,
-      hasAcceptedAnswer: false,
-      voteCount: 0,
-      canVote: false,
-      userVoted: false,
-      posters: [],
-      participants: [],
-    },
-  ];
-  const expectedOutput = {
-    users: [
-      {
-        id: 152,
-        username: 'Impostor',
-        name: '',
-        avatarTemplate:
-          'https://avatars.discourse-cdn.com/v4/letter/i/ac8455/{size}.png',
-      },
-      {
-        id: 154,
-        username: 'crewmate',
-        name: '',
-        avatarTemplate:
-          'https://avatars.discourse-cdn.com/v4/letter/c/7ba0ec/{size}.png',
-      },
-    ],
-    primaryGroups: [],
-    topicList: {
-      canCreateTopic: true,
-      draft: null,
-      draftKey: 'new_topic',
-      draftSequence: 4,
-      perPage: 30,
-      topTags: ['document', 'code', 'tag', 'art', 'product'],
-      topics: expectedTopics,
-    },
+import { createMessage, createUser } from './data';
+
+describe('privateMessagesMerger', () => {
+  const topicListDefaults = {
+    canCreateTopic: true,
+    draft: null,
+    draftKey: 'new_topic',
+    draftSequence: 4,
+    perPage: 30,
+    topTags: [],
   };
 
-  let pmComplete = privateMessagesMerger(pmInbox, pmSent);
-  expect(pmComplete).toEqual(expectedOutput);
+  const currentUser = createUser({ id: 0, username: 'current-user' });
+  const otherUser = createUser({ id: 1, username: 'other-user' });
+
+  const messageWhoAreYou = createMessage({
+    id: 0,
+    lastPosterUsername: otherUser.username,
+    title: "Who are you! I don't know you!",
+  });
+
+  const messageWhoDoYouThink = createMessage({
+    id: 1,
+    lastPosterUsername: currentUser.username,
+    title: 'Who do you think I am?',
+  });
+
+  const messageNotDoingTasks = createMessage({
+    id: 2,
+    lastPosterUsername: currentUser.username,
+    title: "You're not doing your tasks",
+  });
+
+  it('can merge all topics and users without duplicates', () => {
+    const inboxTopics = [messageWhoAreYou, messageWhoDoYouThink];
+    const outboxTopics = [messageWhoAreYou, messageNotDoingTasks];
+
+    const inbox: DiscoursePMInput = {
+      users: [currentUser, otherUser],
+      primaryGroups: [1, 2],
+      topicList: { ...topicListDefaults, topics: inboxTopics },
+    };
+
+    const outbox: DiscoursePMInput = {
+      users: [currentUser],
+      primaryGroups: [3, 4],
+      topicList: { ...topicListDefaults, topics: outboxTopics },
+    };
+
+    const expected: PMOutput = {
+      users: [currentUser, otherUser],
+      primaryGroups: [1, 2, 3, 4],
+      topicList: {
+        ...topicListDefaults,
+        topics: [messageWhoAreYou, messageWhoDoYouThink, messageNotDoingTasks],
+      },
+    };
+
+    const result = privateMessagesMerger(inbox, outbox);
+    expect(result).toEqual(expected);
+  });
+
+  it('can handle both response types for `primaryGroups`', () => {
+    const inbox: DiscoursePMInput = {
+      users: [otherUser],
+      primaryGroups: [1, 2, { id: 3, name: 'staff' }, 4],
+      topicList: {
+        ...topicListDefaults,
+        topics: [messageWhoAreYou],
+      },
+    };
+
+    const outbox: DiscoursePMInput = {
+      users: [currentUser],
+      primaryGroups: [
+        { id: 1, name: 'owners' },
+        4,
+        { id: 5, name: 'moderators' },
+      ],
+      topicList: {
+        ...topicListDefaults,
+        topics: [messageWhoDoYouThink],
+      },
+    };
+
+    const expected: PMOutput = {
+      users: [otherUser, currentUser],
+      primaryGroups: [1, 2, 3, 4, 5],
+      topicList: {
+        ...topicListDefaults,
+        topics: [messageWhoAreYou, messageWhoDoYouThink],
+      },
+    };
+
+    const result = privateMessagesMerger(inbox, outbox);
+    expect(result).toEqual(expected);
+  });
 });

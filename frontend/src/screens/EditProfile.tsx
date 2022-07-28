@@ -26,7 +26,7 @@ import {
   TextInput,
   TextInputType,
 } from '../core-ui';
-import { UploadTypeEnum } from '../generated/server/globalTypes';
+import { UploadTypeEnum } from '../generated/server/types';
 // import { formatDateTime } from '../helpers/formatDateTime';
 import {
   createReactNativeFile,
@@ -83,11 +83,10 @@ export default function EditProfile(props: ProfileProps) {
   const extensions = authorizedExtensions?.split('|');
   const normalizedExtensions = formatExtensions(extensions);
 
-  const { control, handleSubmit, errors, setValue, getValues } = useForm<
-    ProfileForm
-  >({
-    mode: 'onChange',
-  });
+  const { control, handleSubmit, errors, setValue, getValues } =
+    useForm<ProfileForm>({
+      mode: 'onChange',
+    });
 
   const [show, setShow] = useState(false);
   const [currentUserData, setCurrentUserData] = useState(selectedUser);
@@ -276,7 +275,7 @@ export default function EditProfile(props: ProfileProps) {
             variables: {
               file: reactNativeFile,
               userId: user?.id,
-              type: UploadTypeEnum.avatar,
+              type: UploadTypeEnum.Avatar,
             },
           });
           setNoChanges(false);

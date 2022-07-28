@@ -13,13 +13,17 @@ import {
   LoadingOrError,
 } from '../../components';
 import { FloatingButton } from '../../core-ui';
-import { Message_privateMessage_topicList_topics as MessageType } from '../../generated/server/Message';
+import { Message } from '../../generated/server/Message';
 import { errorHandler, getParticipants, useStorage } from '../../helpers';
 import { useMessageList } from '../../hooks';
 import { makeStyles, useTheme } from '../../theme';
 import { MessageParticipants, StackNavProp } from '../../types';
 
 import { MessageCard } from './Components';
+
+type MessageType = NonNullable<
+  Message['privateMessage']['topicList']['topics']
+>[number];
 
 type MessageRenderItem = { item: MessageType; index: number };
 
@@ -80,11 +84,24 @@ export default function Messages() {
           JSON.stringify(incomingMessageIds)
         ) {
           setHasOlderMessages(false);
-        } else {
+        } else if (incomingMessageIds.length > 0) {
           setHasOlderMessages(true);
+        } else {
+          setHasOlderMessages(false);
         }
-        setMessages(tempMessages);
-        setParticipants(tempParticipants);
+
+        // Handle the edge case where messages.length > 0 but tempMessages.length < 1.
+        // When this happens, the existing messages get cleared and replaced with nothing.
+        // TODO: test this on a site with multiple pages of messages. This edge case
+        // came up when there was less than one page.
+        const shouldUpdateMessages =
+          (messages.length > 0 && tempMessages.length > 0) ||
+          (messages.length < 1 && tempMessages.length > 0);
+
+        if (shouldUpdateMessages) {
+          setMessages(tempMessages);
+          setParticipants(tempParticipants);
+        }
         setLoading(false);
       },
       fetchPolicy: 'network-only',

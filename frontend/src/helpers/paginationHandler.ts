@@ -2,7 +2,7 @@
 import { FieldPolicy } from '@apollo/client';
 import { Reference } from '@apollo/client/utilities';
 
-import { UserActivity_userActivity as UserActivity } from '../generated/server/UserActivity';
+import { UserActivity } from '../types/Types';
 
 import { handleDuplicateRef } from './handleDuplicate';
 

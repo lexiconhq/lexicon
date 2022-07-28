@@ -3,7 +3,7 @@ import { MutationHookOptions } from '@apollo/client';
 import {
   Logout as LogoutType,
   LogoutVariables,
-} from '../../generated/server/Logout';
+} from '../../generated/server/Auth';
 import { LOGOUT } from '../../graphql/server/auth';
 import { useMutation } from '../../utils';
 

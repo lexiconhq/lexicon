@@ -14,9 +14,8 @@ export default function PostImagePreview() {
   const styles = useStyles();
   const { colors } = useTheme();
 
-  const { navigate, goBack } = useNavigation<
-    RootStackNavProp<'PostImagePreview'>
-  >();
+  const { navigate, goBack } =
+    useNavigation<RootStackNavProp<'PostImagePreview'>>();
 
   const {
     params: { imageUri, prevScreen },

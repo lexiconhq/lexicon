@@ -61,16 +61,13 @@ export default function Register() {
     mode: 'onChange',
   });
 
-  const {
-    usernameInputRules,
-    nameInputRules,
-    passwordInputRules,
-  } = getTextInputRules({
-    maxUsernameLength,
-    minUsernameLength,
-    minPasswordLength,
-    fullNameRequired,
-  });
+  const { usernameInputRules, nameInputRules, passwordInputRules } =
+    getTextInputRules({
+      maxUsernameLength,
+      minUsernameLength,
+      minPasswordLength,
+      fullNameRequired,
+    });
 
   const onSubmit = handleSubmit(({ email, username, name, password }) => {
     Keyboard.dismiss();

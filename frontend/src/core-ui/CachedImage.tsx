@@ -1,4 +1,5 @@
 /* eslint-disable no-underscore-dangle */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // source: https://github.com/lane-c-wagner/react-native-expo-cached-image
 
 import React, { Component } from 'react';
@@ -93,7 +94,11 @@ export default class CachedImage extends Component<Props> {
   }
 
   async loadImage(filesystemURI: string, remoteURI: string) {
+    // TODO: Migrate to a newer library or implement our own CachedImage
+    // @ts-ignore
     if (this.downloadResumable && this.downloadResumable._removeSubscription) {
+      // TODO: Migrate to a newer library or implement our own CachedImage
+      // @ts-ignore
       this.downloadResumable._removeSubscription();
     }
     try {
@@ -142,8 +147,12 @@ export default class CachedImage extends Component<Props> {
     ) {
       if (
         this.downloadResumable &&
+        // TODO: Migrate to a newer library or implement our own CachedImage
+        // @ts-ignore
         this.downloadResumable._removeSubscription
       ) {
+        // TODO: Migrate to a newer library or implement our own CachedImage
+        // @ts-ignore
         this.downloadResumable._removeSubscription();
       }
       this.downloadResumable = null;

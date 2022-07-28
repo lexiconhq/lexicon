@@ -1,6 +1,8 @@
 import { Alert } from 'react-native';
 import { ApolloError } from '@apollo/client';
 
+import { StackNavProp } from '../types';
+
 import {
   ChangeUsernameError,
   EditPostError,
@@ -30,7 +32,7 @@ export function errorHandler(
 
 export function errorHandlerAlert(
   error: ApolloError | string,
-  navigate?: Function,
+  navigate?: StackNavProp<'PostDetail'>['navigate'],
   isFiltered = false,
 ) {
   let errorMsg;

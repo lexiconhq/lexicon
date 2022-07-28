@@ -26,7 +26,11 @@ export function formatDateTime(
     return '';
   }
 
-  return date.toLocaleString(locale, {
+  // This only happens during testing. Feel free to dig in further to find a more
+  // proper fix.
+  const normalizedLocale = locale === 'mock' ? 'en-US' : locale;
+
+  return date.toLocaleString(normalizedLocale, {
     ...presets[format],
     ...(time && presetTime),
   });

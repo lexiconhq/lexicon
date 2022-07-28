@@ -2,7 +2,6 @@ import React from 'react';
 import { Platform, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  BottomTabBarOptions,
   BottomTabBarProps,
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs';
@@ -15,10 +14,7 @@ import { TabParamList } from '../types';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
-function TabBar({
-  state,
-  navigation: { navigate },
-}: BottomTabBarProps<BottomTabBarOptions>) {
+function TabBar({ state, navigation: { navigate } }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const styles = useStyles();
   const { colors } = useTheme();
@@ -79,8 +75,16 @@ export default function TabNavigator() {
       initialRouteName="Home"
       tabBar={(props) => <TabBar {...props} />}
     >
-      <Tab.Screen name="Home" component={HomeScene} />
-      <Tab.Screen name="Profile" component={ProfileScene} />
+      <Tab.Screen
+        name="Home"
+        component={HomeScene}
+        options={{ headerShown: false }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScene}
+        options={{ headerShown: false }}
+      />
     </Tab.Navigator>
   );
 }

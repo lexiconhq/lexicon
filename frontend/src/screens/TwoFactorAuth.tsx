@@ -30,8 +30,9 @@ export default function TwoFactorAuth() {
 
   const { login, loading } = useLogin({
     onCompleted: ({ login: authUser }) => {
-      // eslint-disable-next-line no-underscore-dangle
-      if (authUser.__typename === 'LoginOutput') {
+      const { __typename: responseType } = authUser;
+
+      if (responseType === 'LoginOutput') {
         setToken(authUser.token);
         let { user } = authUser;
         storage.setItem('user', {
@@ -41,7 +42,7 @@ export default function TwoFactorAuth() {
           avatar: getImage(user.avatar),
         });
         reset({ index: 0, routes: [{ name: 'TabNav' }] });
-      } else {
+      } else if (responseType === 'SecondFactorRequired') {
         setErrorMsg(authUser.error);
       }
     },

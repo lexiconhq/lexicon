@@ -2,7 +2,7 @@ import camelcaseKey from 'camelcase-keys';
 import snakecaseKey from 'snakecase-keys';
 import { FieldResolver, mutationField, arg } from '@nexus/schema';
 
-import { CONTENT_JSON } from '../../constants';
+import { ACCEPTED_LANGUAGE, CONTENT_JSON } from '../../constants';
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';
 
@@ -17,6 +17,7 @@ export let newTopicResolver: FieldResolver<'Mutation', 'newTopic'> = async (
   });
   const config = {
     headers: {
+      'Accept-Language': ACCEPTED_LANGUAGE,
       'Content-Type': CONTENT_JSON,
     },
   };

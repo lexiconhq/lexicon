@@ -17,14 +17,8 @@ export function Chip(props: Props) {
   const styles = useStyles();
   const { spacing } = useTheme();
 
-  const {
-    content,
-    decorationColor,
-    large,
-    right,
-    style,
-    ...otherProps
-  } = props;
+  const { content, decorationColor, large, right, style, ...otherProps } =
+    props;
 
   const { onPress, onPressIn, onPressOut, onLongPress } = otherProps;
 

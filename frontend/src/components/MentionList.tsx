@@ -1,4 +1,5 @@
 import React, { RefObject } from 'react';
+import { UseFormMethods } from 'react-hook-form';
 import {
   FlatList,
   StyleProp,
@@ -21,7 +22,7 @@ type Props = ViewProps & {
   rawText: string;
   textRef: RefObject<TextInputType>;
   setRawText?: (value: string) => void;
-  setMentionValue?: (varName: string, cookedText: string) => void;
+  setMentionValue?: UseFormMethods['setValue'];
   setShowUserList: (value: boolean) => void;
   viewStyle?: StyleProp<ViewStyle>;
   fontStyle?: StyleProp<TextStyle>;

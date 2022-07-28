@@ -1,3 +1,5 @@
+import { UseFormMethods } from 'react-hook-form';
+
 import { Image } from '../types';
 
 export function formatImageLink(
@@ -40,7 +42,7 @@ export function reformatMarkdownBeforeUpload(
   raw: string,
   startingCursorPosition: number,
   imagesArray: Array<Image>,
-  setValue: (name: string, value: string) => void,
+  setValue: UseFormMethods['setValue'],
 ) {
   const result = insertImageUploadStatus(
     raw,
@@ -54,7 +56,7 @@ export function reformatMarkdownAfterUpload(
   raw: string,
   imagesArray: Array<Image>,
   token: number,
-  setValue: (name: string, value: string) => void,
+  setValue: UseFormMethods['setValue'],
 ) {
   let newText = raw;
   newText = replaceImageUploadStatus(raw, token, imagesArray[token - 1].link);

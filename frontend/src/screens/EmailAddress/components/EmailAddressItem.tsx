@@ -38,24 +38,22 @@ export default function EmailAddressItem(props: Props) {
 
   const ios = Platform.OS === 'ios';
 
-  const {
-    setPrimaryEmail,
-    loading: setPrimaryEmailLoading,
-  } = useSetPrimaryEmail({
-    variables: {
-      selectedEmail: emailAddress,
-      username,
-    },
-    onError: (error) => {
-      errorHandlerAlert(error);
-    },
-    refetchQueries: [
-      {
-        query: PROFILE,
-        variables: { username },
+  const { setPrimaryEmail, loading: setPrimaryEmailLoading } =
+    useSetPrimaryEmail({
+      variables: {
+        selectedEmail: emailAddress,
+        username,
       },
-    ],
-  });
+      onError: (error) => {
+        errorHandlerAlert(error);
+      },
+      refetchQueries: [
+        {
+          query: PROFILE,
+          variables: { username },
+        },
+      ],
+    });
 
   const { deleteEmail, loading: deleteEmailLoading } = useDeleteEmail({
     variables: {

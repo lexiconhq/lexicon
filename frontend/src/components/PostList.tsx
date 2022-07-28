@@ -7,7 +7,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 
 import { makeStyles, useTheme } from '../theme';
-import { Post } from '../types';
+import { Post, StackNavProp } from '../types';
 import { useUserEvent } from '../utils';
 
 import { PostItem } from './PostItem';
@@ -31,7 +31,7 @@ type Ref = VirtualizedList<Post>;
 export { Ref as PostListRef };
 
 export const PostList = forwardRef<Ref, Props>((props, ref) => {
-  const { navigate } = useNavigation();
+  const { navigate } = useNavigation<StackNavProp<'UserInformation'>>();
   const styles = useStyles();
   const { colors } = useTheme();
 

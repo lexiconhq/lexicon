@@ -40,9 +40,8 @@ export default function SelectUser() {
   } = useRoute<RootStackRouteProp<'SelectUser'>>();
 
   const [searchValue, setSearchValue] = useState<string>('');
-  const [selectedUsers, setSelectedUsers] = useState<Array<SelectedUserProps>>(
-    listOfUser,
-  );
+  const [selectedUsers, setSelectedUsers] =
+    useState<Array<SelectedUserProps>>(listOfUser);
   const [currentUsers, setCurrentUsers] = useState<Array<string>>(users);
 
   const ios = Platform.OS === 'ios';
@@ -56,15 +55,9 @@ export default function SelectUser() {
   const onSelectedUser = (username: string) => {
     let tempUsers = new Set(currentUsers);
     let tempUserList = new Set(selectedUsers);
-    let chosenList = data?.searchUser.users.filter((user) => {
-      if (user.username.match(username)) {
-        return {
-          name: user.name || '',
-          username: user.username,
-          avatar: user.avatar,
-        };
-      }
-    });
+    let chosenList = data?.searchUser.users.filter((user) =>
+      user.username.match(username),
+    );
 
     if (tempUsers.has(username)) {
       tempUsers.delete(username);
@@ -76,7 +69,7 @@ export default function SelectUser() {
     } else {
       chosenList?.forEach((index) => {
         if (index.username === username) {
-          tempUserList.add(index);
+          tempUserList.add({ ...index, name: index.name ?? null });
         }
       });
       tempUsers.add(username);
@@ -171,7 +164,7 @@ export default function SelectUser() {
                   user.username
                     .toLowerCase()
                     .includes(searchValue.toLowerCase()) &&
-                  !selectedUsers.includes(user),
+                  !selectedUsers.includes({ ...user, name: user.name ?? null }),
               )
               .map((user) => {
                 if (user.name && user.name !== ownerName) {

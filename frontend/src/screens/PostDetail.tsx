@@ -7,7 +7,7 @@ import {
   VirtualizedList,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { HeaderBackButton } from '@react-navigation/stack';
+import { HeaderBackButton } from '@react-navigation/elements';
 
 import {
   ActionSheet,

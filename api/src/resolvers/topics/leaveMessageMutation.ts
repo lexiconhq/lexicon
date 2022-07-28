@@ -6,7 +6,7 @@ import {
   stringArg,
 } from '@nexus/schema';
 
-import { CONTENT_JSON } from '../../constants';
+import { ACCEPTED_LANGUAGE, CONTENT_JSON } from '../../constants';
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';
 
@@ -16,6 +16,7 @@ export let leaveMessageResolver: FieldResolver<
 > = async (_, { topicId, owner, username }, context: Context) => {
   const config = {
     headers: {
+      'Accept-Language': ACCEPTED_LANGUAGE,
       'Content-Type': CONTENT_JSON,
     },
   };

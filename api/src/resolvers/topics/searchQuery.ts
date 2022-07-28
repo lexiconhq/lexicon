@@ -3,6 +3,7 @@ import { FieldResolver, queryField, intArg, stringArg } from '@nexus/schema';
 
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';
+import { ACCEPTED_LANGUAGE } from '../../constants';
 
 let searchQueryResolver: FieldResolver<'Query', 'search'> = async (
   _,
@@ -13,6 +14,9 @@ let searchQueryResolver: FieldResolver<'Query', 'search'> = async (
     search = `${search} order:${order}`;
   }
   const config = {
+    headers: {
+      'Accept-Language': ACCEPTED_LANGUAGE,
+    },
     params: {
       q: search,
       page,

@@ -8,7 +8,7 @@ import {
   intArg,
 } from '@nexus/schema';
 
-import { CONTENT_FORM_URLENCODED } from '../../constants';
+import { ACCEPTED_LANGUAGE, CONTENT_FORM_URLENCODED } from '../../constants';
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';
 
@@ -23,12 +23,16 @@ export let likePostResolver: FieldResolver<'Mutation', 'likePost'> = async (
   };
   const config = {
     headers: {
+      'Accept-Language': ACCEPTED_LANGUAGE,
       'Content-Type': CONTENT_FORM_URLENCODED,
     },
     params: unlike && body,
   };
 
   const postConfig = {
+    headers: {
+      'Accept-Language': ACCEPTED_LANGUAGE,
+    },
     // eslint-disable-next-line @typescript-eslint/camelcase
     params: { post_ids: null, include_raw: true },
   };

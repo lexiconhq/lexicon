@@ -4,6 +4,7 @@ import { FieldResolver, queryField, intArg } from '@nexus/schema';
 
 import { errorHandler, getTopicPostPath } from '../../helpers';
 import { Context } from '../../types';
+import { ACCEPTED_LANGUAGE } from '../../constants';
 
 let topicDetailQueryResolver: FieldResolver<'Query', 'topicDetail'> = async (
   _,
@@ -11,6 +12,9 @@ let topicDetailQueryResolver: FieldResolver<'Query', 'topicDetail'> = async (
   context: Context,
 ) => {
   const config = {
+    headers: {
+      'Accept-Language': ACCEPTED_LANGUAGE,
+    },
     params: { post_ids: posts, include_raw: true },
   };
 

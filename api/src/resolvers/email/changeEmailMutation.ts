@@ -1,5 +1,6 @@
 import { FieldResolver, mutationField, stringArg } from '@nexus/schema';
 
+import { CONTENT_JSON } from '../../constants';
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';
 
@@ -9,7 +10,7 @@ export let changeEmailResolver: FieldResolver<
 > = async (_, { username, newEmail }, context: Context) => {
   const config = {
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': CONTENT_JSON,
     },
   };
   const url = `users/${username}/preferences/email.json`;

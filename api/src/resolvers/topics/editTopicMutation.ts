@@ -4,6 +4,7 @@ import { FieldResolver, mutationField, arg, intArg } from '@nexus/schema';
 
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';
+import { ACCEPTED_LANGUAGE, CONTENT_JSON } from '../../constants';
 
 export let editTopicMutation: FieldResolver<'Mutation', 'editTopic'> = async (
   _,
@@ -13,7 +14,8 @@ export let editTopicMutation: FieldResolver<'Mutation', 'editTopic'> = async (
   let topic = snakecaseKey(topicInput);
   const config = {
     headers: {
-      'Content-Type': 'application/json',
+      'Accept-Language': ACCEPTED_LANGUAGE,
+      'Content-Type': CONTENT_JSON,
     },
   };
   try {

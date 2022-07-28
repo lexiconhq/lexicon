@@ -3,7 +3,7 @@ import { MutationHookOptions } from '@apollo/client';
 import {
   Register as RegisterType,
   RegisterVariables,
-} from '../../generated/server/Register';
+} from '../../generated/server/Auth';
 import { REGISTER } from '../../graphql/server/auth';
 import { useMutation } from '../../utils';
 

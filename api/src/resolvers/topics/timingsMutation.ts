@@ -3,6 +3,7 @@ import { FieldResolver, mutationField, intArg } from '@nexus/schema';
 
 import { errorHandler, getTopicTimings } from '../../helpers';
 import { Context } from '../../types';
+import { CONTENT_JSON } from '../../constants';
 
 export let timingsResolver: FieldResolver<'Mutation', 'timings'> = async (
   _,
@@ -11,7 +12,7 @@ export let timingsResolver: FieldResolver<'Mutation', 'timings'> = async (
 ) => {
   const config = {
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': CONTENT_JSON,
     },
   };
   let timingsInputSnake = snakecaseKey(getTopicTimings(postNumbers, topicId));

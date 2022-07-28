@@ -5,7 +5,8 @@ import { getFormat } from './getFormat';
 
 export async function pickImage(extensions?: Array<string>) {
   const ios = Platform.OS === 'ios';
-  let permissionCameraRollResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  let permissionCameraRollResult =
+    await ImagePicker.requestMediaLibraryPermissionsAsync();
 
   if (permissionCameraRollResult.status !== 'granted') {
     return {
@@ -19,9 +20,18 @@ export async function pickImage(extensions?: Array<string>) {
   });
 
   if (!ios && !result) {
-    // For android only see getPendingResultAsync expo documentation.
-    let pendingResult = await ImagePicker.getPendingResultAsync();
-    result = 'cancelled' in pendingResult ? pendingResult : { cancelled: true };
+    // On Android, `result` can sometimes be `undefined`. The official Expo
+    // documentation has a workaround for this, which is to retrieve it from
+    // `getPenderingResultAsync`.
+    //
+    // Read more: https://docs.expo.dev/versions/latest/sdk/imagepicker/#imagepickergetpendingresultasync
+    let pendingResults = await ImagePicker.getPendingResultAsync();
+
+    // For now, we only ever want a single image that was selected.
+    // If this ever changes in the future, be sure to update `result`
+    // to reflect that it will be an array of `uri`s.
+    const [firstResult] = pendingResults;
+    result = 'cancelled' in firstResult ? firstResult : { cancelled: true };
   }
 
   if (result.cancelled) {

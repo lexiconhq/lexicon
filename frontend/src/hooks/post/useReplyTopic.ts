@@ -3,7 +3,7 @@ import { MutationHookOptions } from '@apollo/client';
 import {
   ReplyTopic as ReplyTopicType,
   ReplyTopicVariables,
-} from '../../generated/server/ReplyTopic';
+} from '../../generated/server/Topics';
 import { REPLY_TOPIC } from '../../graphql/server/topics';
 import { useMutation } from '../../utils';
 

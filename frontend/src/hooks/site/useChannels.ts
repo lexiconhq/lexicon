@@ -1,6 +1,6 @@
 import { QueryHookOptions } from '@apollo/client';
 
-import { GetChannels as ChannelsType } from '../../generated/server/GetChannels';
+import { GetChannels as ChannelsType } from '../../generated/server/Channels';
 import { GET_CHANNELS } from '../../graphql/server/channels';
 import { ErrorAlertOptionType } from '../../types';
 import { useQuery } from '../../utils';

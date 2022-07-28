@@ -6,21 +6,17 @@ import {
 } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 
-import { Profile_userProfile_user_UserDetail as UserProfile } from '../generated/server/Profile';
-
 import { NewPost, Post, ReplyPost } from './Post';
-import { SelectedUserProps, UserMessageProps } from './Types';
+import { SelectedUserProps, UserDetail, UserMessageProps } from './Types';
 
-export type RootStackNavProp<
-  T extends keyof RootStackParamList
-> = StackNavigationProp<RootStackParamList, T>;
+export type RootStackNavProp<T extends keyof RootStackParamList> =
+  StackNavigationProp<RootStackParamList, T>;
 
-export type StackNavProp<
-  T extends keyof StackParamList
-> = CompositeNavigationProp<
-  StackNavigationProp<StackParamList, T>,
-  StackNavigationProp<RootStackParamList>
->;
+export type StackNavProp<T extends keyof StackParamList> =
+  CompositeNavigationProp<
+    StackNavigationProp<StackParamList, T>,
+    StackNavigationProp<RootStackParamList>
+  >;
 
 export type TabNavProp<T extends keyof TabParamList> = CompositeNavigationProp<
   BottomTabNavigationProp<TabParamList, T>,
@@ -30,9 +26,8 @@ export type TabNavProp<T extends keyof TabParamList> = CompositeNavigationProp<
   >
 >;
 
-export type RootStackRouteProp<
-  T extends keyof RootStackParamList
-> = RoutePropBase<RootStackParamList, T>;
+export type RootStackRouteProp<T extends keyof RootStackParamList> =
+  RoutePropBase<RootStackParamList, T>;
 
 export type StackRouteProp<T extends keyof StackParamList> = RoutePropBase<
   StackParamList,
@@ -50,7 +45,7 @@ type ChannelsParams = {
 };
 
 type EditProfileParams = {
-  user: UserProfile;
+  user: UserDetail;
 };
 
 type FlagPostParams = {

@@ -34,9 +34,8 @@ export default function StackNavigator() {
 
   return (
     <Stack.Navigator
-      mode="card"
       initialRouteName="InstanceLoading"
-      screenOptions={navHeader}
+      screenOptions={{ ...navHeader, presentation: 'card' }}
     >
       <Stack.Screen
         name="TabNav"

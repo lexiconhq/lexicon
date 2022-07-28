@@ -1,4 +1,4 @@
-import { Appearance } from 'react-native-appearance';
+import { Appearance } from 'react-native';
 
 export type ColorScheme = 'light' | 'dark' | 'no-preference';
 

@@ -1,8 +1,11 @@
 /* eslint no-underscore-dangle: 0 */
 import { Alert } from 'react-native';
 
-import { Notification_notification_notifications as RawNotificationsType } from '../generated/server/Notification';
-import { Notification as NotificationDataType, StackParamList } from '../types';
+import {
+  Notification as NotificationDataType,
+  RawNotificationsType,
+  StackParamList,
+} from '../types';
 
 enum NotificationType {
   Mention = 1,

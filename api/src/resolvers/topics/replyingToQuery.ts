@@ -1,5 +1,6 @@
 import { FieldResolver, queryField, intArg } from '@nexus/schema';
 
+import { ACCEPTED_LANGUAGE } from '../../constants';
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';
 
@@ -12,6 +13,9 @@ let replyingToQueryResolver: FieldResolver<'Query', 'replyingTo'> = async (
   info,
 ) => {
   const config = {
+    headers: {
+      'Accept-Language': ACCEPTED_LANGUAGE,
+    },
     params: {
       // eslint-disable-next-line @typescript-eslint/camelcase
       max_replies: 1,

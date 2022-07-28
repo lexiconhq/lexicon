@@ -7,7 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import { MentionList } from '../../components';
 import { Icon, TextInputType } from '../../core-ui';
-import { UploadTypeEnum } from '../../generated/server/globalTypes';
+import { UploadTypeEnum } from '../../generated/server/types';
 import {
   createReactNativeFile,
   errorHandlerAlert,
@@ -79,7 +79,7 @@ export default function ImagePreview() {
         },
         file: reactNativeFile,
         userId: user?.id,
-        type: UploadTypeEnum.composer,
+        type: UploadTypeEnum.Composer,
       },
     });
   };

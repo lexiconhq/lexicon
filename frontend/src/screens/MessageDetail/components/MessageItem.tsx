@@ -23,14 +23,8 @@ export function MessageItem(props: Props) {
   const styles = useStyles();
   const { spacing } = useTheme();
 
-  const {
-    content,
-    sender,
-    newTimestamp,
-    isPrev,
-    settings,
-    onPressAvatar,
-  } = props;
+  const { content, sender, newTimestamp, isPrev, settings, onPressAvatar } =
+    props;
 
   const storage = useStorage();
   const myUsername = storage.getItem('user')?.username || '';

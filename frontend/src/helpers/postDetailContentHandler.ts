@@ -1,9 +1,6 @@
 import { DEFAULT_CHANNEL } from '../constants';
-import {
-  GetTopicDetail_topicDetail as TopicDetail,
-  GetTopicDetail_topicDetail_postStream_posts_actionsSummary as ActionsSummaryServer,
-} from '../generated/server/GetTopicDetail';
-import { Channel, Post, Topic, User } from '../types';
+import { ActionSummary as ActionsSummaryServer } from '../generated/server/types';
+import { Channel, Post, Topic, TopicDetail, User } from '../types';
 
 import { getImage } from './getUserImage';
 
@@ -26,7 +23,7 @@ export function ActionsSummaryHandler(
   let isLiked = false;
   let canFlag = true;
 
-  actionsSummary?.map(({ id, count, acted }) => {
+  actionsSummary?.forEach(({ id, count, acted }) => {
     switch (id) {
       case ActionsSummaryType.Like: {
         likeCount = count || 0;
@@ -117,9 +114,12 @@ export function postDetailContentHandler({
       replyToPostNumber,
       canEdit,
     }) => {
-      const { isLiked, likeCount, canFlag } = ActionsSummaryHandler(
-        actionsSummary,
-      );
+      if (!actionsSummary) {
+        throw new Error('Unexpected condition: actionsSummary was undefined');
+      }
+
+      const { isLiked, likeCount, canFlag } =
+        ActionsSummaryHandler(actionsSummary);
 
       posts.push({
         id,

@@ -12,12 +12,12 @@
     "generate": "yarn generate:schema",
     "lint": "eslint --max-warnings 0 \"src/**/*.{ts,tsx}\"",
     "jest": "env PROSE_DISCOURSE_HOST=https://meta.discourse.org jest --coverage --passWithNoTests",
-    "test": "yarn lint && yarn typecheck && yarn format:check && yarn jest",
+    "test": "yarn lint && yarn typecheck && yarn format:check && yarn build && yarn jest",
     "build": "tsc --outDir lib/"
   },
   "dependencies": {
     "@nexus/schema": "^0.15.0",
-    "axios": "^0.19.2",
+    "axios": "^0.21.2",
     "axios-cookiejar-support": "^1.0.0",
     "camelcase-keys": "^6.2.2",
     "dotenv": "^8.2.0",

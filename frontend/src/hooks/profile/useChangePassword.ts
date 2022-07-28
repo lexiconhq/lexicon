@@ -3,7 +3,7 @@ import { MutationHookOptions } from '@apollo/client';
 import {
   ChangeNewPassword as ChangeNewPasswordType,
   ChangeNewPasswordVariables,
-} from '../../generated/server/ChangeNewPassword';
+} from '../../generated/server/ChangePassword';
 import { CHANGE_PASSWORD } from '../../graphql/server/changePassword';
 import { useMutation } from '../../utils';
 

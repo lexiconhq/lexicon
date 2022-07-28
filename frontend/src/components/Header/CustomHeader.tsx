@@ -1,11 +1,12 @@
 import React, { useLayoutEffect } from 'react';
 import { useNavigation, useNavigationState } from '@react-navigation/native';
-import { HeaderBackButton } from '@react-navigation/stack';
+import { HeaderBackButton } from '@react-navigation/elements';
 import { StatusBar, StatusBarStyle } from 'expo-status-bar';
 
 import { ActivityIndicator } from '../../core-ui';
 import { IconName } from '../../icons';
 import { Color, makeStyles, useColorScheme, useTheme } from '../../theme';
+import { TabNavProp } from '../../types';
 
 import { HeaderItem } from './HeaderItem';
 
@@ -23,7 +24,7 @@ type Props = {
 
 export function CustomHeader(props: Props) {
   const { colorScheme } = useColorScheme();
-  const navigation = useNavigation();
+  const navigation = useNavigation<TabNavProp<'Home'>>();
   const styles = useStyles();
   const { colors, fontSizes, navHeader } = useTheme();
 
@@ -42,10 +43,16 @@ export function CustomHeader(props: Props) {
   const statusBarStyle: StatusBarStyle =
     colorScheme === 'light' ? 'dark' : 'light';
 
-  const headerRight = isLoading ? (
-    <ActivityIndicator style={styles.headerRight} />
-  ) : (
-    onPressRight && (
+  const headerRight = React.useMemo(() => {
+    if (isLoading) {
+      return <ActivityIndicator style={styles.headerRight} />;
+    }
+
+    if (!onPressRight) {
+      return null;
+    }
+
+    return (
       <HeaderItem
         label={rightTitle}
         icon={rightIcon}
@@ -53,13 +60,17 @@ export function CustomHeader(props: Props) {
         disabled={disabled}
         style={styles.headerRight}
       />
-    )
-  );
+    );
+  }, [isLoading, onPressRight, disabled, rightTitle, rightIcon, styles]);
 
   const routesLength = useNavigationState((state) => state.routes.length);
 
-  const headerLeft =
-    routesLength > 1 ? (
+  const headerLeft = React.useMemo(() => {
+    if (routesLength < 2) {
+      return null;
+    }
+
+    return (
       <HeaderBackButton
         tintColor={isLoading ? colors.grey : colors.primary}
         style={isLoading && { opacity: 0.5 }}
@@ -72,13 +83,15 @@ export function CustomHeader(props: Props) {
         disabled={isLoading}
         onPress={() => {
           prevScreen
-            ? navigation.navigate(prevScreen, {
-                backToTop: false,
-              })
+            ? // TODO: Fix this type error more properly when there's time
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              navigation.navigate(prevScreen, { backToTop: false })
             : navigation.goBack();
         }}
       />
-    ) : null;
+    );
+  }, [routesLength, isLoading, navigation, prevScreen, colors, fontSizes]);
 
   useLayoutEffect(() => {
     navigation.setOptions({

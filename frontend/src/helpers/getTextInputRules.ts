@@ -1,4 +1,4 @@
-import { Site_site as SiteSettings } from '../generated/server/Site';
+import { SiteSettings } from '../types';
 
 type TextInputRules = Pick<
   SiteSettings,

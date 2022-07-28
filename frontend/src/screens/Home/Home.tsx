@@ -16,9 +16,15 @@ import {
   PostListRef,
   SegmentedControl,
 } from '../../components';
-import { DEFAULT_CHANNEL, NO_EXCERPT_WORDING } from '../../constants';
+import {
+  DEFAULT_CHANNEL,
+  NO_CHANNEL_FILTER,
+  isNoChannelFilter,
+  NO_EXCERPT_WORDING,
+  isChannelFilter,
+} from '../../constants';
 import { FloatingButton } from '../../core-ui';
-import { TopicsSortEnum } from '../../generated/server/globalTypes';
+import { TopicsSortEnum } from '../../generated/server/types';
 import { Topics, TopicsVariables } from '../../generated/server/Topics';
 import { client } from '../../graphql/client';
 import { TOPICS } from '../../graphql/server/topics';
@@ -52,9 +58,9 @@ let sortTypes = {
   TOP: { label: () => t('Top') },
 };
 
-let sortOptionsArray = Object.entries(
-  sortTypes,
-).map(([name, { label }], index) => ({ index, name, label }));
+let sortOptionsArray = Object.entries(sortTypes).map(
+  ([name, { label }], index) => ({ index, name, label }),
+);
 
 const NAV_BAR_TITLE_SIZE = 24;
 const IOS_BAR = 60;
@@ -113,12 +119,14 @@ export default function Home() {
   }, [routeParams, tabNavigation]);
 
   const [sortState, setSortState] = useState<TopicsSortEnum>(
-    TopicsSortEnum.LATEST,
+    TopicsSortEnum.Latest,
   );
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [activityLoading, setActivityLoading] = useState(false);
-  const [selectedChannelId, setSelectedChannelId] = useState(999);
+  const [selectedChannelId, setSelectedChannelId] = useState(
+    NO_CHANNEL_FILTER.id,
+  );
   const [dataReady, setDataReady] = useState(false);
   const [page, setPage] = useState(FIRST_PAGE);
   const [hasOlderTopics, setHasOlderTopics] = useState(false);
@@ -148,7 +156,7 @@ export default function Home() {
         if (data && data.category.categories) {
           let channels = data.category.categories.map((channel) => {
             let { id, color, name, descriptionText } = channel;
-            return { id, color, name, description: descriptionText };
+            return { id, color, name, description: descriptionText ?? null };
           });
           storage.setItem('channels', channels);
         }
@@ -191,29 +199,6 @@ export default function Home() {
     },
     'HIDE_ALERT',
   );
-
-  const {
-    getTopicList,
-    loading: topicsLoading,
-    error: topicsError,
-    refetch: refetchTopics,
-    fetchMore: fetchMoreTopics,
-  } = useLazyTopicList({
-    variables:
-      selectedChannelId === 999
-        ? { sort: sortState, page }
-        : { sort: sortState, categoryId: selectedChannelId, page },
-    onError: () => {
-      setRefreshing(false);
-      setLoading(false);
-    },
-    onCompleted: (data) => {
-      if (data) {
-        setData(data);
-        setLoading(false);
-      }
-    },
-  });
 
   const setData = useCallback(
     ({ topics }: Topics) => {
@@ -288,6 +273,28 @@ export default function Home() {
     [allTopicCount, setTopicsData, storage],
   );
 
+  const {
+    getTopicList,
+    loading: topicsLoading,
+    error: topicsError,
+    refetch: refetchTopics,
+    fetchMore: fetchMoreTopics,
+  } = useLazyTopicList({
+    variables: isNoChannelFilter(selectedChannelId)
+      ? { sort: sortState, page }
+      : { sort: sortState, categoryId: selectedChannelId, page },
+    onError: () => {
+      setRefreshing(false);
+      setLoading(false);
+    },
+    onCompleted: (data) => {
+      if (data) {
+        setData(data);
+        setLoading(false);
+      }
+    },
+  });
+
   const getData = useCallback(
     (variables: TopicsVariables) => {
       try {
@@ -314,13 +321,20 @@ export default function Home() {
       setSelectedChannelId(receivedChannelId);
       setPage(0);
     } else if (channels) {
-      setSelectedChannelId(999);
+      setSelectedChannelId(NO_CHANNEL_FILTER.id);
     }
 
     const unsubscribe = stackNavigation.addListener('focus', () => {
+      let categoryId = receivedChannelId;
+      if (receivedChannelId) {
+        categoryId = isNoChannelFilter(receivedChannelId)
+          ? 0
+          : receivedChannelId;
+      }
+
       const variables: TopicsVariables = {
         sort: sortState,
-        categoryId: receivedChannelId === 999 ? 0 : receivedChannelId,
+        categoryId,
         page: FIRST_PAGE,
       };
       setPage(FIRST_PAGE);
@@ -398,16 +412,15 @@ export default function Home() {
 
   const onSegmentedControlItemPress = ({ name }: SortOption) => {
     const sortState: TopicsSortEnum =
-      name === 'LATEST' ? TopicsSortEnum.LATEST : TopicsSortEnum.TOP;
+      name === 'LATEST' ? TopicsSortEnum.Latest : TopicsSortEnum.Top;
     setSortState(sortState);
-    const variables: TopicsVariables =
-      selectedChannelId === 999
-        ? { sort: sortState, page: FIRST_PAGE }
-        : {
-            sort: sortState,
-            categoryId: selectedChannelId,
-            page: FIRST_PAGE,
-          };
+    const variables: TopicsVariables = isNoChannelFilter(selectedChannelId)
+      ? { sort: sortState, page: FIRST_PAGE }
+      : {
+          sort: sortState,
+          categoryId: selectedChannelId,
+          page: FIRST_PAGE,
+        };
     setTopicsData([]);
     setPage(FIRST_PAGE);
     getData(variables);
@@ -428,16 +441,18 @@ export default function Home() {
     }
     const nextPage = page + 1;
     if (fetchMoreTopics) {
-      let result = await fetchMoreTopics({
-        variables:
-          selectedChannelId === 999
-            ? { sort: sortState, page: nextPage }
-            : {
-                sort: sortState,
-                categoryId: selectedChannelId,
-                page: nextPage,
-              },
-      });
+      let variables: TopicsVariables;
+      if (isNoChannelFilter(selectedChannelId)) {
+        variables = { sort: sortState, page: nextPage };
+      } else {
+        variables = {
+          sort: sortState,
+          page: nextPage,
+          categoryId: selectedChannelId,
+        };
+      }
+
+      let result = await fetchMoreTopics({ variables });
       if (result.data.topics.topicList?.topics?.length === 0) {
         setHasOlderTopics(false);
       } else {
@@ -456,7 +471,7 @@ export default function Home() {
   let getChannelName = (): string => {
     let channels = storage.getItem('channels');
     if (channels) {
-      if (selectedChannelId !== 999) {
+      if (isChannelFilter(selectedChannelId)) {
         let channel = channels.find(
           (channel) => channel.id === selectedChannelId,
         );
@@ -546,7 +561,7 @@ export default function Home() {
           ]}
         >
           <SearchBar
-            placeholder={t('Search by posts, category, etc.')}
+            placeholder={t('Search posts, categories, etc.')}
             onPressSearch={onPressSearch}
           />
           <SegmentedControl

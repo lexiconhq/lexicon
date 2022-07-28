@@ -3,7 +3,7 @@ import { stringify } from 'querystring';
 import camelcaseKeys from 'camelcase-keys';
 import { FieldResolver, mutationField, intArg, stringArg } from '@nexus/schema';
 
-import { CONTENT_FORM_URLENCODED } from '../../constants';
+import { ACCEPTED_LANGUAGE, CONTENT_FORM_URLENCODED } from '../../constants';
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';
 
@@ -14,6 +14,7 @@ export let flagPostResolver: FieldResolver<'Mutation', 'flagPost'> = async (
 ) => {
   const config = {
     headers: {
+      'Accept-Language': ACCEPTED_LANGUAGE,
       'Content-Type': CONTENT_FORM_URLENCODED,
     },
   };

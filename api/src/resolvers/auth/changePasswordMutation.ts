@@ -1,5 +1,6 @@
 import { FieldResolver, mutationField, stringArg } from '@nexus/schema';
 
+import { CONTENT_JSON } from '../../constants';
 import { errorHandler, getCsrfSession } from '../../helpers';
 import { Context } from '../../types';
 
@@ -8,7 +9,7 @@ export let changePasswordResolver: FieldResolver<
   'changePassword'
 > = async (_, { login }, context: Context) => {
   let headers = {
-    'Content-Type': 'application/json',
+    'Content-Type': CONTENT_JSON,
   };
   if (!context.isAuth) {
     let { csrf, initialSessionCookie } = await getCsrfSession();

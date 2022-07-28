@@ -27,7 +27,6 @@ export function computeRelativeTime(
   }
 
   const timeInterval = currentDate.getTime() - date.getTime();
-
   if (timeInterval < 0) {
     return showFutureDate
       ? { type: 'DATE', data: formatDateTime(dateString) }

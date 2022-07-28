@@ -7,12 +7,6 @@ export type User = {
   name?: string | null;
 };
 
-export type Tag = {
-  id: string;
-  text: string;
-  count: number;
-};
-
 export type Post = {
   id: number;
   topicId: number;

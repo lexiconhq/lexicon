@@ -8,7 +8,7 @@ import {
   stringArg,
 } from '@nexus/schema';
 
-import { CONTENT_JSON } from '../../constants';
+import { ACCEPTED_LANGUAGE, CONTENT_JSON } from '../../constants';
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';
 import { changeUsernameResolver } from '../user/changeUsernameMutation';
@@ -43,6 +43,7 @@ export let editProfileMutation: FieldResolver<
     let editProfile = snakecaseKey(editProfileInput);
     const config = {
       headers: {
+        'Accept-Language': ACCEPTED_LANGUAGE,
         'Content-Type': CONTENT_JSON,
       },
     };
