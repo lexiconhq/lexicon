@@ -40,7 +40,7 @@ $ yarn && yarn generate
 You can run the Lexicon Mobile App and test it out by running this command from the project root:
 
 ```
-$ npm run quickstart
+$ yarn quickstart
 ```
 
 This will simultaneously launch two processes:
@@ -54,6 +54,102 @@ Configuring it to point at your own Discourse site will take additional configur
 
 You can learn more about this in the [Lexicon Documentation](https://docs.lexicon.is/quick-start).
 
+## Example: Specifying a custom Discourse Site URL
+
+This is a brief example to demonstrate how to quickly point the project at a custom Discourse site.
+
+In the example below, we'll use the [Rust Users forum](https://users.rust-lang.org).
+
+If you'd like, simply change that URL to the URL for your Discourse site in order to follow along with your own site.
+
+After running `yarn && yarn generate` from the project root, execute the following:
+
+```
+$ echo "PROSE_DISCOURSE_HOST=https://users.rust-lang.org" > api/.env
+$ echo "MOBILE_PROSE_HOST=http://localhost" > frontend/.env
+```
+
+The above statements setup the requires environment variables for the Prose GraphQL API and the frontend.
+
+The API (via `PROSE_DISCOURSE_HOST`) has been instructed to attempt to connect to a Discourse instance at `https://users.rust-lang.org`.
+
+The frontend (via `MOBILE_HOST_PROSE`) has been instructed to attempt to connect to a Prose GraphQL API running at `http://localhost` (port 80).
+
+### Important Notes
+
+The API defaults instruct the server to listen on a hostname of `0.0.0.0` (the public interface) and port 80.
+
+<details><summary>The frontend takes some additional steps so that you can use the app on your mobile device...<b>(Read More)</b></summary>
+
+This may seem confusing at first, but it actually saves you a bit of time.
+
+In this scenario, the frontend app is running on your mobile device via Expo Go, and the Prose GraphQL API is running on your development machine (e.g. laptop).
+
+So, how could you expect the mobile app to be able to locate a server running on a different device, when all we have specified in `localhost`? The API isn't running on your mobile device.
+
+The traditional way to deal with this is to force you to manually lookup your local IP address on the network that your mobile device is also connected to. It would be a value like `192.168.0.144`.
+
+Then, you'd have to update `frontend/.env` with that value.
+
+That's kind of a pain, and fortunately Expo provides us an easier way.
+
+We leverage a property from Expo called `debuggerHost` in order to automatically locate the IP address of your development machine. From that value, we strip off the port number and append the port number that your Prose GraphQL API is running on (defaults to port 80).
+
+With this approach, it should all just work automatically.
+
+</details>
+
+### Start the Prose GraphQL API server
+
+Next, start the Prose GraphQL API server.
+
+```
+$ yarn --cwd api start
+```
+
+You should see output that looks similar to this:
+
+```
+Attempting to reach your Discourse instance at https://users.rust-lang.org...
+Your Discourse instance was reachable and valid.
+
+-- Prose GraphQL Discourse API --
+listening at http://0.0.0.0:80
+forwarding Discourse requests to https://users.rust-lang.org
+```
+
+### Start Expo to run the frontend app
+
+After that, **in a separate shell**, start Expo to run the frontend app:
+
+```
+$ cd frontend
+$ yarn start
+```
+
+You should see the typical Expo output with a QR code that you can scan from your mobile device to open the app, as well as some output similar to this:
+
+```
+Starting project at lexicon/frontend
+Starting Metro Bundler
+...
+
+› Metro waiting on exp://192.168.0.53:19000
+› Scan the QR code above with Expo Go (Android) or the Camera app (iOS)
+
+...
+
+Logs for your project will appear below. Press Ctrl+C to exit.
+Started Metro Bundler
+```
+
+### Scan the QR code and open the app on your mobile device
+
+Once you've scanned the QR code on your mobile device, you will be instructed to download Expo / Expo Go if you haven't already.
+
+After that, you should be able to open the Lexicon frontend on your mobile device via the QR code, and will be able to interact with the Discourse site you configured Prose to connect to.
+
+---
 
 ## Professional Support
 
