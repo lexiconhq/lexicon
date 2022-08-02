@@ -19,7 +19,7 @@ export let timingsResolver: FieldResolver<'Mutation', 'timings'> = async (
   try {
     await context.client.post(
       '/topics/timings.json',
-      JSON.stringify(timingsInputSnake),
+      timingsInputSnake,
       config,
     );
     return 'success';

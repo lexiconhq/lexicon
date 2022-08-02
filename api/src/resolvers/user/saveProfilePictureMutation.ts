@@ -22,7 +22,7 @@ export let saveProfilePictureResolver: FieldResolver<
   try {
     await context.client.put(
       `/u/${username}/preferences/avatar/pick.json`,
-      JSON.stringify(body),
+      body,
       config,
     );
     return 'success';

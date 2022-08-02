@@ -21,7 +21,7 @@ export let editPostResolver: FieldResolver<'Mutation', 'editPost'> = async (
   try {
     let { data } = await context.client.put(
       `/posts/${postId}.json`,
-      JSON.stringify({ post }),
+      { post },
       config,
     );
     return camelcaseKey(data.post, { deep: true });

@@ -24,7 +24,7 @@ let lookupUrlsQueryResolver: FieldResolver<'Query', 'lookupUrls'> = async (
     let url = '/uploads/lookup-urls.json';
     let { data: lookupUrlsResult } = await context.client.post(
       url,
-      JSON.stringify(body),
+      body,
       config,
     );
 

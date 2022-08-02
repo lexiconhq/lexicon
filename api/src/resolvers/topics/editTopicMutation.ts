@@ -21,7 +21,7 @@ export let editTopicMutation: FieldResolver<'Mutation', 'editTopic'> = async (
   try {
     let { data } = await context.client.put(
       `/t/-/${topicId}.json`,
-      JSON.stringify(topic),
+      topic,
       config,
     );
     return camelcaseKey(data.basic_topic, { deep: true });

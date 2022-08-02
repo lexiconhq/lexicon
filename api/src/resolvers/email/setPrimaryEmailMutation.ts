@@ -17,7 +17,7 @@ export let setPrimaryEmailResolver: FieldResolver<
   try {
     let { data } = await context.client.put(
       url,
-      JSON.stringify({ email: selectedEmail }),
+      { email: selectedEmail },
       config,
     );
     if (data.success === 'OK') {

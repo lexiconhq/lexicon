@@ -50,7 +50,7 @@ export let editProfileMutation: FieldResolver<
     try {
       let { data } = await context.client.put(
         `/users/${username}.json`,
-        JSON.stringify(editProfile),
+        editProfile,
         config,
       );
       let user = data.user;

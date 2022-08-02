@@ -24,7 +24,7 @@ export let newTopicResolver: FieldResolver<'Mutation', 'newTopic'> = async (
   try {
     let { data } = await context.client.post(
       '/posts.json',
-      JSON.stringify(topicInputSnake),
+      topicInputSnake,
       config,
     );
     return camelcaseKey(data, { deep: true });

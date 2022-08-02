@@ -18,7 +18,7 @@ export let markReadMutation: FieldResolver<'Mutation', 'markRead'> = async (
   try {
     await context.client.put(
       `/notifications/mark-read.json`,
-      JSON.stringify({ id: notificationId }),
+      { id: notificationId },
       config,
     );
   } catch (e) {

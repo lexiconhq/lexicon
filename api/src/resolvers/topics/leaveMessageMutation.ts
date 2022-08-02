@@ -28,7 +28,7 @@ export let leaveMessageResolver: FieldResolver<
     } else {
       await context.client.put(
         `/t/${topicId}/remove-allowed-user.json`,
-        JSON.stringify({ username }),
+        { username },
         config,
       );
       return 'success';

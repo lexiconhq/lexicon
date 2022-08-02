@@ -15,7 +15,7 @@ export let changeEmailResolver: FieldResolver<
   };
   const url = `users/${username}/preferences/email.json`;
   try {
-    await context.client.put(url, JSON.stringify({ email: newEmail }), config);
+    await context.client.put(url, { email: newEmail }, config);
     return 'success';
   } catch (e) {
     throw errorHandler(e);

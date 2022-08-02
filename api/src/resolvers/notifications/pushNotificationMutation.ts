@@ -18,11 +18,11 @@ export let pushNotificationMutation: FieldResolver<
   try {
     await context.client.post(
       `/expo_pn/subscribe.json`,
-      JSON.stringify({
+      {
         expo_pn_token: expoPnToken,
         application_name: applicationName,
         platform: platform,
-      }),
+      },
       config,
     );
     return 'success';

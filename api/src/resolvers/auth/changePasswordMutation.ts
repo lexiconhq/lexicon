@@ -24,7 +24,7 @@ export let changePasswordResolver: FieldResolver<
   try {
     let { data } = await context.client.post(
       '/session/forgot_password.json',
-      JSON.stringify({ login }),
+      { login },
       config,
     );
     if (!data.user_found) {
