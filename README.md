@@ -71,31 +71,35 @@ $ echo "MOBILE_PROSE_HOST=http://localhost" > frontend/.env
 
 The above statements setup the requires environment variables for the Prose GraphQL API and the frontend.
 
-The API (via `PROSE_DISCOURSE_HOST`) has been instructed to attempt to connect to a Discourse instance at `https://users.rust-lang.org`.
+- The API (via `PROSE_DISCOURSE_HOST`) has been instructed to attempt to connect to a Discourse instance at `https://users.rust-lang.org`.
 
-The frontend (via `MOBILE_HOST_PROSE`) has been instructed to attempt to connect to a Prose GraphQL API running at `http://localhost` (port 80).
+- The frontend (via `MOBILE_HOST_PROSE`) has been instructed to attempt to connect to a Prose GraphQL API running at `http://localhost` (port 80).
 
 ### Important Notes
 
-The API defaults instruct the server to listen on a hostname of `0.0.0.0` (the public interface) and port 80.
+The API default config instructs the server to listen on a hostname of `0.0.0.0` (the public interface) and port 80.
 
-<details><summary>The frontend takes some additional steps so that you can use the app on your mobile device...<b>(Read More)</b></summary>
+<details><summary>The frontend takes some additional steps so that you can use the app on your mobile device... <b>(Read More)</b></summary>
 
 This may seem confusing at first, but it actually saves you a bit of time.
 
 In this scenario, the frontend app is running on your mobile device via Expo Go, and the Prose GraphQL API is running on your development machine (e.g. laptop).
 
-So, how could you expect the mobile app to be able to locate a server running on a different device, when all we have specified in `localhost`? The API isn't running on your mobile device.
+So, how could we expect the mobile app to be able to locate a server running on a different device, when we have only told the frontend app to attempt to connect to the API on `localhost`? The API isn't running on your mobile device.
 
-The traditional way to deal with this is to force you to manually lookup your local IP address on the network that your mobile device is also connected to. It would be a value like `192.168.0.144`.
+The traditional way to deal with this is to force you to manually lookup your local IP address on the network that your mobile device is also connected to. It would be a value like `192.168.0.53`.
 
 Then, you'd have to update `frontend/.env` with that value.
+
+Even worse, if your local IP address ever changes, everything would break and you'd have to update the environment variable again.
 
 That's kind of a pain, and fortunately Expo provides us an easier way.
 
 We leverage a property from Expo called `debuggerHost` in order to automatically locate the IP address of your development machine. From that value, we strip off the port number and append the port number that your Prose GraphQL API is running on (defaults to port 80).
 
 With this approach, it should all just work automatically.
+
+If you're interested, you can read the code for how we achieve this here: [src/frontend/constants/app.ts](https://github.com/lexiconhq/lexicon/blob/master/frontend/src/constants/app.ts#L30-L46)
 
 </details>
 
@@ -159,8 +163,29 @@ With official support, you get expert help straight from the core team. We provi
 
 The full documentation for Lexicon is located at [docs.lexicon.is](https://docs.lexicon.is).
 
-If you'd like to contribute to it, or just wnat to browse it locally, you can run the following command from the project root:
+If you'd like to contribute to it, or just want to browse it locally, you can run the following command from the project root:
 
 ```
+yarn docs:install
 yarn docs:start
+```
+
+### Note: Node 16 required
+
+Our tooling, Docusaurus v2, requires Node version 16 in order to work with it.
+
+You can check your current Node version by running the following command:
+
+```
+$ node --version
+v14.17.0
+```
+
+In order to make this process simpler, we recommend installing [nvm](https://github.com/nvm-sh/nvm) (Node version manager) onto your development machine.
+
+Then you'll be able to quickly switch between versions without issue:
+
+```
+$ nvm use 14
+Now using node v14.17.0 (npm v8.15.1)
 ```
