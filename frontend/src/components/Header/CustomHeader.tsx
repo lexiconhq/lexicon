@@ -1,4 +1,5 @@
 import React, { useLayoutEffect } from 'react';
+import { Platform } from 'react-native';
 import { useNavigation, useNavigationState } from '@react-navigation/native';
 import { HeaderBackButton } from '@react-navigation/elements';
 import { StatusBar, StatusBarStyle } from 'expo-status-bar';
@@ -72,6 +73,8 @@ export function CustomHeader(props: Props) {
 
     return (
       <HeaderBackButton
+        label="Back"
+        labelVisible={Platform.OS === 'ios'}
         tintColor={isLoading ? colors.grey : colors.primary}
         style={isLoading && { opacity: 0.5 }}
         labelStyle={[

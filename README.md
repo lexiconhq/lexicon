@@ -69,7 +69,7 @@ $ echo "PROSE_DISCOURSE_HOST=https://users.rust-lang.org" > api/.env
 $ echo "MOBILE_PROSE_HOST=http://localhost" > frontend/.env
 ```
 
-The above statements setup the requires environment variables for the Prose GraphQL API and the frontend.
+The above statements setup the required environment variables for the Prose GraphQL API and the frontend.
 
 - The API (via `PROSE_DISCOURSE_HOST`) has been instructed to attempt to connect to a Discourse instance at `https://users.rust-lang.org`.
 
@@ -91,11 +91,11 @@ The traditional way to deal with this is to force you to manually lookup your lo
 
 Then, you'd have to update `frontend/.env` with that value.
 
-Even worse, if your local IP address ever changes, everything would break and you'd have to update the environment variable again.
+Even worse, if your local IP address ever changes, everything would break, and you'd have to update the environment variable again.
 
-That's kind of a pain, and fortunately Expo provides us an easier way.
+That's kind of a pain, and fortunately Expo provides us with an easier way.
 
-We leverage a property from Expo called `debuggerHost` in order to automatically locate the IP address of your development machine. From that value, we strip off the port number and append the port number that your Prose GraphQL API is running on (defaults to port 80).
+We leverage a property from Expo called `debuggerHost` in order to automatically locate the IP address of your development machine. From that value, we strip off the port number (typically 19000) and append the port number that your Prose GraphQL API is running on (defaults to port 80).
 
 With this approach, it should all just work automatically.
 

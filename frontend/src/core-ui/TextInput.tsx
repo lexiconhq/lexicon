@@ -43,6 +43,7 @@ export function TextInput(props: Props) {
     inputRef,
     inputStyle,
     style,
+    secureTextEntry,
     ...otherProps
   } = props;
 
@@ -74,12 +75,13 @@ export function TextInput(props: Props) {
           onFocus={() => setBorderColor(colors.primary)}
           onEndEditing={() => setBorderColor(colors.border)}
           style={[styles.input, inputStyle]}
+          secureTextEntry={secureTextEntry}
           {...otherProps}
         />
         {rightIcon && (
           <Icon
             name={rightIcon}
-            color={colors.textLighter}
+            color={secureTextEntry ? colors.textLighter : colors.primary}
             size={iconSize}
             onPress={onPressIcon}
           />

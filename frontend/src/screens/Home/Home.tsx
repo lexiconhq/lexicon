@@ -600,6 +600,7 @@ const useStyles = makeStyles(({ colors, shadow, spacing }) => ({
     flexDirection: 'column',
     flexWrap: 'wrap',
     alignItems: 'stretch',
+    paddingTop: Platform.OS === 'ios' ? 0 : spacing.xl,
     paddingHorizontal: spacing.xxl,
     backgroundColor: colors.background,
     zIndex: 2,

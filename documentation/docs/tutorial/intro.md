@@ -18,7 +18,8 @@ In order to complete this tutorial, you should have familiarity with:
 
 In terms of prepararation, you will need:
 
-- NodeJS installed on your development machine (between versions 12 and 14)
+- NodeJS installed on your development machine
+  - Use the latest version of Node that is compatible with the project's version of Expo (i.e. `expo-cli`).
 - An editor to edit config files
 
 #### Have some concerns?

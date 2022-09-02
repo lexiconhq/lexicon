@@ -38,7 +38,20 @@ module.exports = {
       style: 'dark',
       copyright: `Copyright © ${new Date().getFullYear()} Lexicon. MIT License. Built with ❤️ by KodeFox.`,
     },
+    zoom: {
+      selector: '.markdown :not(em) > img',
+      background: {
+        light: 'rgb(255, 255, 255)',
+        dark: 'rgb(50, 50, 50)',
+      },
+      // options you can specify via https://github.com/francoischalifour/medium-zoom#usage
+      config: {
+        margin: 48,
+        scrollOffset: 70,
+      },
+    },
   },
+  plugins: ['docusaurus-plugin-image-zoom'],
   presets: [
     [
       '@docusaurus/preset-classic',

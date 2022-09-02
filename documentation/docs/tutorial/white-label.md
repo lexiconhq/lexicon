@@ -65,7 +65,7 @@ The asset for the App Icon is located at `frontend/assets/icon.png`. To customiz
 
 ## Further Customization
 
-We get into much more detail about how to White Label your app in the [White Labeling](white-labeling) section of the documentation.
+We get into much more detail about how to White Label your app in the [White Labeling](../white-labeling) section of the documentation.
 
 In particular, this includes customizing and extending the theme's color palette, icons, and even fonts.
 

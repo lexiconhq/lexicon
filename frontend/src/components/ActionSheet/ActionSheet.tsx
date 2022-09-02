@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import {
   Modal,
   ModalProps,
@@ -6,9 +6,11 @@ import {
   StyleProp,
   TouchableWithoutFeedback,
   ViewStyle,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ANIMATION_DURATION } from '../../constants/theme/animations';
 import { makeStyles } from '../../theme';
 
 import { ActionSheetItem, ActionSheetItemProps } from './ActionSheetItem';
@@ -34,7 +36,7 @@ export function ActionSheet(props: Props) {
     actionItemOnPress,
     onClose,
     visible,
-    animationType = 'none',
+    animationType = 'fade',
     transparent = true,
     style,
     ...otherProps
@@ -49,6 +51,51 @@ export function ActionSheet(props: Props) {
   const lastItemNoCancelIndex = options.length - (!cancelOption ? 1 : 2);
   const lastItemIndex = cancelOption ? options.length - 1 : -1;
 
+  const slideAnimation = useRef(new Animated.Value(0)).current;
+
+  let slideIn = useCallback(() => {
+    Animated.timing(slideAnimation, {
+      toValue: 1,
+      duration: ANIMATION_DURATION.s,
+      useNativeDriver: true,
+    }).start();
+  }, [slideAnimation]);
+
+  let slideOut = useCallback(() => {
+    Animated.timing(slideAnimation, {
+      toValue: 0,
+      duration: ANIMATION_DURATION.s,
+      useNativeDriver: true,
+    }).start(() => {
+      onClose();
+    });
+  }, [slideAnimation, onClose]);
+
+  useEffect(() => {
+    if (visible) {
+      slideIn();
+    }
+  }, [visible, slideIn]);
+
+  let renderOptions = () => (
+    <>
+      {options.map(({ label, disabled }, index) => (
+        <ActionSheetItem
+          key={`actionItem-${index}`}
+          label={label}
+          disabled={disabled}
+          onPress={() => {
+            !disabled && actionItemOnPress(index);
+            !disabled && slideOut();
+          }}
+          isTop={index === firstItemIndex}
+          isBottom={index === lastItemNoCancelIndex}
+          isCancelOption={index === lastItemIndex}
+        />
+      ))}
+    </>
+  );
+
   return (
     <Modal
       visible={visible}
@@ -56,22 +103,27 @@ export function ActionSheet(props: Props) {
       transparent={transparent}
       {...otherProps}
     >
-      <TouchableWithoutFeedback onPressOut={onClose}>
+      <TouchableWithoutFeedback onPressOut={slideOut}>
         <SafeAreaView style={[styles.container, style]}>
-          {options.map(({ label, disabled }, index) => (
-            <ActionSheetItem
-              key={`actionItem-${index}`}
-              label={label}
-              disabled={disabled}
-              onPress={() => {
-                !disabled && actionItemOnPress(index);
-                !disabled && onClose();
+          {ios ? (
+            <Animated.View
+              style={{
+                width: '100%',
+                transform: [
+                  {
+                    translateY: slideAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [200, 0],
+                    }),
+                  },
+                ],
               }}
-              isTop={index === firstItemIndex}
-              isBottom={index === lastItemNoCancelIndex}
-              isCancelOption={index === lastItemIndex}
-            />
-          ))}
+            >
+              {renderOptions()}
+            </Animated.View>
+          ) : (
+            renderOptions()
+          )}
         </SafeAreaView>
       </TouchableWithoutFeedback>
     </Modal>
@@ -85,5 +137,6 @@ const useStyles = makeStyles(({ spacing }) => ({
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.5)',
     paddingHorizontal: spacing.m,
+    paddingBottom: ios ? spacing.xxxxl : 0,
   },
 }));

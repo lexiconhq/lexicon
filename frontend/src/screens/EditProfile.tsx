@@ -262,7 +262,7 @@ export default function EditProfile(props: ProfileProps) {
     let user = storage.getItem('user');
     if (user) {
       let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],
         quality: 1,

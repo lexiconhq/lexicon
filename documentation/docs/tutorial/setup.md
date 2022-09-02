@@ -12,9 +12,7 @@ If you are unsure of how to install NodeJS, you can follow the instructions on t
 
 #### Supported Node Versions
 
-For now, it is recommended that you perform this tutorial using a version of Node between 12 and 14.
-
-This is primarily because—as of this writing—Expo, the underlying tooling for the Mobile App, does not yet have support for Node 16.
+It is recommended that you perform this tutorial using the latest version of Node that is compatible with the the project's version of Expo.
 
 If your environment doesn't support this, we would recommend making use of [`nvm`](https://github.com/nvm-sh/nvm) to quickly switch between Node versions.
 

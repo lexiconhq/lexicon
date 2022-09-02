@@ -4,6 +4,37 @@ title: Introduction
 slug: /
 ---
 
+<head>
+    --- iOS Auth
+    <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/IOS_Login.png')}/>
+    <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/IOS_SignUp.png')}/>
+    <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/IOS_Home.png')}/>
+    --- iOS Dark Mode
+    <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/IOS_DarkMode.png')}/>
+    <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/IOS_NewPost.png')}/>
+    <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/IOS_PostDetail.png')}/>
+    --- iOS Comment
+    <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/IOS_Comment.png')}/>
+    <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/IOS_Profile.png')}/>
+    <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/IOS_Notification.png')}/>
+    --- iOS Message
+    <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/IOS_Message.png')}/>
+    --- Android Auth
+    <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/Android_Login.png')}/>
+    <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/Android_SignUp.png')}/>
+    <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/Android_Home.png')}/>
+    --- Android Dark Mode
+    <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/Android_DarkMode.png')}/>
+    <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/Android_NewPost.png')}/>
+    <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/Android_PostDetail.png')}/>
+    --- Android Comment
+    <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/Android_Comment.png')}/>
+    <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/Android_Profile.png')}/>
+    <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/Android_Notifications.png')}/>
+    --- Android Message
+    <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/Android_Message.png')}/>
+</head>
+
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import Carousel from 'react-bootstrap/Carousel';
 
@@ -31,47 +62,47 @@ Lexicon is a customizable, pre-built mobile app that provides an elegant mobile 
 
 ### iOS
 
-<Carousel>
+<Carousel prevLabel="" nextLabel="" indicators={false}>
     <Carousel.Item>
-        <img alt="IOS Lexicon Login Page" width="160" height="320" src={useBaseUrl('/img/screenshot/IOS_Login.png')}/>
-        <img alt="IOS Lexicon Signup Page" width="160" height="320" src={useBaseUrl('/img/screenshot/IOS_SignUp.png')}/>
-        <img alt="IOS Lexicon Home Page" width="160" height="320" src={useBaseUrl('/img/screenshot/IOS_Home.png')}/>
+        <img loading="eager" alt="IOS Lexicon Login Page" className="carousel-image" src={useBaseUrl('/img/screenshot/IOS_Login.png')}/>
+        <img loading="eager" alt="IOS Lexicon Signup Page" className="carousel-image" src={useBaseUrl('/img/screenshot/IOS_SignUp.png')}/>
+        <img loading="eager" alt="IOS Lexicon Home Page" className="carousel-image" src={useBaseUrl('/img/screenshot/IOS_Home.png')}/>
     </Carousel.Item>
     <Carousel.Item>
-        <img alt="IOS Lexicon Dark Mode in Home Page" width="160" height="320" src={useBaseUrl('/img/screenshot/IOS_DarkMode.png')}/>
-        <img alt="IOS Lexicon New Post Page" width="160" height="320" src={useBaseUrl('/img/screenshot/IOS_NewPost.png')}/>
-        <img alt="IOS Lexicon Post Detail Page" width="160" height="320" src={useBaseUrl('/img/screenshot/IOS_PostDetail.png')}/>
+        <img loading="eager" alt="IOS Lexicon Dark Mode in Home Page" className="carousel-image" src={useBaseUrl('/img/screenshot/IOS_DarkMode.png')}/>
+        <img loading="eager" alt="IOS Lexicon New Post Page" className="carousel-image" src={useBaseUrl('/img/screenshot/IOS_NewPost.png')}/>
+        <img loading="eager" alt="IOS Lexicon Post Detail Page" className="carousel-image" src={useBaseUrl('/img/screenshot/IOS_PostDetail.png')}/>
     </Carousel.Item>
     <Carousel.Item>
-        <img alt="IOS Lexicon Comment Section" width="160" height="320" src={useBaseUrl('/img/screenshot/IOS_Comment.png')}/>
-        <img alt="IOS Lexicon Profile Page" width="160" height="320" src={useBaseUrl('/img/screenshot/IOS_Profile.png')}/>
-        <img alt="IOS Lexicon Notification Page" width="160" height="320" src={useBaseUrl('/img/screenshot/IOS_Notification.png')}/>
+        <img loading="eager" alt="IOS Lexicon Comment Section" className="carousel-image" src={useBaseUrl('/img/screenshot/IOS_Comment.png')}/>
+        <img loading="eager" alt="IOS Lexicon Profile Page" className="carousel-image" src={useBaseUrl('/img/screenshot/IOS_Profile.png')}/>
+        <img loading="eager" alt="IOS Lexicon Notification Page" className="carousel-image" src={useBaseUrl('/img/screenshot/IOS_Notification.png')}/>
     </Carousel.Item>
     <Carousel.Item>
-        <img alt="IOS Lexicon Message Page" width="160" height="320" src={useBaseUrl('/img/screenshot/IOS_Message.png')}/>
+        <img loading="eager" alt="IOS Lexicon Message Page" className="carousel-image" src={useBaseUrl('/img/screenshot/IOS_Message.png')}/>
     </Carousel.Item>
 </Carousel>
 
 ### Android
 
-<Carousel>
+<Carousel prevLabel="" nextLabel="" indicators={false}>
     <Carousel.Item>
-        <img alt="Android Lexicon Login Page" width="160" height="320" src={useBaseUrl('/img/screenshot/Android_Login.png')}/>
-        <img alt="Android Lexicon Signup Page" width="160" height="320" src={useBaseUrl('/img/screenshot/Android_SignUp.png')}/>
-        <img alt="Android Lexicon Home Page" width="160" height="320" src={useBaseUrl('/img/screenshot/Android_Home.png')}/>
+        <img loading="eager" alt="Android Lexicon Login Page" className="carousel-image" src={useBaseUrl('/img/screenshot/Android_Login.png')}/>
+        <img loading="eager" alt="Android Lexicon Signup Page" className="carousel-image" src={useBaseUrl('/img/screenshot/Android_SignUp.png')}/>
+        <img loading="eager" alt="Android Lexicon Home Page" className="carousel-image" src={useBaseUrl('/img/screenshot/Android_Home.png')}/>
     </Carousel.Item>
     <Carousel.Item>
-        <img alt="Android Lexicon Dark Mode in Home Page" width="160" height="320" src={useBaseUrl('/img/screenshot/Android_DarkMode.png')}/>
-        <img alt="Android Lexicon New Post Page" width="160" height="320" src={useBaseUrl('/img/screenshot/Android_NewPost.png')}/>
-        <img alt="Android Lexicon Post Detail Page" width="160" height="320" src={useBaseUrl('/img/screenshot/Android_PostDetail.png')}/>
+        <img loading="eager" alt="Android Lexicon Dark Mode in Home Page" className="carousel-image" src={useBaseUrl('/img/screenshot/Android_DarkMode.png')}/>
+        <img loading="eager" alt="Android Lexicon New Post Page" className="carousel-image" src={useBaseUrl('/img/screenshot/Android_NewPost.png')}/>
+        <img loading="eager" alt="Android Lexicon Post Detail Page" className="carousel-image" src={useBaseUrl('/img/screenshot/Android_PostDetail.png')}/>
     </Carousel.Item>
     <Carousel.Item>
-        <img alt="Android Lexicon Comment Section" width="160" height="320" src={useBaseUrl('/img/screenshot/Android_Comment.png')}/>
-        <img alt="Android Lexicon Profile Page" width="160" height="320" src={useBaseUrl('/img/screenshot/Android_Profile.png')}/>
-        <img alt="Android Lexicon Notification Page" width="160" height="320" src={useBaseUrl('/img/screenshot/Android_Notifications.png')}/>
+        <img loading="eager" alt="Android Lexicon Comment Section" className="carousel-image" src={useBaseUrl('/img/screenshot/Android_Comment.png')}/>
+        <img loading="eager" alt="Android Lexicon Profile Page" className="carousel-image" src={useBaseUrl('/img/screenshot/Android_Profile.png')}/>
+        <img loading="eager" alt="Android Lexicon Notification Page" className="carousel-image" src={useBaseUrl('/img/screenshot/Android_Notifications.png')}/>
     </Carousel.Item>
     <Carousel.Item>
-        <img alt="Android Lexicon Message Page" width="160" height="320" src={useBaseUrl('/img/screenshot/Android_Message.png')}/>
+        <img loading="eager" alt="Android Lexicon Message Page" className="carousel-image" src={useBaseUrl('/img/screenshot/Android_Message.png')}/>
     </Carousel.Item>
 </Carousel>
 
