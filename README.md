@@ -1,6 +1,6 @@
 ## Lexicon
 
-Lexicon is a customizable, open source mobile **App Template** that provides an elegant mobile discussions experience. Built on top of [Discourse](#what-is-discourse), a platform for communities.
+Lexicon is a customizable, open source mobile **App Template** that provides an elegant mobile discussions experience. Built on top of [Discourse](https://www.discourse.org), a platform for communities.
 
 ### Benefits
 
@@ -8,11 +8,9 @@ Lexicon is a customizable, open source mobile **App Template** that provides an 
 - Increase engagement with your users by adding a mobile experience
 - Built with React Native: designed from the ground up for a mobile first experience - no webviews!
 
-### What is Discourse?
+### Project Roadmap
 
-Discourse is open-source **forum software** that is thoughtfully designed, simple to setup, and well-maintained.
-
-You can learn more about it on the [Discourse website](https://www.discourse.org/).
+Lexicon is currently under active development. You can stay up to date on the features we're working on by viewing the [Project Roadmap](https://github.com/orgs/lexiconhq/projects/1/views/1).
 
 ## Installation
 
@@ -66,7 +64,7 @@ After running `yarn && yarn generate` from the project root, execute the followi
 
 ```
 $ echo "PROSE_DISCOURSE_HOST=https://users.rust-lang.org" > api/.env
-$ echo "MOBILE_PROSE_HOST=http://localhost" > frontend/.env
+$ echo "MOBILE_PROSE_URL=http://localhost" > frontend/.env
 ```
 
 The above statements setup the required environment variables for the Prose GraphQL API and the frontend.
@@ -117,9 +115,11 @@ You should see output that looks similar to this:
 Attempting to reach your Discourse instance at https://users.rust-lang.org...
 Your Discourse instance was reachable and valid.
 
--- Prose GraphQL Discourse API --
-listening at http://0.0.0.0:80
+
+ -- Prose GraphQL Discourse API --
 forwarding Discourse requests to https://users.rust-lang.org
+
+💡   🧘 Yoga -   Running GraphQL Server at http://0.0.0.0:8999/graphql
 ```
 
 ### Start Expo to run the frontend app
