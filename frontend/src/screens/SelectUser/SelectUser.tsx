@@ -206,7 +206,7 @@ export default function SelectUser() {
                 );
               } else {
                 return (
-                  <Text style={styles.noUser} key={'user' + index}>
+                  <Text style={styles.noUser} key={`noUser-${index}`}>
                     {t('Find Users with the Search Bar above.')}
                   </Text>
                 );
