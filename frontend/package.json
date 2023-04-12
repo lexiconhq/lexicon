@@ -68,11 +68,18 @@
     "@types/react-native": "~0.70.6",
     "@types/react-native-dotenv": "^0.2.0",
     "@types/react-test-renderer": "^16.9.2",
+    "@typescript-eslint/eslint-plugin": "^5.58.0",
+    "@typescript-eslint/parser": "^5.58.0",
     "apollo": "2.34.0",
-    "eslint": "^7.6.0",
-    "eslint-config-kodefox": "^1.2.0",
-    "eslint-plugin-styles": "^0.1.0",
-    "eslint-plugin-t": "^1.2.1",
+    "eslint": "^8.38.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-eslint-comments": "^3.2.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-native": "^4.0.0",
+    "eslint-plugin-styles": "^1.0.0",
+    "eslint-plugin-t": "^1.6.0",
     "jest": "^26.6.3",
     "jest-expo": "^47.0.0",
     "prettier": "^2.0.5",
@@ -81,7 +88,7 @@
     "react-test-renderer": "^16.13.1",
     "runtypes": "^5.0.1",
     "ts-jest": "^26.1.4",
-    "typescript": "^4.7.4"
+    "typescript": "^4.9.5"
   },
   "jest": {
     "preset": "jest-expo",
@@ -90,17 +97,6 @@
     ],
     "moduleNameMapper": {
       "\\.svg$": "<rootDir>/src/__mocks__/svgMock.js"
-    }
-  },
-  "eslintConfig": {
-    "extends": "kodefox/react-native",
-    "plugins": [
-      "t",
-      "styles"
-    ],
-    "rules": {
-      "t/string-literal": 1,
-      "styles/style-maker-no-unused": 1
     }
   },
   "prettier": {
