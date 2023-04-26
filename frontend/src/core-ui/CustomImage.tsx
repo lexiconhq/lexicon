@@ -51,17 +51,11 @@ export function CustomImage(props: Props) {
   const hideImage = src === '' || error;
 
   const onPress = () => {
-    if (show) {
-      setShow(false);
-    }
-    setTimeout(() => setShow(true), 50);
+    setShow(true);
   };
 
   const onPressCancel = () => {
-    if (!show) {
-      setShow(true);
-    }
-    setTimeout(() => setShow(false), 50);
+    setShow(false);
   };
 
   const content = (
@@ -90,13 +84,12 @@ export function CustomImage(props: Props) {
       >
         {content}
       </TouchableOpacity>
-      {show && (
-        <ShowImageModal
-          show={show}
-          userImage={imgSource}
-          onPressCancel={onPressCancel}
-        />
-      )}
+
+      <ShowImageModal
+        show={show}
+        userImage={imgSource}
+        onPressCancel={onPressCancel}
+      />
     </>
   ) : (
     <View style={styles.noContent} />

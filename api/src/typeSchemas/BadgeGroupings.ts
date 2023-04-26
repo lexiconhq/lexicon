@@ -1,12 +1,12 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let BadgeGroupings = objectType({
   name: 'BadgeGroupings',
   definition(t) {
-    t.string('description', { nullable: true }),
-      t.int('id'),
-      t.string('name'),
-      t.int('position'),
-      t.boolean('system');
+    t.nullable.string('description');
+    t.int('id');
+    t.string('name');
+    t.int('position');
+    t.boolean('system');
   },
 });

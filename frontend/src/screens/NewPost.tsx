@@ -29,7 +29,7 @@ import {
   TextInput,
   TextInputType,
 } from '../core-ui';
-import { UploadTypeEnum } from '../generated/server/types';
+import { UploadTypeEnum } from '../generated/server';
 import {
   bottomMenu,
   createReactNativeFile,
@@ -111,7 +111,8 @@ export default function NewPost() {
   const [selectedTags, setSelectedTags] = useState<Array<string>>([]);
   const [imagesArray, setImagesArray] = useState<Array<Image>>([]);
   const [uri, setUri] = useState('');
-  const [isValid, setValid] = useState(false);
+  const [postValidity, setPostValidity] = useState(false);
+  const [editPostType, setEditPostType] = useState('');
   const [isKeyboardShow, setKeyboardShow] = useState(false);
   const [showLeftMenu, setShowLeftMenu] = useState(true);
   const [cursorPosition, setCursorPosition] = useState<CursorPosition>({
@@ -131,8 +132,10 @@ export default function NewPost() {
     }
   }, 1500);
 
-  const { control, handleSubmit, errors, setValue, getValues, formState } =
-    useForm<Form>({ mode: 'onChange', reValidateMode: 'onChange' });
+  const { control, handleSubmit, errors, setValue, getValues } = useForm<Form>({
+    mode: 'onChange',
+    reValidateMode: 'onChange',
+  });
 
   const kasv = useKASVWorkaround();
 
@@ -191,6 +194,7 @@ export default function NewPost() {
       channelId: selectedChannel,
       tagIds: selectedTags,
       createdAt: new Date().toISOString(),
+      topicId: editTopicId,
     };
   };
 
@@ -205,8 +209,14 @@ export default function NewPost() {
     navigate('PostPreview', {
       reply: false,
       postData: getPostData(),
-      editPostId,
-      editTopicId,
+      editPostId:
+        editPostType === 'Post' || editPostType === 'Both'
+          ? editPostId
+          : undefined,
+      editTopicId:
+        editPostType === 'Topic' || editPostType === 'Both'
+          ? editTopicId
+          : undefined,
       editedUser,
       focusedPostNumber: editTopicId ? 1 : undefined,
     });
@@ -269,19 +279,21 @@ export default function NewPost() {
     navigate(screen, params);
   };
 
-  const { onInsertImage, onInsertLink } = bottomMenu(
+  const { onInsertImage, onInsertLink } = bottomMenu({
     isKeyboardShow,
     user,
-    onNavigate,
-    'NewPost',
-    normalizedExtensions,
-  );
+    navigate: onNavigate,
+    prevScreen: 'NewPost',
+    extensions: normalizedExtensions,
+  });
 
   useEffect(() => {
     const { title, raw: content } = getValues();
-    let isValid;
-    if (editTopicId) {
-      isValid = existingPostIsValid(
+
+    let currentPostValidity; // temp variable to get the value of existingPostIsValid or newPostIsValid helper
+
+    if (editTopicId || editPostId) {
+      currentPostValidity = existingPostIsValid(
         uploadsInProgress,
         title,
         oldTitle,
@@ -292,12 +304,16 @@ export default function NewPost() {
         selectedTags,
         oldTags,
       );
+
+      setPostValidity(currentPostValidity.isValid);
+      setEditPostType(currentPostValidity.editType);
     } else {
-      isValid = newPostIsValid(title, content, uploadsInProgress);
+      currentPostValidity = newPostIsValid(title, content, uploadsInProgress);
+      setPostValidity(currentPostValidity);
     }
-    setValid(isValid);
   }, [
     editTopicId,
+    editPostId,
     getValues,
     oldChannel,
     oldContent,
@@ -311,10 +327,7 @@ export default function NewPost() {
   useEffect(
     () =>
       navigation.addListener('beforeRemove', (e) => {
-        if (
-          (!isValid || !formState.isValid || !modal) &&
-          uploadsInProgress < 1
-        ) {
+        if ((!postValidity || !modal) && uploadsInProgress < 1) {
           return;
         }
         e.preventDefault();
@@ -330,27 +343,27 @@ export default function NewPost() {
           ],
         );
       }),
-    [formState.isValid, isValid, modal, navigation, uploadsInProgress],
+    [postValidity, modal, navigation, uploadsInProgress],
   );
 
   const Header = () =>
     ios ? (
       <ModalHeader
-        title={editTopicId ? t('Edit Post') : t('New Post')}
+        title={editTopicId || editPostId ? t('Edit Post') : t('New Post')}
         left={<HeaderItem label={t('Cancel')} left onPressItem={goBack} />}
         right={
           <HeaderItem
             label={t('Next')}
             onPressItem={doneCreatePost}
-            disabled={!isValid}
+            disabled={!postValidity}
           />
         }
       />
     ) : (
       <CustomHeader
-        title={editTopicId ? t('Edit Post') : t('New Post')}
+        title={editTopicId || editPostId ? t('Edit Post') : t('New Post')}
         rightTitle={t('Next')}
-        disabled={!isValid}
+        disabled={!postValidity}
         onPressRight={doneCreatePost}
       />
     );
@@ -394,9 +407,11 @@ export default function NewPost() {
                     placeholder={t("What's on your mind?")}
                     onChangeText={(text) => {
                       const { raw: content } = getValues();
-                      let isValid;
-                      if (editTopicId) {
-                        isValid = existingPostIsValid(
+
+                      let currentPostValidity; // temp variable to get the value of existingPostIsValid or newPostIsValid helper
+
+                      if (editTopicId || editPostId) {
+                        currentPostValidity = existingPostIsValid(
                           uploadsInProgress,
                           text,
                           oldTitle,
@@ -407,14 +422,16 @@ export default function NewPost() {
                           selectedTags,
                           oldTags,
                         );
+                        setPostValidity(currentPostValidity.isValid);
+                        setEditPostType(currentPostValidity.editType);
                       } else {
-                        isValid = newPostIsValid(
+                        currentPostValidity = newPostIsValid(
                           text,
                           content,
                           uploadsInProgress,
                         );
+                        setPostValidity(currentPostValidity);
                       }
-                      setValid(isValid);
                       onChange(text);
                     }}
                     onFocus={() => setShowLeftMenu(false)}
@@ -525,10 +542,13 @@ export default function NewPost() {
                     );
                     onChange(text);
                     debounced(text, currentUploadToken);
+
                     const { title } = getValues();
-                    let isValid;
-                    if (editTopicId) {
-                      isValid = existingPostIsValid(
+
+                    let currentPostValidity; // temp variable to get the value of existingPostIsValid or newPostIsValid helper
+
+                    if (editTopicId || editPostId) {
+                      currentPostValidity = existingPostIsValid(
                         uploadsInProgress,
                         title,
                         oldTitle,
@@ -539,10 +559,16 @@ export default function NewPost() {
                         selectedTags,
                         oldTags,
                       );
+                      setPostValidity(currentPostValidity.isValid);
+                      setEditPostType(currentPostValidity.editType);
                     } else {
-                      isValid = newPostIsValid(title, text, uploadsInProgress);
+                      currentPostValidity = newPostIsValid(
+                        title,
+                        text,
+                        uploadsInProgress,
+                      );
+                      setPostValidity(currentPostValidity);
                     }
-                    setValid(isValid);
                   }}
                   onFocus={(event) => {
                     kasv.scrollToFocusedInput(event);

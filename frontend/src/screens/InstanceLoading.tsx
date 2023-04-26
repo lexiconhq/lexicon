@@ -5,9 +5,14 @@ import { LoadingOrError } from '../components';
 import { useSiteSettings } from '../hooks';
 import { StackNavProp } from '../types';
 import useLoadFonts from '../hooks/useLoadFonts';
+import { removeToken, useStorage } from '../helpers';
+import { errorTypes } from '../constants';
+
+const { sessionExpired, unauthorizedAccess } = errorTypes;
 
 export default function Loading() {
   const { reset } = useNavigation<StackNavProp<'Login'>>();
+  const { removeItem } = useStorage();
   // TODO: Make use of error from useLoadFonts
   const { loading: fontsLoading } = useLoadFonts();
 
@@ -15,7 +20,24 @@ export default function Loading() {
     canSignUp,
     loading: settingsLoading,
     error: settingsError,
-  } = useSiteSettings();
+  } = useSiteSettings({
+    onError: ({ message }) => {
+      if (
+        message.includes(sessionExpired) ||
+        message.includes(unauthorizedAccess)
+      ) {
+        /**
+         * Making sure token and user data are removed either when the session expired
+         * or when the discourse instance is private and users are not authenticated.
+         *
+         * Can't remove the user data item from the storage in error link,
+         * so we do that here.
+         */
+        removeToken();
+        removeItem('user');
+      }
+    },
+  });
 
   const loading = fontsLoading || settingsLoading;
 

@@ -1,14 +1,14 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
-import { PROSE_DISCOURSE_UPLOAD_HOST } from '../constants';
+import { getNormalizedUrlTemplate } from '../resolvers/utils';
 
 export let LookupUrl = objectType({
   name: 'LookupUrl',
   definition(t) {
     t.string('shortUrl');
-    t.string('url', (lookup) => {
-      let { url } = 'url' in lookup ? lookup : { url: '' };
-      return PROSE_DISCOURSE_UPLOAD_HOST + url;
+    t.string('url', {
+      resolve: (instance) => getNormalizedUrlTemplate(instance, 'url'),
+      sourceType: 'string',
     });
     t.string('shortPath');
   },

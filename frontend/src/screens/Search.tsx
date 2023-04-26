@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   Keyboard,
   Platform,
@@ -8,12 +8,14 @@ import {
   View,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { HeaderBackButton } from '@react-navigation/elements';
 import Constants from 'expo-constants';
 
 import {
   FooterLoadingIndicator,
   LoadingOrError,
   PostList,
+  SearchPostItem,
 } from '../components';
 import { DEFAULT_CHANNEL } from '../constants';
 import { Icon, Text } from '../core-ui';
@@ -26,7 +28,7 @@ const ios = Platform.OS === 'ios';
 
 export default function Search() {
   const styles = useStyles();
-  const { colors, spacing } = useTheme();
+  const { colors } = useTheme();
 
   const storage = useStorage();
   const channels = storage.getItem('channels');
@@ -34,7 +36,7 @@ export default function Search() {
   const { minSearchLength = 3 } = useSiteSettings();
   const maxPostsPerPage = 50;
 
-  const { navigate, setOptions } = useNavigation<StackNavProp<'Search'>>();
+  const { navigate } = useNavigation<StackNavProp<'Search'>>();
 
   const [searchValue, setSearchValue] = useState('');
   const [page, setPage] = useState(1);
@@ -171,7 +173,7 @@ export default function Search() {
     );
   };
 
-  const onChangeValue = React.useCallback(
+  const onChangeValue = useCallback(
     (text: string) => {
       setPage(1);
       setSearchValue(text);
@@ -179,12 +181,9 @@ export default function Search() {
     [setPage, setSearchValue],
   );
 
-  const onPressCancel = React.useCallback(
-    () => setSearchValue(''),
-    [setSearchValue],
-  );
+  const onPressCancel = useCallback(() => setSearchValue(''), [setSearchValue]);
 
-  const search = React.useMemo(
+  const search = useMemo(
     () => (
       <View style={styles.searchContainer}>
         {ios && <Icon name="Search" color={colors.textLighter} />}
@@ -195,6 +194,7 @@ export default function Search() {
           onChangeText={onChangeValue}
           placeholder={t('Search for ...')}
           placeholderTextColor={colors.textLighter}
+          keyboardType="visible-password" // To remove underline at every words on Android
         />
         {searchValue !== '' && (
           <TouchableOpacity
@@ -216,7 +216,6 @@ export default function Search() {
       {searchValue !== '' && (
         <PostList
           data={posts}
-          hasFooter={false}
           onRefresh={onRefresh}
           refreshing={loading}
           onEndReached={loadMore}
@@ -226,38 +225,40 @@ export default function Search() {
               isHidden={!hasOlderPosts || posts.length < 1}
             />
           }
-          numberOfLines={5}
+          renderItem={({ item }) => {
+            return <SearchPostItem topicId={item.topicId} postId={item.id} />;
+          }}
           {...keyboardDismissProp}
         />
       )}
     </View>
   );
 
-  useEffect(() => {
-    setOptions({
-      headerLeftContainerStyle: {
-        paddingLeft: spacing.l,
-        paddingBottom: spacing.s,
-      },
-      headerTitle: () => search,
-      headerTitleAlign: 'left',
-    });
-  }, [search, setOptions, spacing]);
-
   return (
     <View style={styles.container}>
-      {ios && (
-        <View style={styles.headerContainer}>
-          {search}
-          <TouchableOpacity
-            style={styles.iosCancelContainer}
-            onPress={() => navigate('TabNav', { screen: 'Home' })}
-            hitSlop={{ top: 15, bottom: 15, left: 0, right: 15 }}
-          >
-            <Text style={{ color: colors.primary }}>{t('Cancel')}</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+      <View style={styles.headerContainer}>
+        {ios ? (
+          <>
+            {search}
+            <TouchableOpacity
+              style={styles.iosCancelContainer}
+              hitSlop={{ top: 15, bottom: 15, left: 0, right: 15 }}
+              onPress={() => navigate('TabNav', { screen: 'Home' })}
+            >
+              <Text style={{ color: colors.primary }}>{t('Cancel')}</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            <HeaderBackButton
+              tintColor={colors.primary}
+              style={styles.androidBackButton}
+              onPress={() => navigate('TabNav', { screen: 'Home' })}
+            />
+            {search}
+          </>
+        )}
+      </View>
       {content}
     </View>
   );
@@ -272,7 +273,9 @@ const useStyles = makeStyles(({ colors, fontSizes, shadow, spacing }) => ({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.xxl,
-    paddingTop: Constants.statusBarHeight + spacing.m,
+    paddingTop: ios
+      ? Constants.statusBarHeight + spacing.m
+      : Constants.statusBarHeight + spacing.l + spacing.xl,
     paddingBottom: spacing.xl,
     backgroundColor: colors.background,
     ...shadow,
@@ -307,5 +310,10 @@ const useStyles = makeStyles(({ colors, fontSizes, shadow, spacing }) => ({
   },
   iosCancelContainer: {
     paddingLeft: spacing.xl,
+  },
+  androidBackButton: {
+    marginHorizontal: 0,
+    marginVertical: 0,
+    paddingRight: spacing.s,
   },
 }));

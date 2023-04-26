@@ -8,6 +8,7 @@ import { discourseClient } from '../client';
 import { CONTENT_FORM_URLENCODED } from '../constants';
 
 import { cookiesStringify } from './cookiesStringify';
+import { SessionExpiredError } from './customErrors';
 
 async function getCsrfSession(cookies?: string) {
   let {
@@ -29,7 +30,7 @@ type Credentials = {
   secondFactorToken?: string | null;
 };
 type CsrfSession = { csrf: string; initialSessionCookie: string };
-type AuthRequest = Credentials & CsrfSession;
+type AuthRequest = Credentials & CsrfSession & { client: AxiosInstance };
 
 function generateToken(cookies: string) {
   const buffer = Buffer.from(cookies);
@@ -38,11 +39,12 @@ function generateToken(cookies: string) {
   return token;
 }
 
-function decodeToken(token?: string) {
+function decodeToken(token: string | null) {
   if (!token) {
     return '';
   }
-  const base64TokenRegex = /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$/;
+  const base64TokenRegex =
+    /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$/;
   let isValidToken = base64TokenRegex.test(token);
   if (!isValidToken) {
     return '';
@@ -61,6 +63,7 @@ async function authenticate(authRequest: AuthRequest) {
     login,
     password,
     secondFactorToken,
+    client,
   } = authRequest;
 
   let config = {
@@ -80,11 +83,7 @@ async function authenticate(authRequest: AuthRequest) {
   }
   let body = stringify({ login, password, ...secondFactorLogin });
 
-  let { data, headers } = await discourseClient.post(
-    '/session.json',
-    body,
-    config,
-  );
+  let { data, headers } = await client.post('/session.json', body, config);
   let { error, failed } = data;
   if (failed) {
     return {
@@ -116,19 +115,13 @@ async function getHpChallenge(csrfSession: CsrfSession) {
   };
   let data;
   let headers;
-  let {
-    data: oldVersionData,
-    headers: oldVersionHeaders,
-  } = await discourseClient.get('/users/hp.json', config);
-  let {
-    errors: oldVersionErrors,
-    error_type: oldVersionErrorType,
-  } = oldVersionData;
+  let { data: oldVersionData, headers: oldVersionHeaders } =
+    await discourseClient.get('/users/hp.json', config);
+  let { errors: oldVersionErrors, error_type: oldVersionErrorType } =
+    oldVersionData;
   if (oldVersionErrors && oldVersionErrorType === 'not_found') {
-    let {
-      data: newVersionData,
-      headers: newVersionHeaders,
-    } = await discourseClient.get('/session/hp.json', config);
+    let { data: newVersionData, headers: newVersionHeaders } =
+      await discourseClient.get('/session/hp.json', config);
     data = newVersionData;
     headers = newVersionHeaders;
   } else {
@@ -151,7 +144,7 @@ async function getHpChallenge(csrfSession: CsrfSession) {
 async function checkSession(authClient: AxiosInstance) {
   let sessionCookie: string = authClient.defaults.headers.Cookie;
   if (!sessionCookie) {
-    throw new Error('Session not found.');
+    throw new SessionExpiredError();
   }
   try {
     let { data, headers } = await authClient.get('/session/current.json');
@@ -173,7 +166,7 @@ async function checkSession(authClient: AxiosInstance) {
       token,
     };
   } catch (e) {
-    throw new Error('Session not found.');
+    throw new SessionExpiredError();
   }
 }
 

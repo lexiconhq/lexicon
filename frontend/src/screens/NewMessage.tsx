@@ -21,7 +21,7 @@ import {
   TextArea,
 } from '../components';
 import { Divider, Icon, Text, TextInputType } from '../core-ui';
-import { UploadTypeEnum } from '../generated/server/types';
+import { UploadTypeEnum } from '../generated/server';
 import {
   bottomMenu,
   createReactNativeFile,
@@ -184,13 +184,13 @@ export default function NewMessage() {
     navigate(screen, params);
   };
 
-  const { onInsertImage, onInsertLink } = bottomMenu(
+  const { onInsertImage, onInsertLink } = bottomMenu({
     isKeyboardShow,
     user,
-    onNavigate,
-    'NewMessage',
-    normalizedExtensions,
-  );
+    navigate: onNavigate,
+    prevScreen: 'NewMessage',
+    extensions: normalizedExtensions,
+  });
 
   useEffect(() => {
     setSelectedUsers(users);

@@ -1,4 +1,4 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let Tag = objectType({
   name: 'Tag',
@@ -6,7 +6,7 @@ export let Tag = objectType({
     t.int('count');
     t.string('id');
     t.int('pmCount');
-    t.boolean('targetTag', { nullable: true });
+    t.nullable.boolean('targetTag');
     t.string('text');
   },
 });

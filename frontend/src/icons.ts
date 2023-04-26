@@ -31,6 +31,9 @@ import Send from '../assets/icons/Send.svg';
 import Settings from '../assets/icons/settings.svg';
 import Triangle from '../assets/icons/Triangle.svg';
 import Views from '../assets/icons/Views.svg';
+import NoConnection from '../assets/icons/NoConnection.svg';
+import Online from '../assets/icons/Online.svg';
+import Unreachable from '../assets/icons/Unreachable.svg';
 
 export const Icons = {
   Add,
@@ -66,6 +69,9 @@ export const Icons = {
   Settings,
   Triangle,
   Views,
+  NoConnection,
+  Online,
+  Unreachable,
 };
 
 export type IconName = keyof typeof Icons;

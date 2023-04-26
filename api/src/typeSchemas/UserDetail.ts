@@ -1,26 +1,23 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
-import { PROSE_DISCOURSE_UPLOAD_HOST } from '../constants';
+import { getNormalizedUrlTemplate } from '../resolvers/utils';
 
 export let UserDetail = objectType({
   name: 'UserDetail',
   definition(t) {
     t.int('id');
     t.string('username');
-    t.string('name', { nullable: true });
+    t.nullable.string('name');
     t.string('email');
-    t.string('avatarTemplate', (userDetail) => {
-      let { avatarTemplate } =
-        'avatarTemplate' in userDetail ? userDetail : { avatarTemplate: '' };
-      return avatarTemplate.includes('http')
-        ? avatarTemplate
-        : PROSE_DISCOURSE_UPLOAD_HOST.concat(avatarTemplate);
+    t.string('avatarTemplate', {
+      resolve: (userDetail) => getNormalizedUrlTemplate(userDetail),
+      sourceType: 'string',
     });
-    t.string('lastPostedAt', { nullable: true }); // New user doens't have last Posted
-    t.string('lastSeenAt', { nullable: true });
+    t.nullable.string('lastPostedAt'); // New user doens't have last Posted
+    t.nullable.string('lastSeenAt');
     t.string('createdAt');
-    t.string('secondaryEmails', { list: true, nullable: true });
-    t.string('unconfirmedEmails', { list: true, nullable: true });
+    t.nullable.list.string('secondaryEmails');
+    t.nullable.list.string('unconfirmedEmails');
     t.boolean('ignored');
     t.boolean('muted');
     t.boolean('canIgnoreUser');
@@ -30,23 +27,23 @@ export let UserDetail = objectType({
     t.int('trustLevel');
     t.boolean('moderator');
     t.boolean('admin');
-    t.string('title', { nullable: true });
+    t.nullable.string('title');
     t.int('badgeCount');
     t.int('timeRead');
     t.int('recentTimeRead');
-    t.int('primaryGroupId', { nullable: true });
-    t.string('primaryGroupName', { nullable: true });
-    t.string('primaryGroupFlairUrl', { nullable: true });
-    t.string('primaryGroupFlairBgColor', { nullable: true });
-    t.string('primaryGroupFlairColor', { nullable: true });
-    t.field('featuredTopic', { type: 'UserFeaturedTopic', nullable: true });
-    t.string('bioExcerpt', { nullable: true });
-    t.string('bioCooked', { nullable: true });
-    t.string('bioRaw', { nullable: true });
-    t.string('dateOfBirth', { nullable: true });
-    t.string('website', { nullable: true });
-    t.string('websiteName', { nullable: true });
-    t.string('location', { nullable: true });
+    t.nullable.int('primaryGroupId');
+    t.nullable.string('primaryGroupName');
+    t.nullable.string('primaryGroupFlairUrl');
+    t.nullable.string('primaryGroupFlairBgColor');
+    t.nullable.string('primaryGroupFlairColor');
+    t.nullable.field('featuredTopic', { type: 'UserFeaturedTopic' });
+    t.nullable.string('bioExcerpt');
+    t.nullable.string('bioCooked');
+    t.nullable.string('bioRaw');
+    t.nullable.string('dateOfBirth');
+    t.nullable.string('website');
+    t.nullable.string('websiteName');
+    t.nullable.string('location');
     t.boolean('canEdit');
     t.boolean('canEditUsername');
     t.boolean('canEditEmail');
@@ -54,47 +51,40 @@ export let UserDetail = objectType({
     t.boolean('canChangeBio');
     t.boolean('canChangeLocation');
     t.boolean('canChangeWebsite');
-    t.int('uploadedAvatarId', { nullable: true });
+    t.nullable.int('uploadedAvatarId');
     t.boolean('hasTitleBadges');
     t.boolean('secondFactorEnabled');
-    t.boolean('secondFactorBackupEnabled', { nullable: true }); // If Admin change it's null
+    t.nullable.boolean('secondFactorBackupEnabled'); // If Admin change it's null
     t.int('pendingCount');
     t.int('profileViewCount');
     t.boolean('canUploadProfileHeader');
     t.boolean('canUploadUserCardBackground');
-    t.string('locale', { nullable: true });
+    t.nullable.string('locale');
     t.int('mailingListPostsPerDay');
-    t.int('mutedCategoryIds', { list: true });
-    t.int('regularCategoryIds', { list: true });
-    t.int('trackedCategoryIds', { list: true });
-    t.int('watchedCategoryIds', { list: true });
-    t.int('watchedFirstPostCategoryIds', { list: true });
-    t.string('watchedTags', { list: true });
-    t.string('watchingFirstPostTags', { list: true });
-    t.string('trackedTags', { list: true });
-    t.string('mutedTags', { list: true });
-    t.string('systemAvatarTemplate', (userDetail) => {
-      let { systemAvatarTemplate } =
-        'systemAvatarTemplate' in userDetail
-          ? userDetail
-          : { systemAvatarTemplate: '' };
-      return systemAvatarTemplate.includes('http')
-        ? systemAvatarTemplate
-        : PROSE_DISCOURSE_UPLOAD_HOST.concat(systemAvatarTemplate);
+    t.list.int('mutedCategoryIds');
+    t.list.int('regularCategoryIds');
+    t.list.int('trackedCategoryIds');
+    t.list.int('watchedCategoryIds');
+    t.list.int('watchedFirstPostCategoryIds');
+    t.list.string('watchedTags');
+    t.list.string('watchingFirstPostTags');
+    t.list.string('trackedTags');
+    t.list.string('mutedTags');
+    t.string('systemAvatarTemplate', {
+      resolve: (userDetail) =>
+        getNormalizedUrlTemplate(userDetail, 'systemAvatar'),
     });
-    t.string('mutedUsernames', { list: true });
-    t.string('ignoredUsernames', { list: true });
-    t.string('allowedPmUsernames', { list: true });
-    t.int('featuredUserBadgeIds', { nullable: true, list: true });
-    t.field('invitedBy', { type: 'UserIcon', nullable: true });
-    t.field('groups', { type: 'Group', list: true });
-    t.field('groupUsers', { type: 'GroupUser', list: true });
-    t.field('remindersFrequency', {
+    t.list.string('mutedUsernames');
+    t.list.string('ignoredUsernames');
+    t.list.string('allowedPmUsernames');
+    t.nullable.list.int('featuredUserBadgeIds');
+    t.nullable.field('invitedBy', { type: 'UserIcon' });
+    t.list.field('groups', { type: 'Group' });
+    t.list.field('groupUsers', { type: 'GroupUser' });
+    t.nullable.list.field('remindersFrequency', {
       type: 'RemindersFrequency',
-      list: true,
-      nullable: true,
     });
-    t.field('userAuthTokens', { type: 'UserAuthToken', list: true });
+    t.list.field('userAuthTokens', { type: 'UserAuthToken' });
     t.field('userOption', { type: 'UserOption' });
   },
 });

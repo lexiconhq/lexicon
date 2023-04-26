@@ -1,30 +1,30 @@
-import { inputObjectType } from '@nexus/schema';
+import { inputObjectType } from 'nexus';
 
 export let ReplyInput = inputObjectType({
   name: 'ReplyInput',
   definition(t) {
-    t.string('raw', { required: true });
-    t.int('topicId', { required: true });
-    t.int('replyToPostNumber');
+    t.string('raw');
+    t.int('topicId');
+    t.nullable.int('replyToPostNumber');
   },
 });
 
 export let NewPrivateMessageInput = inputObjectType({
   name: 'NewPrivateMessageInput',
   definition(t) {
-    t.string('raw', { required: true });
-    t.int('category');
-    t.string('targetRecipients', { list: true, required: true });
-    t.string('title', { required: true });
+    t.string('raw');
+    t.nullable.int('category');
+    t.list.string('targetRecipients');
+    t.string('title');
   },
 });
 
 export let NewTopicInput = inputObjectType({
   name: 'NewTopicInput',
   definition(t) {
-    t.string('raw', { required: true });
-    t.int('category');
-    t.string('title', { required: true });
-    t.string('tags', { list: true });
+    t.string('raw');
+    t.nullable.int('category');
+    t.string('title');
+    t.nullable.list.string('tags');
   },
 });

@@ -1,5 +1,5 @@
 import camelcaseKeys from 'camelcase-keys';
-import { FieldResolver, queryField, intArg, stringArg } from '@nexus/schema';
+import { FieldResolver, queryField, intArg, stringArg, nullable } from 'nexus';
 
 import { errorHandler, privateMessagesMerger } from '../../helpers';
 import { Context, PMOutput } from '../../types';
@@ -46,8 +46,8 @@ let privateMessageQueryResolver: FieldResolver<
 let privateMessageQuery = queryField('privateMessage', {
   type: 'PrivateMessageOutput',
   args: {
-    username: stringArg({ required: true }),
-    page: intArg(),
+    username: stringArg(),
+    page: nullable(intArg()),
   },
   resolve: privateMessageQueryResolver,
 });

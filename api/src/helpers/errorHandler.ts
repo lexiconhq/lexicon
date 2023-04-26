@@ -1,20 +1,31 @@
 import { AxiosError } from 'axios';
 
-import { ChangeUsernameError, EditPostError } from '../constants';
+import { ChangeUsernameError, EditPostError, errorTypes } from '../constants';
 
-export function errorHandler(e: AxiosError) {
+import { AuthorizationError, SessionExpiredError } from './customErrors';
+
+export function errorHandler(unknownError: unknown) {
+  const e = unknownError as AxiosError;
   let status = e.response?.status;
   let errors = e.response?.data?.errors;
+  let errorType = e.response?.data?.error_type;
   let failed = e.response?.data?.failed;
+  let cookie = e.response?.config.headers.Cookie;
 
   if (errors) {
-    if (errors === EditPostError) {
-      throw new Error(
-        'This post can no longer be edited because it was created more than 30 days ago.',
-      );
+    if (errors[0] === EditPostError) {
+      throw new Error("You've passed the time limit to edit this post.");
     }
     if (Array.isArray(errors) && errors[0] === ChangeUsernameError) {
       throw new Error('This username is already taken');
+    }
+    const { invalidAccess, unauthenticatedAccess } = errorTypes;
+    if (errorType === unauthenticatedAccess || errorType === invalidAccess) {
+      // If the token was provided and we encountered one of these errors, it means the token was invalid
+      if (cookie?.includes('_t=')) {
+        throw new SessionExpiredError();
+      }
+      throw new AuthorizationError();
     }
     throw new Error(errors);
   }

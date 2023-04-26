@@ -1,9 +1,9 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let SearchGroup = objectType({
   name: 'SearchGroup',
   definition(t) {
-    t.string('fullName', { nullable: true });
+    t.nullable.string('fullName');
     t.string('name');
   },
 });

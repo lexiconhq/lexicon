@@ -3,49 +3,57 @@
   "version": "1.0.0",
   "scripts": {
     "start": "yarn build && node lib/index.js",
-    "quickstart": "yarn generate && env PROSE_DISCOURSE_HOST=https://meta.discourse.org PROSE_APP_HOSTNAME=0.0.0.0 PROSE_APP_PORT=8929 ts-node-dev --no-notify --respawn --transpile-only src/index.ts",
+    "quickstart": "yarn generate && cross-env PROSE_DISCOURSE_HOST=https://meta.discourse.org PROSE_APP_HOSTNAME=0.0.0.0 PROSE_APP_PORT=8929 ts-node-dev --no-notify --respawn --transpile-only src/index.ts",
     "dev": "yarn generate && ts-node-dev --no-notify --respawn --transpile-only src/index.ts",
     "typecheck": "tsc --noEmit -p .",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
-    "generate:schema": "env SKIP_VALIDATION=true ts-node --transpile-only src/schema.ts",
+    "generate:schema": "cross-env SKIP_VALIDATION=true ts-node --transpile-only src/schema.ts",
     "generate": "yarn generate:schema",
     "lint": "eslint --max-warnings 0 \"src/**/*.{ts,tsx}\"",
-    "jest": "env PROSE_DISCOURSE_HOST=https://meta.discourse.org jest --coverage --passWithNoTests",
+    "jest": "cross-env PROSE_DISCOURSE_HOST=https://meta.discourse.org jest --coverage --passWithNoTests",
     "test": "yarn lint && yarn typecheck && yarn format:check && yarn build && yarn jest",
     "build": "tsc --outDir lib/"
   },
   "dependencies": {
-    "@nexus/schema": "^0.15.0",
+    "@envelop/core": "^1.0.3",
+    "@graphql-authz/core": "^1.2.1",
+    "@graphql-authz/envelop-plugin": "^1.0.3",
+    "@graphql-yoga/node": "^2.13.8",
     "axios": "^0.21.2",
     "axios-cookiejar-support": "^1.0.0",
     "camelcase-keys": "^6.2.2",
     "dotenv": "^8.2.0",
-    "form-data": "^3.0.0",
-    "graphql-shield": "6.1.0",
-    "graphql-upload": "8.0.7",
-    "graphql-yoga": "^1.18.3",
+    "form-data": "^4.0.0",
+    "graphql": "^16.5.0",
+    "nexus": "^1.4.0-next.11",
     "querystring": "^0.2.0",
-    "snakecase-keys": "^3.2.0",
+    "snakecase-keys": "3.2.0",
     "tough-cookie": "^4.0.0"
   },
   "devDependencies": {
     "@types/form-data": "^2.5.0",
-    "@types/graphql-upload": "^8.0.3",
     "@types/jest": "^26.0.9",
     "@types/node": "^14.0.27",
     "@types/tough-cookie": "^4.0.0",
     "@types/ws": "^7.2.6",
+    "cross-env": "^7.0.3",
     "eslint": "^7.6.0",
-    "eslint-config-kodefox": "^0.2.2",
+    "eslint-config-kodefox": "^1.2.0",
     "jest": "^26.2.2",
     "prettier": "^2.0.5",
     "ts-jest": "^26.1.4",
     "ts-node-dev": "^1.0.0-pre.56",
-    "typescript": "^3.9.7"
+    "typescript": "4.7.4"
   },
   "eslintConfig": {
-    "extends": "kodefox"
+    "extends": "kodefox",
+    "rules": {
+      "operator-assignment": [
+        "warn",
+        "always"
+      ]
+    }
   },
   "prettier": {
     "singleQuote": true,

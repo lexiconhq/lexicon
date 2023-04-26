@@ -1,4 +1,4 @@
-import { FieldResolver, queryField } from '@nexus/schema';
+import { FieldResolver, queryField } from 'nexus';
 
 import { checkSession } from '../../helpers';
 import { Context } from '../../types';
@@ -12,7 +12,8 @@ export let refreshTokenQueryResolver: FieldResolver<
       throw new Error('Not authorized');
     }
     return checkSession(context.client);
-  } catch (error) {
+  } catch (unknownError) {
+    const error = unknownError as Error;
     throw new Error(`Session not found: ${error.message}`);
   }
 };

@@ -1,6 +1,6 @@
 import camelcaseKey from 'camelcase-keys';
 import snakecaseKeys from 'snakecase-keys';
-import { FieldResolver, queryField, stringArg } from '@nexus/schema';
+import { FieldResolver, queryField, stringArg } from 'nexus';
 
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';
@@ -42,7 +42,7 @@ let searchUserQueryResolver: FieldResolver<'Query', 'searchUser'> = async (
 let searchUserQuery = queryField('searchUser', {
   type: 'SearchUserOutput',
   args: {
-    search: stringArg({ required: true }),
+    search: stringArg(),
   },
   resolve: searchUserQueryResolver,
 });

@@ -1,21 +1,22 @@
 import { MutationHookOptions, QueryHookOptions } from '@apollo/client';
 
 import {
-  MarkRead as MarkReadType,
-  MarkReadVariables,
-  Notification as NotificationQueryType,
-  NotificationVariables,
-} from '../../generated/server/Notification';
-import { MARK_READ, NOTIFICATION } from '../../graphql/server/notification';
+  MarkReadMutation as MarkReadType,
+  MarkReadMutationVariables,
+  MarkReadDocument,
+  NotificationQuery as NotificationQueryType,
+  NotificationQueryVariables,
+  NotificationDocument,
+} from '../../generated/server';
 import { useMutation, useQuery } from '../../utils';
 
 export function useNotification(
-  options?: QueryHookOptions<NotificationQueryType, NotificationVariables>,
+  options?: QueryHookOptions<NotificationQueryType, NotificationQueryVariables>,
 ) {
   const { data, loading, error, refetch, fetchMore } = useQuery<
     NotificationQueryType,
-    NotificationVariables
-  >(NOTIFICATION, {
+    NotificationQueryVariables
+  >(NotificationDocument, {
     ...options,
   });
 
@@ -23,12 +24,12 @@ export function useNotification(
 }
 
 export function useMarkRead(
-  options?: MutationHookOptions<MarkReadType, MarkReadVariables>,
+  options?: MutationHookOptions<MarkReadType, MarkReadMutationVariables>,
 ) {
   const [markAsRead, { loading }] = useMutation<
     MarkReadType,
-    MarkReadVariables
-  >(MARK_READ, {
+    MarkReadMutationVariables
+  >(MarkReadDocument, {
     ...options,
   });
 

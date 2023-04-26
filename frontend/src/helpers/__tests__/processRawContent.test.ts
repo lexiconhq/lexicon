@@ -1,6 +1,7 @@
 import { NO_EXCERPT_WORDING } from '../../constants';
 import {
   anchorToMarkdown,
+  generateMarkdownContent,
   getPostShortUrl,
   sortImageUrl,
 } from '../processRawContent';
@@ -96,5 +97,55 @@ describe('anchorToMarkdown change anchor tag to markdown', () => {
       imageUrl: undefined,
       mentionedUsers: [],
     });
+  });
+});
+
+describe('generateMarkdownContent returns markdown content with complete urls', () => {
+  const rawContent = 'Hello Lexicon! ![image](upload://shortUrl.com)';
+  const shortImageUrl = '![image](upload://shortUrl.com)';
+  const imageUrls = ['https://wiki.kfox.io/example.png'];
+  const markdownContent =
+    'Hello Lexicon! ![image](https://wiki.kfox.io/example.png)';
+
+  it('should return raw content when image urls are empty', () => {
+    expect(generateMarkdownContent(rawContent, [])).toBe(rawContent);
+  });
+  it('should return raw content when there are no short urls in raw content', () => {
+    const rawContentWithNoImage = 'Hello Lexicon!';
+    expect(generateMarkdownContent(rawContentWithNoImage, imageUrls)).toBe(
+      rawContentWithNoImage,
+    );
+  });
+
+  it('should return raw content with short urls and complete urls when the total number of short urls is more than the complete image urls', () => {
+    expect(
+      generateMarkdownContent(`${rawContent} ${shortImageUrl}`, imageUrls),
+    ).toBe(`${markdownContent} ${shortImageUrl}`);
+  });
+  it('should return raw content with no short url when the total number of short urls is less than the complete image urls', () => {
+    expect(
+      generateMarkdownContent(rawContent, [...imageUrls, ...imageUrls]),
+    ).toBe(markdownContent);
+  });
+
+  it('should return raw content with no short url when the total number of short urls is the same as the complete image urls', () => {
+    expect(generateMarkdownContent(rawContent, imageUrls)).toBe(
+      markdownContent,
+    );
+  });
+  it('should only replace short urls and return raw content with complete urls when there are short and complete urls in raw data', () => {
+    const completeImageUrl =
+      '![second image](https://wiki.kfox.io/secondExample.png)';
+    const secondCompleteUrlInMarkdown =
+      '![image](https://wiki.kfox.io/example3.png)';
+
+    expect(
+      generateMarkdownContent(
+        `${rawContent} ${completeImageUrl} ${shortImageUrl}`,
+        [...imageUrls, 'https://wiki.kfox.io/example3.png'],
+      ),
+    ).toBe(
+      `${markdownContent} ${completeImageUrl} ${secondCompleteUrlInMarkdown}`,
+    );
   });
 });

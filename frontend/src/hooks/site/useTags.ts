@@ -1,10 +1,10 @@
 import { LazyQueryHookOptions } from '@apollo/client';
 
 import {
-  SearchTags as TagsType,
-  SearchTagsVariables as TagsVariables,
-} from '../../generated/server/Search';
-import { SEARCH_TAGS } from '../../graphql/server/search';
+  SearchTagsQuery as TagsType,
+  SearchTagsQueryVariables as TagsVariables,
+  SearchTagsDocument,
+} from '../../generated/server';
 import { useLazyQuery } from '../../utils';
 
 export function useTags(
@@ -13,7 +13,7 @@ export function useTags(
   const [getTags, { data, loading, error, refetch }] = useLazyQuery<
     TagsType,
     TagsVariables
-  >(SEARCH_TAGS, {
+  >(SearchTagsDocument, {
     ...options,
   });
 

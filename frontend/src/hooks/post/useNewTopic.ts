@@ -1,19 +1,19 @@
 import { MutationHookOptions } from '@apollo/client';
 
 import {
-  NewTopic as NewTopicType,
-  NewTopicVariables,
-} from '../../generated/server/NewTopic';
-import { NEW_TOPIC } from '../../graphql/server/newTopic';
+  NewTopicMutation as NewTopicType,
+  NewTopicMutationVariables,
+  NewTopicDocument,
+} from '../../generated/server';
 import { useMutation } from '../../utils';
 
 export function useNewTopic(
-  options?: MutationHookOptions<NewTopicType, NewTopicVariables>,
+  options?: MutationHookOptions<NewTopicType, NewTopicMutationVariables>,
 ) {
-  const [newTopic, { loading }] = useMutation<NewTopicType, NewTopicVariables>(
-    NEW_TOPIC,
-    { ...options },
-  );
+  const [newTopic, { loading }] = useMutation<
+    NewTopicType,
+    NewTopicMutationVariables
+  >(NewTopicDocument, { ...options });
 
   return { newTopic, loading };
 }

@@ -14,7 +14,11 @@ Both of these assets often contain your logo in one form or another. For example
 
 ### Customizing the Splash Screen
 
-The assets used for the Splash Screen in Lexicon is located at `frontend/assets/images/splash.png` and `frontend/assets/images/splashDark.png`.
+:::info
+Expo does not currently support dark mode for splash screens.
+:::
+
+The assets used for the splash screen in the Mobile App are located at `frontend/assets/images/splash.png` and `frontend/assets/images/splashDark.png`.
 
 Above, we mention splash screen assets for both Dark Mode and Light Mode.
 
@@ -61,22 +65,18 @@ The `backgroundColor` field enables you to specify the color of the background b
 
 Customizing the App Icon in Lexicon is nearly the same process as customizing the Splash Screen.
 
-The asset for the App Icon is located at `frontend/assets/icon.png`. To customize it, simply overwrite that file with your own `icon.png`.
+The image asset for the Mobile App's icon is located at `frontend/assets/icon.png`. To customize it, simply overwrite that file with your own `icon.png`.
 
 ## Further Customization
 
-We get into much more detail about how to White Label your app in the [White Labeling](../white-labeling) section of the documentation.
+We get into more detail about how to white label your app in the [White Labeling](../white-labeling) section of the documentation.
 
 In particular, this includes customizing and extending the theme's color palette, icons, and even fonts.
 
-Should wish to customize anything not covered in that section, get in touch with us, and we'll see how we can help you make it a reality.
+Should you wish to customize anything not covered in that section, get in touch with us, and we'll see how we can help you make it a reality.
 
-## All Done!
+## Awesome Work
 
-That's it for the tutorial. Great work.
+Your app looks cool now 😎. However, it's only accessible to you.
 
-We hope that this has served as an informative guide to help familiarize you with Lexicon and how you can make use of it.
-
-If you haven't already, check out the [Lexicon Documentation](../) to get a deeper understanding of the project and how it all works.
-
-If you have any questions, comments, feedback, or want to contribute, please reach out to us on Github!
+Next, we'll cover how you can actually [build your app](building), so you can share it with the world.

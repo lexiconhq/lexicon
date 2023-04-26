@@ -19,7 +19,7 @@ export default function Hyperlink() {
   const { navigate, goBack } = useNavigation<RootStackNavProp<'HyperLink'>>();
 
   const {
-    params: { prevScreen, title, id, post, postPointer },
+    params: { prevScreen, title, id, replyToPostId, postNumber },
   } = useRoute<RootStackRouteProp<'HyperLink'>>();
 
   const { control, errors, formState, getValues } = useForm<HyperlinkForm>({
@@ -42,18 +42,18 @@ export default function Hyperlink() {
         navigate(prevScreen, {
           title,
           topicId: id,
-          post,
+          replyToPostId,
           hyperlinkUrl,
           hyperlinkTitle,
         });
       }
     } else if (prevScreen === 'MessageDetail') {
-      if (id && postPointer) {
+      if (id && postNumber) {
         navigate('Main', {
           screen: prevScreen,
           params: {
             id,
-            postPointer,
+            postNumber,
             emptied: false,
             hyperlinkUrl,
             hyperlinkTitle,

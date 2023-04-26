@@ -1,30 +1,44 @@
 import { gql } from '@apollo/client';
 
+export const SEARCH_POST_FRAGMENT = gql`
+  fragment SearchPostFragment on SearchPost {
+    id
+    avatarTemplate
+    blurb
+    createdAt
+    username
+    likeCount
+    postNumber
+    topicId
+  }
+`;
+
+export const SEARCH_TOPIC_FRAGMENT = gql`
+  fragment SearchTopicFragment on SearchTopic {
+    id
+    title
+    postsCount
+    replyCount
+    createdAt
+    archetype
+    excerpt
+    visible
+    liked
+    tags
+    categoryId
+  }
+`;
+
 export const SEARCH = gql`
+  ${SEARCH_POST_FRAGMENT}
+  ${SEARCH_TOPIC_FRAGMENT}
   query Search($search: String!, $page: Int!, $order: String) {
     search(search: $search, page: $page, order: $order) {
       posts {
-        id
-        avatarTemplate
-        blurb
-        createdAt
-        username
-        likeCount
-        postNumber
-        topicId
+        ...SearchPostFragment
       }
       topics {
-        id
-        title
-        postsCount
-        replyCount
-        createdAt
-        archetype
-        excerpt
-        visible
-        liked
-        tags
-        categoryId
+        ...SearchTopicFragment
       }
     }
   }

@@ -1,49 +1,53 @@
-import { objectType } from '@nexus/schema';
+import { interfaceType, objectType } from 'nexus';
+
+export const BaseTopicDetailOutput = interfaceType({
+  name: 'BaseTopicDetailOutput',
+  definition(t) {
+    t.int('id');
+    t.nullable.string('title');
+    t.nullable.string('fancyTitle');
+    t.nullable.int('postsCount');
+    t.nullable.list.list.int('timelineLookup');
+    t.nullable.string('slug');
+    t.nullable.int('replyCount');
+    t.nullable.int('highestPostNumber');
+    t.nullable.int('currentPostNumber');
+    t.nullable.string('createdAt');
+    t.nullable.string('lastPostedAt');
+    t.nullable.string('archetype');
+    t.nullable.boolean('pinned');
+    t.nullable.boolean('visible');
+    t.nullable.boolean('closed');
+    t.nullable.boolean('archived');
+    t.nullable.boolean('bookmarked');
+    t.nullable.boolean('liked');
+    t.nullable.list.string('tags');
+    t.nullable.int('views');
+    t.nullable.int('likeCount');
+    t.nullable.boolean('hasSummary');
+    t.nullable.int('categoryId');
+    t.nullable.boolean('pinnedGlobally');
+    t.nullable.string('pinnedAt');
+    t.nullable.string('pinnedUntil');
+    t.nullable.int('wordCount');
+    t.nullable.string('deletedAt');
+    t.nullable.int('userId');
+    t.nullable.string('draftKey');
+    t.nullable.list.field('actionsSummary', { type: 'ActionSummary' });
+    t.nullable.int('chunkSize');
+    t.nullable.int('messageBusLastId');
+    t.nullable.int('participantCount');
+    t.nullable.boolean('showReadIndicator');
+    t.nullable.field('details', { type: 'TopicDetail' });
+    t.nullable.list.field('suggestedTopics', { type: 'Topic' });
+    t.field('postStream', { type: 'PostStream' });
+  },
+  resolveType: () => null,
+});
 
 export let TopicDetailOutput = objectType({
   name: 'TopicDetailOutput',
   definition(t) {
-    t.int('id');
-    t.string('title', { nullable: true });
-    t.string('fancyTitle', { nullable: true });
-    t.int('postsCount', { nullable: true });
-    t.int('timelineLookup', { list: [true, true], nullable: true });
-    t.string('slug', { nullable: true });
-    t.int('replyCount', { nullable: true });
-    t.int('highestPostNumber', { nullable: true });
-    t.int('currentPostNumber', { nullable: true });
-    t.string('createdAt', { nullable: true });
-    t.string('lastPostedAt', { nullable: true });
-    t.string('archetype', { nullable: true });
-    t.boolean('pinned', { nullable: true });
-    t.boolean('visible', { nullable: true });
-    t.boolean('closed', { nullable: true });
-    t.boolean('archived', { nullable: true });
-    t.boolean('bookmarked', { nullable: true });
-    t.boolean('liked', { nullable: true });
-    t.string('tags', { nullable: true, list: true });
-    t.int('views', { nullable: true });
-    t.int('likeCount', { nullable: true });
-    t.boolean('hasSummary', { nullable: true });
-    t.int('categoryId', { nullable: true });
-    t.boolean('pinnedGlobally', { nullable: true });
-    t.string('pinnedAt', { nullable: true });
-    t.string('pinnedUntil', { nullable: true });
-    t.int('wordCount', { nullable: true });
-    t.string('deletedAt', { nullable: true });
-    t.int('userId', { nullable: true });
-    t.string('draftKey', { nullable: true });
-    t.field('actionsSummary', {
-      type: 'ActionSummary',
-      list: true,
-      nullable: true,
-    });
-    t.int('chunkSize', { nullable: true });
-    t.int('messageBusLastId', { nullable: true });
-    t.int('participantCount', { nullable: true });
-    t.boolean('showReadIndicator', { nullable: true });
-    t.field('details', { type: 'TopicDetail', nullable: true });
-    t.field('suggestedTopics', { type: 'Topic', list: true, nullable: true });
-    t.field('postStream', { type: 'PostStream' });
+    t.implements(BaseTopicDetailOutput);
   },
 });

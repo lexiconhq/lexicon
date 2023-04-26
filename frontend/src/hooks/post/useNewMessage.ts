@@ -1,10 +1,10 @@
 import { MutationHookOptions } from '@apollo/client';
 
 import {
-  NewPrivateMessage as NewMessageType,
-  NewPrivateMessageVariables as NewMessageVariables,
-} from '../../generated/server/Message';
-import { NEW_PRIVATE_MESSAGE } from '../../graphql/server/message';
+  NewPrivateMessageMutation as NewMessageType,
+  NewPrivateMessageMutationVariables as NewMessageVariables,
+  NewPrivateMessageDocument,
+} from '../../generated/server';
 import { useMutation } from '../../utils';
 
 export function useNewMessage(
@@ -13,7 +13,7 @@ export function useNewMessage(
   const [newMessage, { loading }] = useMutation<
     NewMessageType,
     NewMessageVariables
-  >(NEW_PRIVATE_MESSAGE, { ...options });
+  >(NewPrivateMessageDocument, { ...options });
 
   return { newMessage, loading };
 }

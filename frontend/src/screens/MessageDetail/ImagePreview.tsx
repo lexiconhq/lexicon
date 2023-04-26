@@ -7,7 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import { MentionList } from '../../components';
 import { Icon, TextInputType } from '../../core-ui';
-import { UploadTypeEnum } from '../../generated/server/types';
+import { UploadTypeEnum } from '../../generated/server';
 import {
   createReactNativeFile,
   errorHandlerAlert,
@@ -29,7 +29,7 @@ export default function ImagePreview() {
   const { navigate, goBack } = useNavigation<StackNavProp<'ImagePreview'>>();
 
   const { params } = useRoute<StackRouteProp<'ImagePreview'>>();
-  const { topicId, imageUri, postPointer, message } = params;
+  const { topicId, imageUri, message } = params;
 
   const [loading, setLoading] = useState(false);
   const [imageMessage, setImageMessage] = useState(message);
@@ -46,10 +46,10 @@ export default function ImagePreview() {
   const user = useStorage().getItem('user');
 
   const { reply } = useReplyPost({
-    onCompleted: () => {
+    onCompleted: ({ reply: { postNumber } }) => {
       navigate('MessageDetail', {
         id: topicId,
-        postPointer: postPointer + 1,
+        postNumber,
         emptied: true,
         hyperlinkUrl: '',
         hyperlinkTitle: '',

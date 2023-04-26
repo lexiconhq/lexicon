@@ -45,3 +45,5 @@ const useStyles = makeStyles(({ fontSizes, spacing }) => ({
     fontSize: fontSizes.s,
   },
 }));
+
+export { Props as PostItemFooterProps };

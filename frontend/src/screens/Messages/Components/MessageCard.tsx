@@ -14,7 +14,7 @@ type Props = TouchableOpacityProps & {
   id: number;
   message: string;
   messageParticipants: MessageParticipants;
-  postPointer: number;
+  postNumber: number;
   allowedUserCount?: number | null;
   date: string;
   seen?: boolean;
@@ -33,7 +33,7 @@ export function MessageCard(props: Props) {
     date,
     seen: seenProps,
     allowedUserCount,
-    postPointer,
+    postNumber,
   } = props;
 
   const { participantsToShow } = messageParticipants ?? {
@@ -52,7 +52,7 @@ export function MessageCard(props: Props) {
     }
     navigate('MessageDetail', {
       id,
-      postPointer,
+      postNumber,
       hyperlinkUrl: '',
       hyperlinkTitle: '',
     });

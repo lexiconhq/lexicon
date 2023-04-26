@@ -82,10 +82,7 @@ export default function Profile() {
   }, [data, setUser]);
 
   const onPressCancel = () => {
-    if (!show) {
-      setShow(true);
-    }
-    setTimeout(() => setShow(false), 50);
+    setShow(false);
   };
 
   return (
@@ -176,13 +173,6 @@ export default function Profile() {
                 loading={logoutLoading}
               />
             </View>
-            {show && (
-              <ShowImageModal
-                show={show}
-                userImage={{ uri: userImage }}
-                onPressCancel={onPressCancel}
-              />
-            )}
           </View>
         </ScrollView>
         <View style={styles.bounceContainer}>
@@ -190,6 +180,11 @@ export default function Profile() {
           <View style={styles.bottomBounce} />
         </View>
       </View>
+      <ShowImageModal
+        show={show}
+        userImage={{ uri: userImage }}
+        onPressCancel={onPressCancel}
+      />
     </>
   );
 }

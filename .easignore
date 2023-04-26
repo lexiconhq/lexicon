@@ -1,0 +1,18 @@
+node_modules/**/*
+npm-debug.*
+
+.expo/*
+*/coverage
+*/.env
+*/playstore_secret.json
+
+frontend/web-build/
+frontend/dist
+
+api/lib
+
+# macOS
+.DS_Store
+
+# Ignoring other directories
+/documentation

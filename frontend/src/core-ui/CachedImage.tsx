@@ -168,16 +168,16 @@ export default class CachedImage extends Component<Props> {
     }
     if (
       this.props.isBackground &&
-      this.props.visible &&
+      typeof this.props.visible === 'boolean' &&
       this.props.setVisible
     ) {
-      let images = [{ uri: source.uri }];
       return (
         <ImageView
-          images={images}
+          images={[{ uri: source.uri }]}
           imageIndex={0}
           visible={this.props.visible}
           onRequestClose={this.props.setVisible}
+          animationType="fade"
         />
       );
     } else {

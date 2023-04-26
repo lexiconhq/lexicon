@@ -5,11 +5,19 @@ export type UserIcon = {
   avatarTemplate: string;
 };
 
+export type LikedTopic = {
+  id: number;
+  topicId: number;
+  postId: number;
+  likeCount: number;
+  liked: boolean;
+};
+
 type TopicPoster = {
   extras?: string | null;
   description: string;
   userId?: number | null;
-  user: UserIcon;
+  user: UserIcon | null;
 };
 
 export type Topic = {
@@ -115,3 +123,13 @@ export type UserAction = {
   topicId: number;
   userId: number;
 };
+
+type ActionSummary = {
+  id: number;
+  hidden?: boolean;
+  acted?: boolean;
+  canUndo?: boolean;
+  canAct?: boolean;
+  count?: number;
+};
+export type ActionsSummary = Array<ActionSummary>;

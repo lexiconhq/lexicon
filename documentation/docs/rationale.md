@@ -22,7 +22,7 @@ In our case, we were looking for a very specific type of experience.
 
 ### Who We Are
 
-The Lexicon Team is part of [KodeFox](https://www.kodefox.com/), a software studio comprising of passionate software engineers, designers, and product managers who regularly build world-class software for our customers.
+The Lexicon Team is part of [KodeFox](https://www.kodefox.com/), a software studio comprised of passionate software engineers, designers, and product managers who regularly build world-class software for our customers.
 
 Interested in custom software development with a personal touch? Drop us a line at [hello@kodefox.com](mailto:hello@kodefox.com).
 
@@ -46,7 +46,7 @@ While we can appreciate the sentiment of figuring things out yourself, we wanted
 
 For this reason, we also chose to build Prose, our GraphQL API layer on top of the Discourse RESTful API. Another motivating factor was our existing fluency with GraphQL.
 
-This allowed us to quickly iterate on new features with a more modern, well-thought-out API paradigm.
+This allowed us to quickly implement the mobile app with an intuitive API paradigm that we were already very familiar with.
 
 #### How Lexicon can help you
 

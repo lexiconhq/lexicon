@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActionSheetIOS,
   Alert,
@@ -46,6 +46,7 @@ export default function EmailAddressItem(props: Props) {
       },
       onError: (error) => {
         errorHandlerAlert(error);
+        onSetLoading(false);
       },
       refetchQueries: [
         {
@@ -69,6 +70,7 @@ export default function EmailAddressItem(props: Props) {
     },
     onError: (error) => {
       errorHandlerAlert(error);
+      onSetLoading(false);
     },
     refetchQueries: [
       {
@@ -77,6 +79,12 @@ export default function EmailAddressItem(props: Props) {
       },
     ],
   });
+
+  useEffect(() => {
+    if (setPrimaryEmailLoading || deleteEmailLoading) {
+      onSetLoading(true);
+    }
+  }, [setPrimaryEmailLoading, deleteEmailLoading, onSetLoading]);
 
   const onSetPrimaryEmail = () => {
     if (!ios) {
@@ -138,10 +146,6 @@ export default function EmailAddressItem(props: Props) {
       setShowOptions(true);
     }
   };
-
-  if (setPrimaryEmailLoading || deleteEmailLoading) {
-    onSetLoading(true);
-  }
 
   return (
     <>

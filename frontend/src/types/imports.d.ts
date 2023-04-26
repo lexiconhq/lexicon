@@ -6,8 +6,3 @@ declare module '*.svg' {
   const Component: React.FC<SvgProps>;
   export default Component;
 }
-
-declare module '@env' {
-  export const MOBILE_PROSE_HOST: string;
-  export const MOBILE_PROSE_PORT: number;
-}

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Lexicon",
-    "slug": "lexicon",
+    "name": "<insert your app name>",
+    "slug": "<insert your app slug>",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -32,7 +32,15 @@
       ]
     },
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "buildNumber": "1.0.0",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "permissions": [],
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"

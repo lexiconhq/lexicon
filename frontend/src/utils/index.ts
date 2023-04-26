@@ -1,6 +1,5 @@
 export * from './ModalProvider';
-export * from './PostProvider';
-export * from './UserEventProvider';
+export * from './OngoingLikedTopicProvider';
 export * from './useLazyQuery';
 export * from './useMutation';
 export * from './useQuery';

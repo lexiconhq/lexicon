@@ -1,21 +1,21 @@
 import { LazyQueryHookOptions } from '@apollo/client';
 
 import {
-  SingleBadge,
-  SingleBadgeVariables,
-} from '../../generated/server/SingleBadge';
-import { SINGLE_BADGE } from '../../graphql/server/singleBadge';
+  SingleBadgeQuery,
+  SingleBadgeQueryVariables,
+  SingleBadgeDocument,
+} from '../../generated/server';
 import { useLazyQuery } from '../../utils';
 
 export function useSingleBadge(
-  options?: LazyQueryHookOptions<SingleBadge, SingleBadgeVariables>,
+  options?: LazyQueryHookOptions<SingleBadgeQuery, SingleBadgeQueryVariables>,
 ) {
-  const [singleBadge] = useLazyQuery<SingleBadge, SingleBadgeVariables>(
-    SINGLE_BADGE,
-    {
-      ...options,
-    },
-  );
+  const [singleBadge] = useLazyQuery<
+    SingleBadgeQuery,
+    SingleBadgeQueryVariables
+  >(SingleBadgeDocument, {
+    ...options,
+  });
 
   return { singleBadge };
 }

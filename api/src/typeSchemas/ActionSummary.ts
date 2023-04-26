@@ -1,13 +1,13 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let ActionSummary = objectType({
   name: 'ActionSummary',
   definition(t) {
     t.int('id');
-    t.boolean('hidden', { nullable: true });
-    t.int('count', { nullable: true });
-    t.boolean('canAct', { nullable: true });
-    t.boolean('acted', { nullable: true });
-    t.boolean('canUndo', { nullable: true });
+    t.nullable.boolean('hidden');
+    t.nullable.int('count');
+    t.nullable.boolean('canAct');
+    t.nullable.boolean('acted');
+    t.nullable.boolean('canUndo');
   },
 });

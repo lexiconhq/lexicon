@@ -29,6 +29,7 @@ import SelectUser from './SelectUser/SelectUser';
 import Tags from './Tags/Tags';
 import TwoFactorAuth from './TwoFactorAuth';
 import UserInformation from './UserInformation';
+import Troubleshoot from './Troubleshoot';
 
 export {
   Activity,
@@ -62,4 +63,5 @@ export {
   Tags,
   TwoFactorAuth,
   UserInformation,
+  Troubleshoot,
 };

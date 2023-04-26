@@ -7,6 +7,7 @@ export const TOPICS = gql`
     $topPeriod: TopPeriodEnum
     $tag: String
     $categoryId: Int
+    $username: String
   ) {
     topics(
       sort: $sort
@@ -14,6 +15,7 @@ export const TOPICS = gql`
       topPeriod: $topPeriod
       tag: $tag
       categoryId: $categoryId
+      username: $username
     ) {
       users {
         id
@@ -47,6 +49,8 @@ export const TOPICS = gql`
             user {
               id
               username
+              name
+              avatar: avatarTemplate
             }
           }
           authorUserId
@@ -54,20 +58,6 @@ export const TOPICS = gql`
           pinned
         }
       }
-    }
-  }
-`;
-
-export const REPLY_TOPIC = gql`
-  mutation ReplyTopic($raw: String!, $topicId: Int!, $replyToPostNumber: Int) {
-    reply(
-      replyInput: {
-        raw: $raw
-        topicId: $topicId
-        replyToPostNumber: $replyToPostNumber
-      }
-    ) {
-      commentId: id
     }
   }
 `;

@@ -1,29 +1,28 @@
 import { MutationHookOptions } from '@apollo/client';
 
 import {
-  AddEmailAddress as AddEmailAddressType,
-  AddEmailAddressVariables,
-} from '../../generated/server/AddEmailAddress';
-import {
-  DeleteEmail as DeleteEmailType,
-  DeleteEmailVariables,
-} from '../../generated/server/DeleteEmail';
-import {
-  SetPrimaryEmail as SetPrimaryEmailType,
-  SetPrimaryEmailVariables,
-} from '../../generated/server/SetPrimaryEmail';
-import { ADD_EMAIL_ADDRESS } from '../../graphql/server/addEmailAddress';
-import { DELETE_EMAIL } from '../../graphql/server/deleteEmail';
-import { SET_PRIMARY_EMAIL } from '../../graphql/server/setPrimaryEmail';
+  AddEmailAddressMutation as AddEmailAddressType,
+  AddEmailAddressMutationVariables,
+  AddEmailAddressDocument,
+  DeleteEmailMutation as DeleteEmailType,
+  DeleteEmailMutationVariables,
+  DeleteEmailDocument,
+  SetPrimaryEmailMutation as SetPrimaryEmailType,
+  SetPrimaryEmailMutationVariables,
+  SetPrimaryEmailDocument,
+} from '../../generated/server';
 import { useMutation } from '../../utils';
 
 export function useAddEmail(
-  options?: MutationHookOptions<AddEmailAddressType, AddEmailAddressVariables>,
+  options?: MutationHookOptions<
+    AddEmailAddressType,
+    AddEmailAddressMutationVariables
+  >,
 ) {
   const [addEmailAddress, { loading, error }] = useMutation<
     AddEmailAddressType,
-    AddEmailAddressVariables
-  >(ADD_EMAIL_ADDRESS, {
+    AddEmailAddressMutationVariables
+  >(AddEmailAddressDocument, {
     ...options,
   });
 
@@ -31,12 +30,12 @@ export function useAddEmail(
 }
 
 export function useDeleteEmail(
-  options?: MutationHookOptions<DeleteEmailType, DeleteEmailVariables>,
+  options?: MutationHookOptions<DeleteEmailType, DeleteEmailMutationVariables>,
 ) {
   const [deleteEmail, { loading }] = useMutation<
     DeleteEmailType,
-    DeleteEmailVariables
-  >(DELETE_EMAIL, {
+    DeleteEmailMutationVariables
+  >(DeleteEmailDocument, {
     ...options,
   });
 
@@ -44,12 +43,15 @@ export function useDeleteEmail(
 }
 
 export function useSetPrimaryEmail(
-  options?: MutationHookOptions<SetPrimaryEmailType, SetPrimaryEmailVariables>,
+  options?: MutationHookOptions<
+    SetPrimaryEmailType,
+    SetPrimaryEmailMutationVariables
+  >,
 ) {
   const [setPrimaryEmail, { loading }] = useMutation<
     SetPrimaryEmailType,
-    SetPrimaryEmailVariables
-  >(SET_PRIMARY_EMAIL, {
+    SetPrimaryEmailMutationVariables
+  >(SetPrimaryEmailDocument, {
     ...options,
   });
 

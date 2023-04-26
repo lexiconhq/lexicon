@@ -34,7 +34,7 @@ export function useModal() {
   const context = useContext(Context);
 
   if (context === undefined) {
-    throw new Error('useModal must be inside an ModalProvider');
+    throw new Error('useModal must be inside a ModalProvider');
   }
 
   return context;

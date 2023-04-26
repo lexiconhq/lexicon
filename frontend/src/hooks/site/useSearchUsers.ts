@@ -1,22 +1,22 @@
 import { QueryHookOptions } from '@apollo/client';
 
 import {
-  SearchUser as SearchUserType,
-  SearchUserVariables,
-} from '../../generated/server/Search';
-import { SEARCH_USER } from '../../graphql/server/search';
+  SearchUserQuery as SearchUserType,
+  SearchUserQueryVariables,
+  SearchUserDocument,
+} from '../../generated/server';
 import { ErrorAlertOptionType } from '../../types';
 import { useQuery } from '../../utils';
 
 export function useSearchUsers(
-  options?: QueryHookOptions<SearchUserType, SearchUserVariables>,
+  options?: QueryHookOptions<SearchUserType, SearchUserQueryVariables>,
   errorAlert: ErrorAlertOptionType = 'SHOW_ALERT',
 ) {
   const { data, loading, error } = useQuery<
     SearchUserType,
-    SearchUserVariables
+    SearchUserQueryVariables
   >(
-    SEARCH_USER,
+    SearchUserDocument,
     {
       ...options,
     },

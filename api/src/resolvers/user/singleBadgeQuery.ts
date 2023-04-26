@@ -1,5 +1,5 @@
 import camelcaseKeys from 'camelcase-keys';
-import { FieldResolver, queryField, intArg } from '@nexus/schema';
+import { FieldResolver, queryField, intArg } from 'nexus';
 
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';
@@ -21,7 +21,7 @@ let singleBadgeQueryResolver: FieldResolver<'Query', 'singleBadge'> = async (
 let singleBadgeQuery = queryField('singleBadge', {
   type: 'SingleBadgeOutput',
   args: {
-    id: intArg({ required: true }),
+    id: intArg(),
   },
   resolve: singleBadgeQueryResolver,
 });

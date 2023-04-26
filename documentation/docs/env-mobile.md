@@ -1,48 +1,119 @@
 ---
-title: Environment Variables
+title: Configuration Values
 ---
 
-The table below lays out environment variables for the Lexicon Mobile App.
+You can check and set the configuration values in `frontend/Config.ts`.
+
+The table below describes the configuration values for the Lexicon Mobile App.
 
 If there is a default value indicated, you do not need to set it.
 
-| Environment Variable | Required | Notes                                                            | Default Value | Example Value              |
-| -------------------- | -------- | ---------------------------------------------------------------- | ------------- | -------------------------- |
-| MOBILE_PROSE_HOST    | Yes      | The hostname of the Prose Server (must start with http or https) | -             | https://prose.myserver.com |
-| MOBILE_PROSE_PORT    | No       | The port of the Prose Server                                     | (empty)       | 8080                       |
+| Variable             | Required | Notes                                                                                  | Default Value | Example Value(s)                                                                                                                      |
+| -------------------- | -------- | -------------------------------------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| proseUrl             | Yes      | The url of the Prose Server (must start with http or https)                            | -             | https://prose.myserver.com https://prose.myserver.com:8080 https://prose.myserver.com/subpath https://prose.myserver.com:8080/subpath |
+| inferDevelopmentHost | No       | The flag (true / false) to override localhost with the host of the development machine | (empty)       | true                                                                                                                                  |
 
-## `MOBILE_PROSE_HOST`
+## The `config` object
 
-Note that `MOBILE_PROSE_HOST` must always be specified, and must always start with either `http://` or `https://`.
+In the `Config.ts` file, you'll find a `config` object that allows you to specify configuration values by scenario.
 
-Otherwise The Lexicon Mobile App has no idea what server to talk to in order to interact with Discourse.
+The two primary scenarios are:
+
+- `localDevelopment`: when developing against the app locally. This configuration is also used as a fallback for an unknown build channel.
+- `buildChannels`: used to define configuration by build channel when building the app with the EAS CLI.
+
+Primarily, you'll only be concerned with configuring `proseUrl` for each of these sections.
+
+## `proseUrl`
+
+:::caution
+`proseUrl` must always be specified, with or without a port number, and must always start with either `http://` or `https://`.
+:::
+
+`proseUrl` is used to specify the URL of the Prose GraphQL API.
+
+The Prose GraphQL API acts a middleman between the Lexicon Mobile App and your Discourse instance. Without it, the mobile app cannot interact with your Discourse instance.
+
+### Example
+
+```ts
+const config = {
+  localDevelopment: {
+    proseUrl: 'http://localhost:8929',
+  },
+  buildChannels: {
+    preview: {
+      proseUrl: 'https://preview.myserver.com',
+    },
+    production: {
+      proseUrl: 'https://prose.myserver.com',
+    },
+  },
+};
+```
+
+With this configuration above, the app will:
+
+- point at `http://localhost:8929` when you run the app using `npm run start`
+- point at `https://preview.myserver.com` when you build the app using `eas build --profile preview`
+- point at `https://prose.myserver.com` when you build the app using `eas build`
+
+`proseUrl` also can include a subpath if desired:
+
+```ts
+const config = {
+  localDevelopment: {
+    proseUrl: 'http://localhost:8929',
+  },
+  buildChannels: {
+    preview: {
+      proseUrl: 'https://preview.myserver.com:8080/subpath',
+    },
+    production: {
+      proseUrl: 'https://myserver.com/api/prose',
+    },
+  },
+};
+```
 
 **Different Behavior in Development**
 
-If the Mobile App detects that `NODE_ENV` is not `production`, then it will adjust its behavior slightly if `MOBILE_PROSE_HOST` is making use of `localhost` or `127.0.0.1`.
+When running the app locally, if `proseUrl` is set to `http://localhost` or `http://127.0.0.1`, it will replace `proseUrl` with the IP address of your development machine. It does this by using Expo's `debuggerHost` constant.
 
-In this case, a replacement will be made using Expo's `debuggerHost` constant, which is used to locate the IP address of your development machine.
+_Note: this does not apply when building the app._
 
 This addresses multiple issues:
 
 - Accessing `localhost` from within the Android simulator does not map to your development machine
-- Accessing `localhost` from a device running Expo Go does not map to your development machine, requiring you to manually identify and specify your development machine's IP address with `MOBILE_PROSE_HOST`.
+- Accessing `localhost` from a device running Expo Go does not map to your development machine
+
+Both of these scenarios would otherwise require you to manually identify and specify your development machine's IP address with `proseUrl`. This is bothersome since your machine's IP address can change over time.
 
 If you are interested in more details about this, the implementation of this behavior is available in `frontend/constants/app.ts`.
 
-## `MOBILE_PROSE_PORT`
+This behavior of automatically overriding those values can be disabled, with `inferDevelopmentHost`, which is covered below.
 
-`MOBILE_PROSE_PORT` is used to allow explicitly specifying the port number.
+## `inferDevelopmentHost`
 
-```bash
-MOBILE_PROSE_HOST=http://localhost
-MOBILE_PROSE_PORT=8999
-```
+:::info
+This flag is only valid under `localDevelopment`. It has no effect when used as part of `buildChannels`.
+:::
 
-If it is not set, only `MOBILE_PROSE_HOST` will be used to derive the host of the Prose
+When in development, by default, the Lexicon Mobile App will check to see if `proseUrl` is set to either `http://localhost` or `http://127.0.0.1`.
 
-This presents a situation where you could omit `MOBILE_PROSE_PORT` and still specify a port number, if you desired:
+When detected, either of those values will be overwritten with the IP address of your development machine.
 
-```bash
-MOBILE_PROSE_HOST=http://localhost:8999
+This is a very useful feature that makes on-device testing simply work out of the box without needing to manually specify your IP address (or update it when it changes).
+
+For scenarios where this behavior is not desirable, `inferDevelopmentHost` can be used as a flag to disable this behavior. It can be disabled by specifying the value as `false`.
+
+When set to `false`, this behavior of overriding `proseUrl` with the development machine's IP address will no longer occur, and the original value will be passed through as-is.
+
+```ts
+const config = {
+  localDevelopment: {
+    proseUrl: 'http://localhost:8929',
+    inferDevelopmentHost: false,
+  },
+};
 ```

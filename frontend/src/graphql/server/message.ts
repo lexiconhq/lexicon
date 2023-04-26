@@ -60,3 +60,41 @@ export const NEW_PRIVATE_MESSAGE = gql`
     }
   }
 `;
+
+export const GET_MESSAGE_DETAIL = gql`
+  query GetMessageDetail($topicId: Int!, $postIds: [Int!], $postNumber: Int) {
+    privateMessageDetail(
+      topicId: $topicId
+      postIds: $postIds
+      postNumber: $postNumber
+    ) {
+      id
+      title
+      postStream {
+        posts {
+          id
+          username
+          actionCode
+          actionCodeWho
+          markdownContent
+          mentions
+          createdAt
+          postNumber
+        }
+        stream
+      }
+      details {
+        allowedUsers {
+          id
+          username
+          avatarTemplate
+        }
+        participants {
+          id
+          username
+          avatar: avatarTemplate
+        }
+      }
+    }
+  }
+`;

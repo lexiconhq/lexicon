@@ -1,7 +1,7 @@
 import { gql } from '@apollo/client';
 
 export const USER_FRAGMENT = gql`
-  fragment TempUsers on UserIcon {
+  fragment UserFragment on UserIcon {
     id
     username
     name
@@ -10,24 +10,93 @@ export const USER_FRAGMENT = gql`
 `;
 
 export const TOPIC_FRAGMENT = gql`
-  fragment TempTopic on Topic {
+  fragment TopicFragment on Topic {
     id
     title
-    excerpt
-    categoryId
-    tags
     imageUrl
-    authorUserId
+    postsCount
+    replyCount
+    createdAt
+    bumpedAt
+    excerpt
+    visible
+    liked
+    tags
+    views
+    likeCount
+    categoryId
     posters {
       userId
+      description
+      user {
+        id
+        username
+        name
+        avatar: avatarTemplate
+      }
     }
-    likeCount
+    authorUserId
+    frequentPosterUserId
+    pinned
+  }
+`;
+
+export const TOPIC_DETAIL_FRAGMENT = gql`
+  fragment TopicDetailFragment on TopicDetailOutput {
+    postStream {
+      posts {
+        id
+        postNumber
+        actionsSummary {
+          id
+          count
+          acted
+          __typename @skip(if: true)
+        }
+      }
+    }
+  }
+`;
+
+export const POST_FRAGMENT = gql`
+  fragment PostFragment on Post {
+    id
+    topicId
+    username
+    actionCode
+    actionCodeWho
+    avatar: avatarTemplate
+    hidden
+    canEdit
+    markdownContent
+    mentions
+    createdAt
+    replyCount
+    actionsSummary {
+      id
+      count
+      acted
+      __typename @skip(if: true)
+    }
+    postNumber
+    replyToPostNumber
   }
 `;
 
 export const GET_TOPIC_DETAIL = gql`
-  query GetTopicDetail($topicId: Int!, $posts: [Int!], $postPointer: Int) {
-    topicDetail(topicId: $topicId, posts: $posts, postPointer: $postPointer) {
+  ${POST_FRAGMENT}
+  query GetTopicDetail(
+    $topicId: Int!
+    $postIds: [Int!]
+    $postNumber: Int
+    $includeFirstPost: Boolean
+  ) {
+    topicDetail(
+      topicId: $topicId
+      postIds: $postIds
+      postNumber: $postNumber
+      includeFirstPost: $includeFirstPost
+    ) {
       id
       title
       views
@@ -39,29 +108,12 @@ export const GET_TOPIC_DETAIL = gql`
       createdAt
       postStream {
         posts {
-          id
-          topicId
-          username
-          actionCode
-          actionCodeWho
-          avatar: avatarTemplate
-          raw
-          hidden
-          canEdit
-          listOfCooked
-          listOfMention
-          createdAt
-          replyCount
-          actionsSummary {
-            id
-            count
-            acted
-            __typename @skip(if: true)
-          }
-          postNumber
-          replyToPostNumber
+          ...PostFragment
         }
         stream
+        firstPost {
+          ...PostFragment
+        }
       }
       details {
         canEdit
@@ -94,6 +146,15 @@ export const EDIT_POST = gql`
     editPost(postInput: $postInput, postId: $postId) {
       id
       postNumber
+    }
+  }
+`;
+
+export const REPLIED_POST = gql`
+  ${POST_FRAGMENT}
+  query repliedPost($postId: Int!, $replyToPostId: Int) {
+    replyingTo(postId: $postId, replyToPostId: $replyToPostId) {
+      ...PostFragment
     }
   }
 `;

@@ -1,6 +1,13 @@
 import camelcaseKey from 'camelcase-keys';
 import snakecaseKeys from 'snakecase-keys';
-import { FieldResolver, queryField, intArg, stringArg } from '@nexus/schema';
+import {
+  FieldResolver,
+  queryField,
+  intArg,
+  stringArg,
+  list,
+  nullable,
+} from 'nexus';
 
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';
@@ -36,12 +43,11 @@ let searchTagResolver: FieldResolver<'Query', 'searchTag'> = async (
 };
 
 let searchTagQuery = queryField('searchTag', {
-  type: 'Tag',
-  list: true,
+  type: list('Tag'),
   args: {
-    q: stringArg({ required: true }),
-    limit: intArg(),
-    selectedTags: stringArg({ list: true }),
+    q: stringArg(),
+    limit: nullable(intArg()),
+    selectedTags: nullable(list(stringArg())),
   },
   resolve: searchTagResolver,
 });

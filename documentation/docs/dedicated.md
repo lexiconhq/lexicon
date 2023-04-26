@@ -243,7 +243,7 @@ Regardless, to emphasize it again, it is **critical** that you don't deploy Pros
 
 When someone navigates to your host which is running Prose, how will their request get routed to Prose?
 
-If you had exposed Prose directly on port 80—NOT recommended—and your host's domain name was `myproseserver.com`, then a user would navigate to `http://myproseserver.com` and be greeted with the GraphQL Playground.
+If you had exposed Prose directly on port 80—NOT recommended—and your host's domain name was `myproseserver.com`, then a user would navigate to `http://myproseserver.com` and be greeted with the [GraphiQL interface](https://www.graphql-yoga.com/docs/features/graphiql).
 
 However, a more common approach is to use a dedicated webserver, such as Nginx or Apache, that acts as a reverse-proxy.
 
@@ -293,7 +293,7 @@ Otherwise, you'll want to get the IP address of your host, go into your domain p
 
 #### Ready to Go
 
-At this point, your deployed host should be running Prose correctly. When you navigate to the domain name that you configured it with, you should see the GraphQL Playground, which will allow you to make GraphQL queries against your Discourse instance.
+At this point, your deployed host should be running Prose correctly. When you navigate to the domain name that you configured it with, you should see [GraphiQL](https://www.graphql-yoga.com/docs/features/graphiql), which will allow you to make GraphQL queries against your Discourse instance.
 
 We understand that the details of your deployment can vary quite a bit depending on how you chose to do it.
 

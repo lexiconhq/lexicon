@@ -101,6 +101,7 @@ const useStyles = makeStyles(({ colors, fontSizes, spacing }) => {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
+
       flex: 1,
       backgroundColor: colors.backgroundDarker,
       borderColor: colors.border,
@@ -120,6 +121,13 @@ const useStyles = makeStyles(({ colors, fontSizes, spacing }) => {
     textInput: {
       color: colors.textNormal,
       fontSize: fontSizes.m,
+      /**
+       *   By default, the height for the textInput is 24.3.
+       *   However, because we set the height based on the native layout size,
+       *   the default size becomes 19.3, causing the placeholder text in the text input to be cut off.
+       *   To address this issue, we have set the minimum height as 25, which should fix the problem.
+       */
+      minHeight: 25,
     },
   };
 });

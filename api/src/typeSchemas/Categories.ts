@@ -1,4 +1,4 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let Categories = objectType({
   name: 'Categories',
@@ -6,10 +6,10 @@ export let Categories = objectType({
     t.string('color');
     t.string('defaultListFilter');
     t.string('defaultTopPeriod');
-    t.string('defaultView', { nullable: true });
+    t.nullable.string('defaultView');
     t.string('description');
     t.string('descriptionExcerpt');
-    t.string('descriptionText', { nullable: true });
+    t.nullable.string('descriptionText');
     t.boolean('hasChildren');
     t.int('id');
     t.int('minimunRequiredTags');
@@ -23,19 +23,19 @@ export let Categories = objectType({
     t.boolean('readRestricted');
     t.boolean('showSubcategoryList');
     t.string('slug');
-    t.boolean('sortAscending', { nullable: true });
-    t.boolean('sortOrder', { nullable: true });
+    t.nullable.boolean('sortAscending');
+    t.nullable.boolean('sortOrder');
     t.string('subcategoryListStyle');
     t.string('textColor');
     t.int('topicCount');
-    t.string('topicTemplate', { nullable: true });
+    t.nullable.string('topicTemplate');
     t.string('topicUrl');
     t.int('topicsAllTime');
     t.int('topicsDay');
     t.int('topicsMonth');
     t.int('topicsWeek');
     t.int('topicsYear');
-    t.int('uploadedBackground', { nullable: true });
-    t.int('uploadedLogo', { nullable: true });
+    t.nullable.int('uploadedBackground');
+    t.nullable.int('uploadedLogo');
   },
 });

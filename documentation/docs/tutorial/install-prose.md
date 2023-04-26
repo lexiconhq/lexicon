@@ -18,7 +18,7 @@ Otherwise, it would be unnecessary extra work to get a remote Prose server commu
 
 However, if you've setup your Discourse instance in the cloud, it is up to you if you want to run your Prose server locally or in the cloud as well.
 
-If you'd like to install it in the cloud, you'll want to setup an additional server - similar to how you would set one up for Discourse. If you're not yet comfortable with this, feel free to jump back to the page, [Setting up a Cloud Server (Optional)](setup-cloud-server).
+If you'd like to install it in the cloud, you'll want to setup an additional server - similar to how you would set one up for Discourse. If you're not yet comfortable with this, feel free to jump back to the page, [Setup a Cloud Server (Optional)](setup-cloud-server).
 
 Bearing all of that in mind, once you have identified where you'd like to host Prose, you should also consider how you'd like to install it onto that machine.
 
@@ -241,7 +241,7 @@ $ pm2 delete   <app_name|namespace|id|'all'|json_conf> # To delete a process
 
 Now that you've successfully launched Prose, you can actually interact with it in your web browser.
 
-Because of the libraries that we leveraged in building Prose, it automatically comes with a [GraphQL Playground](https://github.com/graphql/graphql-playground).
+Because of the libraries that we leveraged in building Prose, it automatically comes with [GraphiQL](https://www.graphql-yoga.com/docs/features/graphiql).
 
 This is an in-browser GraphQL IDE that makes it easy to explore the documentation and the schema of the GraphQL API.
 
@@ -251,7 +251,7 @@ For example, if you launched Prose from your local machine on port 5000, you'd n
 
 Similarly, if you set it up in the cloud, and all you have is an IP address with Prose listening on port 80, you would navigate to something like [http://174.31.92.1](http://174.31.92.1).
 
-Once the GraphQL Playground loads, you can test out some example queries and mutations, including logging into Discourse through Prose.
+Once the [GraphiQL](https://www.graphql-yoga.com/docs/features/graphiql) interface loads, you can test out some example queries and mutations, including logging into Discourse through Prose.
 
 ### Login
 

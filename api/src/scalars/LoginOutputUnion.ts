@@ -1,14 +1,14 @@
-import { unionType } from '@nexus/schema';
+import { unionType } from 'nexus';
 
 export let LoginOutputUnion = unionType({
   name: 'LoginOutputUnion',
   definition(t) {
     t.members('LoginOutput', 'SecondFactorRequired');
-    t.resolveType((item) => {
-      if (item.hasOwnProperty('secondFactorRequired')) {
-        return 'SecondFactorRequired';
-      }
-      return 'LoginOutput';
-    });
+  },
+  resolveType: (item) => {
+    if (item.hasOwnProperty('secondFactorRequired')) {
+      return 'SecondFactorRequired';
+    }
+    return 'LoginOutput';
   },
 });

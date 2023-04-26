@@ -11,7 +11,7 @@ type Props = {
   loading?: boolean;
   author: boolean;
   numberOfLines?: number;
-  onPressViewIgnoredContent: () => void;
+  onPressViewIgnoredContent?: () => void;
 };
 
 export function PostHidden(props: Props) {

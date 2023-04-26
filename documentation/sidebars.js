@@ -26,6 +26,9 @@ module.exports = {
       'tutorial/install-prose',
       'tutorial/setup-mobile',
       'tutorial/white-label',
+      'tutorial/building',
+      'tutorial/publishing',
+      'tutorial/updating',
     ],
   },
 };

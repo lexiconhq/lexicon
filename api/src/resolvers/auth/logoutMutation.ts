@@ -1,4 +1,4 @@
-import { FieldResolver, mutationField, stringArg } from '@nexus/schema';
+import { FieldResolver, mutationField, stringArg } from 'nexus';
 
 import { Context } from '../../types';
 
@@ -18,7 +18,7 @@ export let logoutMutationResolver: FieldResolver<'Mutation', 'logout'> = async (
 export let logoutMutation = mutationField('logout', {
   type: 'String',
   args: {
-    username: stringArg({ required: true }),
+    username: stringArg(),
   },
   resolve: logoutMutationResolver,
 });

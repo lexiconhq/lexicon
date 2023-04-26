@@ -1,4 +1,4 @@
-import { FieldResolver, mutationField, intArg } from '@nexus/schema';
+import { FieldResolver, mutationField, intArg, nullable } from 'nexus';
 
 import { ACCEPTED_LANGUAGE, CONTENT_JSON } from '../../constants';
 import { errorHandler } from '../../helpers';
@@ -30,7 +30,7 @@ export let markReadMutation: FieldResolver<'Mutation', 'markRead'> = async (
 export let markRead = mutationField('markRead', {
   type: 'String',
   args: {
-    notificationId: intArg(),
+    notificationId: nullable(intArg()),
   },
   resolve: markReadMutation,
 });

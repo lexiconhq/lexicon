@@ -1,18 +1,15 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
-import { PROSE_DISCOURSE_UPLOAD_HOST } from '../constants';
+import { getNormalizedUrlTemplate } from '../resolvers/utils';
 
 export let SearchUser = objectType({
   name: 'SearchUser',
   definition(t) {
-    t.string('avatarTemplate', (searchUser) => {
-      let { avatarTemplate } =
-        'avatarTemplate' in searchUser ? searchUser : { avatarTemplate: '' };
-      return avatarTemplate.includes('http')
-        ? avatarTemplate
-        : PROSE_DISCOURSE_UPLOAD_HOST.concat(avatarTemplate);
+    t.string('avatarTemplate', {
+      resolve: (searchUser) => getNormalizedUrlTemplate(searchUser),
+      sourceType: 'string',
     });
-    t.string('name', { nullable: true });
+    t.nullable.string('name');
     t.string('username');
   },
 });

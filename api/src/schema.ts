@@ -1,12 +1,16 @@
 import * as path from 'path';
 
-import { makeSchema } from '@nexus/schema';
+import { makeSchema } from 'nexus';
 
 import * as Resolvers from './resolvers';
 import * as Scalars from './scalars';
 import * as Types from './typeSchemas';
 
 let schema = makeSchema({
+  nonNullDefaults: {
+    output: true,
+    input: true,
+  },
   types: [Resolvers, Types, Scalars],
   outputs: {
     schema: __dirname + '/generated/schema.graphql',

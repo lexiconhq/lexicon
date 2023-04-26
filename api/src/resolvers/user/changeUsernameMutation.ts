@@ -1,7 +1,7 @@
 import { stringify } from 'querystring';
 
 import snakecaseKeys from 'snakecase-keys';
-import { FieldResolver, mutationField, stringArg } from '@nexus/schema';
+import { FieldResolver, mutationField, stringArg } from 'nexus';
 
 import { CONTENT_FORM_URLENCODED } from '../../constants';
 import { errorHandler } from '../../helpers';
@@ -32,8 +32,8 @@ export let changeUsernameResolver: FieldResolver<
 export let changeUsernameMutation = mutationField('changeUsername', {
   type: 'ChangeUsernameOutput',
   args: {
-    newUsername: stringArg({ required: true }),
-    oldUsername: stringArg({ required: true }),
+    newUsername: stringArg(),
+    oldUsername: stringArg(),
   },
   resolve: changeUsernameResolver,
 });

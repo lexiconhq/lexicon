@@ -9,10 +9,10 @@ import {
   Author,
   CustomHeader,
   HeaderItem,
+  LocalRepliedPost,
   Markdown,
   ModalHeader,
   PostGroupings,
-  RepliedPost,
 } from '../components';
 import { CustomImage, Divider, IconWithLabel, Text } from '../core-ui';
 import {
@@ -20,6 +20,7 @@ import {
   getPostShortUrl,
   sortImageUrl,
   useStorage,
+  generateMarkdownContent,
 } from '../helpers';
 import {
   useEditPost,
@@ -65,7 +66,7 @@ export default function PostPreview() {
 
   const navToPostDetail = ({
     topicId,
-    selectedChannelId = ('post' in postData && postData.post?.channel.id) || 0,
+    selectedChannelId = ('channelId' in postData && postData.channelId) || 0,
     focusedPostNumber,
   }: StackRouteProp<'PostDetail'>['params']) => {
     const prevScreen = 'PostPreview';
@@ -103,10 +104,10 @@ export default function PostPreview() {
   });
 
   const { reply: replyTopic, loading: replyLoading } = useReplyTopic({
-    onCompleted: () => {
+    onCompleted: ({ reply: { postNumber } }) => {
       navToPostDetail({
         topicId: ('topicId' in postData && postData.topicId) || 0,
-        focusedPostNumber,
+        focusedPostNumber: postNumber,
       });
     },
     onError: (error) => {
@@ -187,12 +188,12 @@ export default function PostPreview() {
       return;
     }
     if (reply) {
-      const post = 'post' in postData && postData.post;
+      const postNumber = 'postNumber' in postData ? postData.postNumber : null;
       replyTopic({
         variables: {
-          raw: content,
+          content,
           topicId: ('topicId' in postData && postData.topicId) || 0,
-          replyToPostNumber: post ? post.postNumber : null,
+          replyToPostNumber: postNumber,
         },
       });
     } else {
@@ -280,13 +281,12 @@ export default function PostPreview() {
             tags={tags}
           />
         )}
-        {reply && 'post' in postData && postData.post && (
-          <RepliedPost replyTo={postData.post} />
+        {reply && 'replyToPostId' in postData && postData.replyToPostId && (
+          <LocalRepliedPost replyToPostId={postData.replyToPostId} />
         )}
         <Markdown
           style={styles.markdown}
-          imageUrls={imageUrls}
-          content={content}
+          content={generateMarkdownContent(content, imageUrls)}
           nonClickable={true}
         />
         {shortUrls.length > 0 &&

@@ -1,0 +1,51 @@
+{
+  "cli": {
+    "version": ">= 2.6.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "channel": "development"
+    },
+    "preview": {
+      "distribution": "internal",
+      "channel": "preview",
+      "ios": {
+        "simulator": true
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "channel": "production"
+    }
+  },
+  "submit": {
+    "base": {
+      "ios": {
+        "appleId": "<insert your apple ID>",
+        "ascAppId": "<insert your App Store connect ID>",
+        "appleTeamId": "<insert your apple team ID>"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./playstore_secret.json"
+      }
+    },
+    "staging": {
+      "extends": "base",
+      "android": {
+        "track": "internal"
+      }
+    },
+    "production": {
+      "extends": "base",
+      "android": {
+        "track": "production"
+      }
+    }
+  }
+}

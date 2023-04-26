@@ -1,10 +1,10 @@
-import { inputObjectType } from '@nexus/schema';
+import { inputObjectType } from 'nexus';
 
 export let EditPostInput = inputObjectType({
   name: 'EditPostInput',
   definition(t) {
-    t.string('raw', { required: true });
-    t.string('rawOld');
-    t.string('editReason', { nullable: true });
+    t.string('raw');
+    t.nullable.string('rawOld');
+    t.nullable.string('editReason');
   },
 });

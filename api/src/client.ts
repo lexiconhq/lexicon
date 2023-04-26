@@ -3,7 +3,7 @@ import axiosCookieJarSupport from 'axios-cookiejar-support';
 import { CookieJar } from 'tough-cookie';
 
 import { PROSE_DISCOURSE_HOST } from './constants';
-import { getCsrfSession } from './helpers/auth';
+import { getCsrfSession, getModifiedUserAgent } from './helpers';
 
 export const discourseClient = axios.create({
   baseURL: PROSE_DISCOURSE_HOST,
@@ -13,8 +13,18 @@ export const discourseClient = axios.create({
 axiosCookieJarSupport(discourseClient);
 discourseClient.defaults.jar = new CookieJar();
 
-export async function getClient(cookies?: string) {
+type GetClientParams = {
+  cookies?: string;
+  userAgent?: string;
+};
+
+export async function getClient(params: GetClientParams) {
+  const { cookies, userAgent } = params;
   let client = discourseClient;
+  client.defaults.headers = {
+    'User-Agent': getModifiedUserAgent(userAgent),
+  };
+
   if (cookies) {
     let { csrf } = await getCsrfSession(cookies);
     client = axios.create({
@@ -26,8 +36,9 @@ export async function getClient(cookies?: string) {
     client.defaults.jar = new CookieJar();
     client.defaults.headers = {
       Cookie: cookies,
-      'x-csrf-token': csrf,
       withCredentials: true,
+      'User-Agent': getModifiedUserAgent(userAgent),
+      'x-csrf-token': csrf,
     };
   }
   client.interceptors.response.use(

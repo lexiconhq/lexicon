@@ -1,4 +1,4 @@
-import { FieldResolver, mutationField, stringArg } from '@nexus/schema';
+import { FieldResolver, mutationField, stringArg } from 'nexus';
 
 import { CONTENT_JSON } from '../../constants';
 import { errorHandler, getCsrfSession } from '../../helpers';
@@ -39,7 +39,7 @@ export let changePasswordResolver: FieldResolver<
 export let changePasswordMutation = mutationField('changePassword', {
   type: 'String',
   args: {
-    login: stringArg({ required: true }),
+    login: stringArg(),
   },
   resolve: changePasswordResolver,
 });
