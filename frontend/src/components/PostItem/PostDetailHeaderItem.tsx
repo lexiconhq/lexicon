@@ -41,6 +41,7 @@ function BasePostDetailHeaderItem(props: Props) {
     onPressReply,
     onPressViewIgnoredContent,
   } = props;
+
   const cacheTopicResult = useFragment_experimental<
     TopicFragment,
     OperationVariables
@@ -62,9 +63,11 @@ function BasePostDetailHeaderItem(props: Props) {
     username,
     channels,
   });
+
   if (!resolvedPostItemPropsResult) {
     return <LoadingOrError message="Post not found" />;
   }
+
   let { postItemProps, postItemFooterProps } = resolvedPostItemPropsResult;
   return (
     <PostItem

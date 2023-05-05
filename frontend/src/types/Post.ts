@@ -30,6 +30,7 @@ export type Post = {
   replyToPostNumber?: number | null;
   canEdit?: boolean;
   canFlag?: boolean;
+  imageUrls?: Array<string>;
 };
 
 export type PostWithoutId = Omit<Post, 'id'>;

@@ -54,9 +54,9 @@ export function Markdown(props: Props) {
     navigate('UserInformation', { username });
   };
 
-  const renderImage = ({ attributes: { src }, key }: ASTNode) => (
-    <CustomImage src={src} key={key} style={styles.image} />
-  );
+  const renderImage = ({ attributes: { src }, key }: ASTNode) => {
+    return <CustomImage src={src} key={key} style={styles.image} />;
+  };
 
   const renderMention = ({ key, content }: ASTNode) => (
     <Text

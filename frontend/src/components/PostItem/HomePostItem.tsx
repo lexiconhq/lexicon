@@ -58,6 +58,7 @@ function BaseHomePostItem(props: Props) {
     freqPosters,
     postNumber,
     content,
+    imageUrls,
   } = transformTopicToPost({ ...cacheTopic, channels: channelsData ?? [] });
 
   const isCreator = username === storage.getItem('user')?.username;
@@ -77,6 +78,7 @@ function BaseHomePostItem(props: Props) {
       topicId={topicId}
       title={title}
       content={content}
+      images={imageUrls}
       avatar={avatar}
       channel={channel}
       tags={tags}
@@ -85,6 +87,7 @@ function BaseHomePostItem(props: Props) {
       username={username}
       isLiked={isLiked}
       numberOfLines={5}
+      showImageRow
       footer={
         <PostItemFooter
           topicId={topicId}

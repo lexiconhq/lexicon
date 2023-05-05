@@ -41,3 +41,4 @@ export * from './storage';
 export * from './transformTopicToPost';
 export * from './updateLike';
 export * from './linking';
+export * from './checkImageFile';

@@ -1,9 +1,9 @@
-import { generateMarkdownContent, getCompleteImageUrls } from '../helpers';
+import { generateMarkdownContent, getCompleteImageVideoUrls } from '../helpers';
 
 describe('getCompleteImageUrls return image urls from html tags', () => {
   it('should return the last url from srcset in img tag if any', () => {
     expect(
-      getCompleteImageUrls(
+      getCompleteImageVideoUrls(
         `
         <a class=\"lightbox\" href=\"https://wiki.kfox.io/example.jpeg\" data-download-href=\"https://wiki.kfox.io/uploads/default/example\" title=\"capacitor-example.jpg|1500 x 1001\">
           <img src=\"https://wiki.kfox.io/example.jpeg\" alt=\"capacitor-example.jpg\" data-base62-sha1=\"fqX6HX7jqEIaBaQX3hc5oZMlxWs\" width=\"333\" height=\"500\" srcset=\"https://wiki.kfox.io/uploads/default/optimized/example_2_333x500.jpeg, https://wiki.kfox.io/uploads/default/optimized/example_2_499x750.jpeg 1.5x, https://wiki.kfox.io/uploads/default/optimized/example_2_666x1000.jpeg 2x\" data-small-upload=\"https://wiki.kfox.io/uploads/default/optimized/example_2_10x10.png\" />
@@ -16,7 +16,7 @@ describe('getCompleteImageUrls return image urls from html tags', () => {
   });
   it('should return image url in anchor tag if no srcset found', () => {
     expect(
-      getCompleteImageUrls(
+      getCompleteImageVideoUrls(
         `
         <a href=\"https://wiki.kfox.io/example.jpeg\" data-download-href=\"https://wiki.kfox.io/uploads/default/example\" title=\"capacitor-example.jpg|1500 x 1001\">
           <img src=\"https://wiki.kfox.io/example.jpeg\" alt=\"capacitor-example.jpg\" data-base62-sha1=\"fqX6HX7jqEIaBaQX3hc5oZMlxWs\" width=\"333\" height=\"500\" data-small-upload=\"https://wiki.kfox.io/uploads/default/optimized/example_2_10x10.png\>
@@ -42,7 +42,7 @@ describe('getCompleteImageUrls return image urls from html tags', () => {
   });
   it('should return image url in img tag if no anchor tag found', () => {
     expect(
-      getCompleteImageUrls(
+      getCompleteImageVideoUrls(
         `
         <p>
           <img src=\"https://wiki.kfox.io/example.jpeg\" alt="capacitor-example.jpg\" data-base62-sha1=\"eV63RAGvspfzY3TZPqWeOk0bBBr\" width=\"590\" height=\"393\">
@@ -61,7 +61,7 @@ describe('getCompleteImageUrls return image urls from html tags', () => {
   });
   it('should return one image url for each image tag. The url will be from srcset if any, or from href tag if any, or from img src', () => {
     expect(
-      getCompleteImageUrls(
+      getCompleteImageVideoUrls(
         `
         <p>
           <img src=\"https://wiki.kfox.io/uploads/default/original.jpeg\" alt=\"download\" width=\"276\" height=\"183\">

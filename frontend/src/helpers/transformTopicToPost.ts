@@ -31,6 +31,7 @@ let transformTopicToPost = ({
   views,
   categoryId,
   channels,
+  imageUrl,
 }: Params): PostWithoutId => {
   const author = posters.find(({ userId }) => userId === authorUserId);
   const frequentUser = posters.map(({ user }) => {
@@ -61,6 +62,7 @@ let transformTopicToPost = ({
     tags: tags || [],
     createdAt,
     freqPosters: frequentUser,
+    imageUrls: imageUrl ? [imageUrl] : undefined,
   };
 };
 

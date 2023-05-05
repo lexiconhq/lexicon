@@ -1,14 +1,14 @@
 import { PROSE_DISCOURSE_UPLOAD_HOST } from '../constants';
 
 const imageRegex = /<img.*? src="(\S+(?:jpe?g|png|gif|heic|heif))"/g;
-const anchoredImageRegex =
-  /<a.*? href="(https?:\/\/[^ ]*\.(?:jpe?g|png|gif|heic|heif))".*?>/g;
+const anchoredImageVideoRegex =
+  /<a.*? href="(https?:\/\/[^ ]*\.(?:jpe?g|png|gif|heic|heif|mov|mp4|webm|avi|wmv|flv|webp))".*?>/g;
 const srcSetRegex = /srcset="(.+?)"/g;
 const imageUrlRegex = /(https?:\/\/[^ ]*\.(?:jpe?g|png|gif|heic|heif))/g;
 const mentionRegex = /<a class=\"mention\".*?>@(.*?)<\/a>/g;
 const imageMarkdownRegex = /(!\[.*?\]\()(upload:\/\/\S*)(\))/g;
-const imageTagRegex =
-  /(?:<img[^>]*src(?:set)?=")(.+?)"|(?:<a[^>]* href="(https?:\/\/[^ ]*\.(?:jpe?g|png|gif|heic|heif))")([^$]+?)<\/a>/g;
+const imageVideoTagRegex =
+  /(?:<img[^>]*src(?:set)?=")(.+?)"|(?:<a[^>]* href="(https?:\/\/[^ ]*\.(?:jpe?g|png|gif|heic|heif|mov|mp4|webm|avi|wmv|flv|webp))")([^$]+?)<\/a>/g;
 
 function handleRegexResult(
   result: RegExpMatchArray,
@@ -30,7 +30,7 @@ function handleRegexResult(
     });
     return optimizedUrl.map((item) => item.replace(transparantRegex, ''));
   } else if (
-    regex === anchoredImageRegex ||
+    regex === anchoredImageVideoRegex ||
     regex === imageRegex ||
     regex === mentionRegex
   ) {
@@ -39,14 +39,16 @@ function handleRegexResult(
   }
 }
 
-export function getCompleteImageUrls(
+export function getCompleteImageVideoUrls(
   content: string,
   host: string = PROSE_DISCOURSE_UPLOAD_HOST,
 ): Array<string | undefined> | undefined {
   // Get all image tags in content
-  let imageTags = content.match(imageTagRegex);
+  let imageVideoTags = content.match(imageVideoTagRegex);
   // Get complete url from each image tag
-  return imageTags?.map((imageTag) => getPostImageUrl(imageTag, host));
+  return imageVideoTags?.map((imageVideoTag) =>
+    getPostImageUrl(imageVideoTag, host),
+  );
 }
 
 export function getPostImageUrl(
@@ -55,13 +57,15 @@ export function getPostImageUrl(
 ): string | undefined {
   // Return only the first element of array because only one url is found
   let result = content.match(srcSetRegex) ?? undefined;
+
   if (result) {
     return handleRegexResult(result, host, srcSetRegex)?.[0];
   }
 
-  result = content.match(anchoredImageRegex) ?? undefined;
+  result = content.match(anchoredImageVideoRegex) ?? undefined;
+
   if (result) {
-    return handleRegexResult(result, host, anchoredImageRegex)?.[0];
+    return handleRegexResult(result, host, anchoredImageVideoRegex)?.[0];
   }
 
   result = content.match(imageRegex) ?? undefined;
@@ -71,10 +75,13 @@ export function getPostImageUrl(
 }
 
 export function generateMarkdownContent(raw: string, cooked: string) {
-  const imageUrls = getCompleteImageUrls(cooked) ?? [];
-  if (!imageUrls.length) {
+  const imageUrls = getCompleteImageVideoUrls(cooked) ?? [];
+
+  const validImageUrls = imageUrls.filter((item) => item);
+  if (!validImageUrls.length) {
     return raw;
   }
+
   let imageCount = 0;
   const markdown = raw.replace(
     imageMarkdownRegex,
@@ -85,13 +92,14 @@ export function generateMarkdownContent(raw: string, cooked: string) {
       closeParenthesis: string,
     ) => {
       const modifiedImageMarkdown = `${imageName}${
-        imageUrls?.[imageCount] ?? shortUrl
+        validImageUrls?.[imageCount] ?? shortUrl
       }${closeParenthesis}`;
       imageCount += 1;
 
       return modifiedImageMarkdown;
     },
   );
+
   return markdown;
 }
 
