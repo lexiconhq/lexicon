@@ -58,7 +58,7 @@ module.exports = {
       {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
-          editUrl: 'https://github.com/lexiconhq/lexicon',
+          editUrl: 'https://github.com/lexiconhq/lexicon/blob/master/documentation/',
           routeBasePath: '/',
         },
         theme: {
