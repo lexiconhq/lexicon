@@ -19,7 +19,7 @@ import {
 } from '../../components';
 import { Text } from '../../core-ui';
 import { errorHandler, notificationHandler } from '../../helpers';
-import { useMarkRead, useNotification, useSingleBadge } from '../../hooks';
+import { useMarkRead, useNotification } from '../../hooks';
 import { makeStyles, useTheme } from '../../theme';
 import {
   Notification as NotificationDataType,
@@ -71,11 +71,13 @@ export default function Notifications() {
     onError: () => {},
   });
 
-  const { singleBadge } = useSingleBadge({
-    onCompleted: () => {
-      refetch({ page: 1 });
-    },
-  });
+  /**
+   * NOTE: Earlier, this file contained the functionality to fetch the detail response for a given Discourse badge.
+   * It was removed because we weren't using it.
+   * This was a feature that was specifically not supported in Lexicon v1, and we haven't yet scheduled it in our current development phase.
+   *
+   * If we later want to implement functionality with badges, the code that was removed is accessible at this commit: https://github.com/kodefox/lexicon/pull/984
+   */
 
   const onRefresh = () => {
     refetch();
@@ -170,7 +172,6 @@ export default function Notifications() {
         onPress={() => {
           if (item.badgeId) {
             onPress(item.badgeId);
-            singleBadge({ variables: { id: item.badgeId } });
           } else {
             onPress(topicId);
             markAsRead({ variables: { notificationId: id } }).then(() =>

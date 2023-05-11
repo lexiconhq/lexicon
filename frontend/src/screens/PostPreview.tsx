@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Image, Platform, SafeAreaView, View } from 'react-native';
+import { Platform, SafeAreaView } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
-import { DEFAULT_IMAGE } from '../../assets/images';
 import mock from '../__mocks__/mockData';
 import {
   Author,
@@ -38,7 +37,7 @@ const ios = Platform.OS === 'ios';
 export default function PostPreview() {
   const { setModal } = useModal();
   const styles = useStyles();
-  const { colors, spacing } = useTheme();
+  const { colors } = useTheme();
 
   const navigation = useNavigation<RootStackNavProp<'PostPreview'>>();
   const { navigate, reset, goBack } = navigation;
@@ -284,31 +283,18 @@ export default function PostPreview() {
         {reply && 'replyToPostId' in postData && postData.replyToPostId && (
           <LocalRepliedPost replyToPostId={postData.replyToPostId} />
         )}
+
         <Markdown
           style={styles.markdown}
           content={generateMarkdownContent(content, imageUrls)}
           nonClickable={true}
         />
-        {shortUrls.length > 0 &&
-          !imageUrls &&
-          shortUrls.map((_url, index) => (
-            <View
-              key={index}
-              style={{
-                paddingVertical: spacing.l,
-                marginBottom: spacing.xl,
-              }}
-            >
-              <Image
-                source={DEFAULT_IMAGE}
-                style={{
-                  width: '100%',
-                  height: 200,
-                  borderRadius: 4,
-                }}
-              />
-            </View>
-          ))}
+
+        {/* NOTE: Earlier, this file contained the functionality to show default image if imageUrl is empty and short url length is not 0.
+          
+          It was removed because we already handle invalid url to use default image inside customImage.
+          If we later want to check the old implementation we can check it in PR: https://github.com/kodefox/lexicon/pull/987>
+         */}
 
         {!reply &&
           images?.map((image, index) => (

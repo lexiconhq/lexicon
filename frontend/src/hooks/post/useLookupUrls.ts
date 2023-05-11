@@ -10,10 +10,10 @@ import { useLazyQuery } from '../../utils';
 export function useLookupUrls(
   options?: LazyQueryHookOptions<LookupUrlsQuery, LookupUrlsQueryVariables>,
 ) {
-  const [getImageUrls] = useLazyQuery<
+  const [getImageUrls, { loading }] = useLazyQuery<
     LookupUrlsQuery,
     LookupUrlsQueryVariables
   >(LookupUrlsDocument, { ...options });
 
-  return { getImageUrls };
+  return { getImageUrls, loading };
 }

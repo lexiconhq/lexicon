@@ -48,7 +48,9 @@ export function CustomImage(props: Props) {
     height: variantSize[size],
     ...(square && { width: variantSize[size] }),
   };
+
   const imgSource = isImageValidUrl(src) ? { uri: src } : DEFAULT_IMAGE;
+
   const hideImage = src === '' || error;
 
   const onPress = () => {
