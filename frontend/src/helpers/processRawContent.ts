@@ -1,3 +1,4 @@
+import { DEFAULT_IMAGE } from '../../assets/images';
 import { NO_EXCERPT_WORDING } from '../constants';
 
 import { formatRelativeTime } from './formatRelativeTime';
@@ -120,21 +121,17 @@ export function generateMarkdownContent(
   raw: string,
   imageUrls?: Array<string>,
 ) {
-  if (!imageUrls?.length) {
-    return raw;
-  }
   let imageCount = 0;
   const markdown = raw.replace(
     imageMarkdownRegex,
     (
       _: string,
       imageName: string,
-      shortImageUrl: string,
+      _shortImageUrl: string,
       closeParenthesis: string,
     ) => {
-      const modifiedImageMarkdown = `${imageName}${
-        imageUrls?.[imageCount] ?? shortImageUrl
-      }${closeParenthesis}`;
+      const currentImageUrl = imageUrls?.[imageCount] ?? DEFAULT_IMAGE;
+      const modifiedImageMarkdown = `${imageName}${currentImageUrl}${closeParenthesis}`;
       imageCount += 1;
 
       return modifiedImageMarkdown;
