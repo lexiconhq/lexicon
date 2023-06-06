@@ -1,6 +1,7 @@
 import { NO_EXCERPT_WORDING } from '../constants';
 
 import { formatRelativeTime } from './formatRelativeTime';
+import { replaceQuotesWithMarkdown } from './replaceQuotesWithMarkdown';
 
 export function getPostShortUrl(content: string): Array<string> | undefined {
   //used in Post Preview scene to get all image shortUrls.
@@ -10,11 +11,11 @@ export function getPostShortUrl(content: string): Array<string> | undefined {
   return result?.map((item) => item.replace(shortUrlRegex, '$1'));
 }
 
-function formatTime(match: string, s1: string) {
+function formatTime(_: string, s1: string) {
   return formatRelativeTime(s1, true, false);
 }
 
-export function handleSpecialMarkdown(content?: string) {
+export function handleUnsupportedMarkdown(content?: string) {
   if (!content) {
     return '';
   }
@@ -25,8 +26,9 @@ export function handleSpecialMarkdown(content?: string) {
       { item },
     );
 
-  const quoteRegex = /\[(quote)([\s\S]*?)(\[\/\1)\]/g;
-  let result = content.replace(quoteRegex, message('Quotes'));
+  let result = content;
+
+  result = replaceQuotesWithMarkdown(result);
 
   const toogleRegex = /\[(details)([\s\S]*?)(\[\/\1)\]/g;
   result = result.replace(toogleRegex, message('Toogles'));
@@ -111,4 +113,32 @@ export function anchorToMarkdown(rawContent: string): MarkdownWithImage {
     : undefined;
 
   return { content, imageUrl, mentionedUsers };
+}
+
+const imageMarkdownRegex = /(!\[.*?\]\()(upload:\/\/\S*)(\))/g;
+export function generateMarkdownContent(
+  raw: string,
+  imageUrls?: Array<string>,
+) {
+  if (!imageUrls?.length) {
+    return raw;
+  }
+  let imageCount = 0;
+  const markdown = raw.replace(
+    imageMarkdownRegex,
+    (
+      _: string,
+      imageName: string,
+      shortImageUrl: string,
+      closeParenthesis: string,
+    ) => {
+      const modifiedImageMarkdown = `${imageName}${
+        imageUrls?.[imageCount] ?? shortImageUrl
+      }${closeParenthesis}`;
+      imageCount += 1;
+
+      return modifiedImageMarkdown;
+    },
+  );
+  return markdown;
 }

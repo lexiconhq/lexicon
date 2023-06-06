@@ -1,11 +1,11 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let TopicPoster = objectType({
   name: 'TopicPoster',
   definition(t) {
-    t.string('extras', { nullable: true });
+    t.nullable.string('extras');
     t.string('description');
-    t.int('userId', { nullable: true });
-    t.field('user', { type: 'UserIcon', nullable: true });
+    t.nullable.int('userId');
+    t.nullable.field('user', { type: 'UserIcon' });
   },
 });

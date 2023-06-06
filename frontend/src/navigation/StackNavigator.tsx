@@ -1,5 +1,4 @@
 import React from 'react';
-import { Platform } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 
 import {
@@ -30,7 +29,6 @@ const Stack = createStackNavigator<StackParamList>();
 
 export default function StackNavigator() {
   const { navHeader } = useTheme();
-  const ios = Platform.OS === 'ios';
 
   return (
     <Stack.Navigator
@@ -109,7 +107,7 @@ export default function StackNavigator() {
       <Stack.Screen
         name="Search"
         component={Search}
-        options={{ headerShown: !ios }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="Preferences"

@@ -1,15 +1,13 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let Notifications = objectType({
   name: 'Notifications',
   definition(t) {
-    t.field('notifications', {
+    t.nullable.list.field('notifications', {
       type: 'NotificationDetail',
-      list: true,
-      nullable: true,
     });
-    t.int('totalRowsNotifications', { nullable: true });
-    t.int('seenNotificationId', { nullable: true });
-    t.string('loadMoreNotifications', { nullable: true });
+    t.nullable.int('totalRowsNotifications');
+    t.nullable.int('seenNotificationId');
+    t.nullable.string('loadMoreNotifications');
   },
 });

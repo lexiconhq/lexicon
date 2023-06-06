@@ -1,4 +1,4 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let UserOptions = objectType({
   name: 'UserOptions',
@@ -6,8 +6,8 @@ export let UserOptions = objectType({
     t.boolean('allowPrivateMessages');
     t.int('autoTrackTopicsAfterMsecs');
     t.boolean('automaticallyUnpinTopics');
-    t.int('colorSchemeId', { nullable: true });
-    t.int('darkSchemeId', { nullable: true });
+    t.nullable.int('colorSchemeId');
+    t.nullable.int('darkSchemeId');
     t.int('digestAfterMinutes');
     t.boolean('dynamicFavicon');
     t.boolean('emailDigests');
@@ -20,7 +20,7 @@ export let UserOptions = objectType({
     t.boolean('enableQuoting');
     t.boolean('externalLinksInNewTab');
     t.boolean('hideProfileAndPresence');
-    t.int('homepageId', { nullable: true });
+    t.nullable.int('homepageId');
     t.boolean('includeTl0InDigests');
     t.int('likeNotificationFrequency');
     t.boolean('mailingListMode');

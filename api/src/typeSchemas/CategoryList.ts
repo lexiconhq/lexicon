@@ -1,13 +1,13 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let CategoryList = objectType({
   name: 'CategoryList',
   definition(t) {
     t.boolean('canCreateCategory');
     t.boolean('canCreateTopic');
-    t.field('categories', { type: 'Categories', list: true });
-    t.boolean('draft', { nullable: true });
+    t.list.field('categories', { type: 'Categories' });
+    t.nullable.boolean('draft');
     t.string('draftKey');
-    t.int('draftSequence', { nullable: true });
+    t.nullable.int('draftSequence');
   },
 });

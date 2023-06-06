@@ -1,5 +1,9 @@
 import { FUNCTIONAL_COLORS } from './theme';
 
+export const DEFAULT_POST_ID = 0;
+export const FIRST_POST_NUMBER = 1;
+export const MAX_POST_COUNT_PER_REQUEST = 20;
+
 export const DEFAULT_CHANNEL = {
   id: 0,
   color: '0088CC',

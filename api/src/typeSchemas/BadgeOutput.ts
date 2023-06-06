@@ -1,10 +1,10 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let BadgeOutput = objectType({
   name: 'BadgeOutput',
   definition(t) {
-    t.field('badgeGroupings', { type: 'BadgeGroupings', list: true });
-    t.field('badgeTypes', { type: 'BadgeType', list: true });
-    t.field('badges', { type: 'Badge', list: true });
+    t.list.field('badgeGroupings', { type: 'BadgeGroupings' });
+    t.list.field('badgeTypes', { type: 'BadgeType' });
+    t.list.field('badges', { type: 'Badge' });
   },
 });

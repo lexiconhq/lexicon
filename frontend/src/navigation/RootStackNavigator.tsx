@@ -14,6 +14,7 @@ import {
   PostReply,
   SelectUser,
   Tags,
+  Troubleshoot,
 } from '../screens';
 import { useTheme } from '../theme';
 import { RootStackParamList } from '../types';
@@ -23,7 +24,7 @@ import StackNavigator from './StackNavigator';
 const RootStack = createStackNavigator<RootStackParamList>();
 
 export default function RootStackNavigator() {
-  const { navHeader, navModal, navNoShadow } = useTheme();
+  const { navHeader, navModal, navNoShadow, shadow } = useTheme();
 
   return (
     <RootStack.Navigator
@@ -97,6 +98,11 @@ export default function RootStackNavigator() {
         name="DarkMode"
         component={DarkMode}
         options={{ title: t('Dark Mode'), ...navModal }}
+      />
+      <RootStack.Screen
+        name="Troubleshoot"
+        component={Troubleshoot}
+        options={{ title: t('Error Details'), headerStyle: shadow }}
       />
     </RootStack.Navigator>
   );

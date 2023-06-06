@@ -26,7 +26,7 @@ import {
   TextInput,
   TextInputType,
 } from '../core-ui';
-import { UploadTypeEnum } from '../generated/server/types';
+import { UploadTypeEnum } from '../generated/server';
 // import { formatDateTime } from '../helpers/formatDateTime';
 import {
   createReactNativeFile,
@@ -251,10 +251,7 @@ export default function EditProfile(props: ProfileProps) {
   // };
 
   const onPressCancel = () => {
-    if (!show) {
-      setShow(true);
-    }
-    setTimeout(() => setShow(false), 50);
+    setShow(false);
   };
 
   const pickImage = async () => {
@@ -539,13 +536,12 @@ export default function EditProfile(props: ProfileProps) {
                 </View>
               )}
             /> */}
-            {show && (
-              <ShowImageModal
-                show={show}
-                userImage={{ uri: userImage }}
-                onPressCancel={onPressCancel}
-              />
-            )}
+
+            <ShowImageModal
+              show={show}
+              userImage={{ uri: userImage }}
+              onPressCancel={onPressCancel}
+            />
           </View>
         )}
       </ScrollView>

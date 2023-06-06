@@ -1,38 +1,43 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
-import { PROSE_DISCOURSE_UPLOAD_HOST } from '../constants';
-import { getMention, getPostImageUrl } from '../helpers';
+import { generateMarkdownContent, getMention } from '../helpers';
+import { getNormalizedUrlTemplate } from '../resolvers/utils';
 
 export let Post = objectType({
   name: 'Post',
   definition(t) {
     t.int('id');
-    t.string('name', { nullable: true });
+    t.nullable.string('name');
     t.string('username');
-    t.string('avatarTemplate', (post) => {
-      let { avatarTemplate } =
-        'avatarTemplate' in post ? post : { avatarTemplate: '' };
-      return avatarTemplate.includes('http')
-        ? avatarTemplate
-        : PROSE_DISCOURSE_UPLOAD_HOST.concat(avatarTemplate);
+    t.string('avatarTemplate', {
+      resolve: (post) => getNormalizedUrlTemplate(post),
+      sourceType: 'string',
     });
     t.string('createdAt');
     t.string('cooked');
-
-    t.list.string('listOfCooked', {
-      resolve: (post) => getPostImageUrl(post.cooked) || null,
-      nullable: true,
-    });
-    t.list.string('listOfMention', {
+    t.nullable.list.string('mentions', {
       resolve: (post) => getMention(post.cooked) || null,
-      nullable: true,
     });
-    t.string('raw', { nullable: true }); // from Post(mutation) doesn't have raw even with include_raw: true
+    t.nullable.string('raw'); // from Post(mutation) doesn't have raw even with include_raw: true
+    t.nullable.string('markdownContent', {
+      resolve: (post) => {
+        let { raw = '' } = 'raw' in post ? post : {};
+        let { cooked = '' } = 'cooked' in post ? post : {};
+
+        if (!raw) {
+          return null;
+        }
+        if (!cooked) {
+          return raw;
+        }
+        return generateMarkdownContent(raw, cooked);
+      },
+    });
     t.int('postNumber');
     t.int('postType');
     t.string('updatedAt');
     t.int('replyCount');
-    t.int('replyToPostNumber', { nullable: true });
+    t.nullable.int('replyToPostNumber');
     t.int('quoteCount');
     t.int('incomingLinkCount');
     t.int('reads');
@@ -40,37 +45,41 @@ export let Post = objectType({
     t.boolean('yours');
     t.int('topicId');
     t.string('topicSlug');
-    t.string('displayUsername', { nullable: true });
-    t.string('primaryGroupName', { nullable: true });
-    t.string('primaryGroupFlairUrl', { nullable: true });
-    t.string('primaryGroupFlairColor', { nullable: true });
-    t.string('primaryGroupFlairBgColor', { nullable: true });
+    t.nullable.string('displayUsername');
+    t.nullable.string('primaryGroupName');
+    t.nullable.string('primaryGroupFlairUrl');
+    t.nullable.string('primaryGroupFlairColor');
+    t.nullable.string('primaryGroupFlairBgColor');
     t.int('version');
     t.boolean('canEdit');
     t.boolean('canDelete');
     t.boolean('canRecover');
     t.boolean('canWiki');
-    t.boolean('bookmarked', { nullable: true });
-    t.field('actionsSummary', {
+    t.nullable.boolean('bookmarked');
+    t.nullable.list.field('actionsSummary', {
       type: 'ActionSummary',
-      list: true,
-      nullable: true,
     });
     t.boolean('moderator');
     t.boolean('admin');
     t.boolean('staff');
     t.int('userId');
-    t.int('draftSequence', { nullable: true }); // Get Post doesn't have draft sequence
+
+    // Nullable because when getting a post, there is no draft sequence.
+    t.nullable.int('draftSequence');
+
     t.boolean('hidden');
     t.int('trustLevel');
     t.boolean('userDeleted');
     t.boolean('canViewEditHistory');
     t.boolean('wiki');
-    t.int('reviewableId', { nullable: true });
-    t.float('reviewableScoreCount', { nullable: true });
-    t.float('reviewableScorePendingCount', { nullable: true });
-    t.field('linkCounts', { type: 'LinkCount', list: true, nullable: true }); // if post have link like image link
-    t.string('actionCode', { nullable: true });
-    t.string('actionCodeWho', { nullable: true });
+    t.nullable.int('reviewableId');
+    t.nullable.float('reviewableScoreCount');
+    t.nullable.float('reviewableScorePendingCount');
+
+    // The post can have an link, such as an image link
+    t.nullable.list.field('linkCounts', { type: 'LinkCount' });
+
+    t.nullable.string('actionCode');
+    t.nullable.string('actionCodeWho');
   },
 });

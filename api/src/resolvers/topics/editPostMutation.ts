@@ -1,6 +1,6 @@
 import camelcaseKey from 'camelcase-keys';
 import snakecaseKey from 'snakecase-keys';
-import { FieldResolver, mutationField, arg, intArg } from '@nexus/schema';
+import { FieldResolver, mutationField, arg, intArg } from 'nexus';
 
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';
@@ -33,8 +33,8 @@ export let editPostResolver: FieldResolver<'Mutation', 'editPost'> = async (
 export let editPostMutation = mutationField('editPost', {
   type: 'Post',
   args: {
-    postId: intArg({ required: true }),
-    postInput: arg({ type: 'EditPostInput', required: true }),
+    postId: intArg(),
+    postInput: arg({ type: 'EditPostInput' }),
   },
   resolve: editPostResolver,
 });

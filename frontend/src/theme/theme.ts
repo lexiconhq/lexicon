@@ -46,6 +46,15 @@ function colorTheme(isDarkMode: boolean) {
     transparentBackground: isDarkMode
       ? FUNCTIONAL_COLORS.darkTransparentBackground
       : FUNCTIONAL_COLORS.lightTransparentBackground,
+    toastBackground: isDarkMode
+      ? FUNCTIONAL_COLORS.lightBackground
+      : FUNCTIONAL_COLORS.darkBackground,
+    toastText: isDarkMode
+      ? FUNCTIONAL_COLORS.darkBackground
+      : FUNCTIONAL_COLORS.lightBackground,
+    toastInfoText: isDarkMode
+      ? FUNCTIONAL_COLORS.darkTextLighter
+      : FUNCTIONAL_COLORS.lightTextDarker,
   };
 }
 

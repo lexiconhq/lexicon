@@ -7,11 +7,10 @@ import { Color, makeStyles, useTheme } from '../theme';
 
 type Props = ViewProps & {
   message: string;
-  imageUrls?: Array<string>;
   bgColor?: Color;
   noBorder?: boolean;
   fontStyle?: StyleProp<TextStyle>;
-  listOfMention?: Array<string>;
+  mentions?: Array<string>;
   nonClickable?: boolean;
 };
 
@@ -21,11 +20,10 @@ const ChatBubble = memo((props: Props) => {
 
   const {
     message,
-    imageUrls,
     bgColor = 'background',
     noBorder = false,
     fontStyle,
-    listOfMention,
+    mentions,
     nonClickable,
     style,
     ...otherProps
@@ -42,11 +40,10 @@ const ChatBubble = memo((props: Props) => {
       {...otherProps}
     >
       <Markdown
-        imageUrls={imageUrls}
         fontColor={automaticFontColor(colors[bgColor])}
         mentionColor={bgColor}
         content={message}
-        listOfMention={listOfMention}
+        mentions={mentions}
         nonClickable={nonClickable}
       />
     </View>

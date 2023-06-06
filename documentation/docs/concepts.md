@@ -14,17 +14,15 @@ However, [the official documentation](https://docs.discourse.org/) for this API 
 >
 > —**Discourse API Documentation**
 
-The core team, as well as members of the [support forum](https://meta.discourse.org), regularly respond to questions about the API by [encouraging developers to reverse-engineer the API](https://meta.discourse.org/t/how-to-reverse-engineer-the-discourse-api/20576). As of this writing, the topic for how to reverse engineer the API has been linked to from nearly 170 other topics on the support forum.
+The core team, as well as members of the [support forum](https://meta.discourse.org), regularly respond to questions about the API by [encouraging developers to reverse-engineer the API](https://meta.discourse.org/t/how-to-reverse-engineer-the-discourse-api/20576). As of this writing, the topic for how to reverse engineer the API has been linked to from nearly 200 other topics on the support forum.
 
 To help you simplify the process for you, Prose strives to normalize a subset of the API. We have done so with the hope that it will save you some time as you develop against Discourse.
 
-#### GraphQL Playground
+#### GraphiQL
 
-Prose's GraphQL implementation includes an [interactive GraphQL IDE](https://github.com/graphql/graphql-playground), known as the GraphQL Playground, which allows developers to easily reference the entire documentation and schema.
+Prose's GraphQL implementation includes an [in-browser GraphQL IDE](https://www.graphql-yoga.com/docs/features/graphiql), known as [GraphiQL](https://github.com/graphql/graphiql), which allows developers to easily reference the entire documentation and schema and make queries against a running Discourse instance.
 
 <img alt="" width="900" src={useBaseUrl('/img/screenshot/playground.png')}/>
-
-_You tried to click the Play button on the image, didn't you?_
 
 This means you can rapidly get a clear understanding of how a method behaves—and what parameters it requires—without digging through support posts or reverse-engineering the REST API.
 
@@ -46,19 +44,17 @@ Having said that, we chose to build Lexicon with it for two primary reasons.
 
 We find that Expo makes us much more effective as developers, and also provides excellent services to facilitate the entire process of building and publishing React Native apps.
 
-## Architecture of the Lexicon Stack
-
-While it's a fairly lightweight setup to describe as an application stack, our reference here to the **Lexicon Stack** refers to all of the components needed to produce the Lexicon mobile experience.
+## Lexicon Architecture
 
 The Lexicon Stack is fairly simple, and only consists of 3 major pieces:
 
 - The Lexicon Mobile App
 - The Prose GraphQL API
-- A running Discourse instance
+- A running, accessible Discourse instance
 
 Below is a diagram illustrating the typical architecture for a Lexicon-powered mobile app.
 
-![Architecture Diagram](/img/lexicon-architecture.png)
+<img alt="IOS Lexicon Login Page" style={{borderRadius: '25px'}} src={useBaseUrl('/img/lexicon-architecture.png')}/>
 
 As indicated above, the mobile app makes requests to a deployed Prose GraphQL server.
 

@@ -1,16 +1,16 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let TopicList = objectType({
   name: 'TopicList',
   definition(t) {
     t.boolean('canCreateTopic');
-    t.boolean('draft', { nullable: true });
+    t.nullable.boolean('draft');
     t.string('draftKey');
-    t.int('draftSequence', { nullable: true });
-    t.string('forPeriod', { nullable: true });
+    t.nullable.int('draftSequence');
+    t.nullable.string('forPeriod');
     t.int('perPage');
-    t.string('topTags', { list: true });
-    t.field('tags', { type: 'TagFilter', list: true, nullable: true });
-    t.field('topics', { type: 'Topic', list: true, nullable: true });
+    t.list.string('topTags');
+    t.nullable.list.field('tags', { type: 'TagFilter' });
+    t.nullable.list.field('topics', { type: 'Topic' });
   },
 });

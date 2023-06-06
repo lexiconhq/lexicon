@@ -7,7 +7,13 @@ import { Controller, useForm } from 'react-hook-form';
 import { DarkLogo, LightLogo } from '../../assets/images';
 import { CustomHeader } from '../components';
 import { Button, Text, TextInput, TextInputType } from '../core-ui';
-import { errorHandler, getImage, setToken, useStorage } from '../helpers';
+import {
+  errorHandler,
+  getImage,
+  removeToken,
+  setToken,
+  useStorage,
+} from '../helpers';
 import { useLogin, useSiteSettings } from '../hooks';
 import { makeStyles, useColorScheme } from '../theme';
 import { StackNavProp } from '../types';
@@ -62,8 +68,10 @@ export default function Login() {
     navigate('Register');
   };
 
-  const onSubmit = handleSubmit(({ email, password }) => {
+  const onSubmit = handleSubmit(async ({ email, password }) => {
     Keyboard.dismiss();
+    await removeToken(); // prevent token leftover when user session expired
+
     tempUser = { email, password };
     login({
       variables: {

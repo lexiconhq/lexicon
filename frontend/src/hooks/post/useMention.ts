@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 
-import { SearchUser, SearchUserVariables } from '../../generated/server/Search';
-import { SEARCH_USER } from '../../graphql/server/search';
+import {
+  SearchUserQuery,
+  SearchUserQueryVariables,
+  SearchUserDocument,
+} from '../../generated/server';
 import { getImage } from '../../helpers';
 import { SelectedUserProps } from '../../types';
 import { useLazyQuery } from '../../utils';
@@ -15,9 +18,9 @@ export function useMention(
     useState<Array<SelectedUserProps>>();
 
   const [getMentionList, { data: searchData, loading }] = useLazyQuery<
-    SearchUser,
-    SearchUserVariables
-  >(SEARCH_USER, {
+    SearchUserQuery,
+    SearchUserQueryVariables
+  >(SearchUserDocument, {
     variables: { search: mentionKeyword },
     onCompleted: () => {
       let formattedMember = searchData?.searchUser.users.map(

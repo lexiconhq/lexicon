@@ -6,7 +6,9 @@ import {
 } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 
-import { NewPost, Post, ReplyPost } from './Post';
+import { NetworkStatus, WithRequestFailed } from '../components';
+
+import { NewPost, ReplyPost } from './Post';
 import { SelectedUserProps, UserDetail, UserMessageProps } from './Types';
 
 export type RootStackNavProp<T extends keyof RootStackParamList> =
@@ -59,21 +61,22 @@ export type HomeProps = { selectedChannelId?: number; backToTop?: boolean };
 type ImagePreviewParams = {
   topicId: number;
   imageUri: string;
-  postPointer: number;
   message: string;
 };
 
 type PostImagePreviewParams = {
   imageUri: string;
+  title?: string;
   prevScreen: 'NewPost' | 'PostReply' | 'NewMessage';
 };
 
-type MessageDetailParams = {
+export type MessageDetailParams = {
   id: number;
-  postPointer: number;
+  postNumber: number;
   emptied?: boolean;
   hyperlinkUrl: string;
   hyperlinkTitle: string;
+  source?: 'deeplink';
 };
 
 type NewMessageParams = {
@@ -122,16 +125,19 @@ type NewMessagePreviewParams = {
 
 type PostDetailParams = {
   topicId: number;
-  selectedChannelId?: number;
-  postNumber?: number;
+  content?: string;
   focusedPostNumber?: number;
+  hidden?: boolean;
+  postNumber?: number;
   prevScreen?: string;
+  selectedChannelId?: number;
+  source?: 'deeplink';
 };
 
-type PostReplyParams = {
+export type PostReplyParams = {
   title: string;
   topicId: number;
-  post?: Post;
+  replyToPostId?: number;
   focusedPostNumber?: number;
   hyperlinkUrl?: string;
   hyperlinkTitle?: string;
@@ -156,13 +162,16 @@ type TwoFactorAuthParams = {
   password: string;
 };
 
+type TroubleshootParams = {
+  type: WithRequestFailed<Exclude<NetworkStatus, 'Online'>>;
+};
+
 type HyperlinkParams = {
   id?: number;
   title?: string;
-  post?: Post;
-  postPointer?: number;
+  postNumber?: number;
   prevScreen: 'NewPost' | 'PostReply' | 'NewMessage' | 'MessageDetail';
-};
+} & Pick<PostReplyParams, 'replyToPostId'>;
 
 type UserInformationParams = {
   username: string;
@@ -182,6 +191,7 @@ export type RootStackParamList = {
   PostImagePreview: PostImagePreviewParams;
   SelectUser: SelectUserParams;
   Tags: TagsParams;
+  Troubleshoot: TroubleshootParams;
 };
 
 export type StackParamList = {

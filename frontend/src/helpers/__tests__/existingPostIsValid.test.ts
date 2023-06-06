@@ -25,7 +25,7 @@ it('should be false if there is no title', () => {
     tags,
     oldTags,
   );
-  expect(postIsValid).toEqual(false);
+  expect(postIsValid).toMatchObject({ isValid: false });
 });
 
 it('should be false if there is no content', () => {
@@ -41,7 +41,7 @@ it('should be false if there is no content', () => {
     tags,
     oldTags,
   );
-  expect(postIsValid).toEqual(false);
+  expect(postIsValid).toMatchObject({ isValid: false });
 });
 
 it('should be false when uploading an image', () => {
@@ -60,7 +60,7 @@ it('should be false when uploading an image', () => {
     tags,
     oldTags,
   );
-  expect(postIsValid).toEqual(false);
+  expect(postIsValid).toMatchObject({ isValid: false });
 });
 
 it('should be false if nothing changes', () => {
@@ -75,7 +75,7 @@ it('should be false if nothing changes', () => {
     oldTags,
     oldTags,
   );
-  expect(postIsValid).toEqual(false);
+  expect(postIsValid).toMatchObject({ isValid: false });
 });
 
 it('should be true if the title changes', () => {
@@ -90,7 +90,7 @@ it('should be true if the title changes', () => {
     oldTags,
     oldTags,
   );
-  expect(postIsValid).toEqual(true);
+  expect(postIsValid).toMatchObject({ isValid: true });
 });
 
 it('should be true if the content changes', () => {
@@ -105,7 +105,7 @@ it('should be true if the content changes', () => {
     oldTags,
     oldTags,
   );
-  expect(postIsValid).toEqual(true);
+  expect(postIsValid).toMatchObject({ isValid: true });
 });
 
 it('should be true if the channel changes', () => {
@@ -120,7 +120,7 @@ it('should be true if the channel changes', () => {
     oldTags,
     oldTags,
   );
-  expect(postIsValid).toEqual(true);
+  expect(postIsValid).toMatchObject({ isValid: true });
 });
 
 it('should be true if tags change', () => {
@@ -135,7 +135,7 @@ it('should be true if tags change', () => {
     tags,
     oldTags,
   );
-  expect(postIsValid).toEqual(true);
+  expect(postIsValid).toMatchObject({ isValid: true });
 });
 
 it('should be true if all data changes', () => {
@@ -150,5 +150,5 @@ it('should be true if all data changes', () => {
     tags,
     oldTags,
   );
-  expect(postIsValid).toEqual(true);
+  expect(postIsValid).toMatchObject({ isValid: true });
 });

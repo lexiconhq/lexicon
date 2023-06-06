@@ -2,19 +2,23 @@
 import { FieldPolicy } from '@apollo/client';
 import { Reference } from '@apollo/client/utilities';
 
-import { UserActivity } from '../types/Types';
-
-import { handleDuplicateRef } from './handleDuplicate';
+import { handleDuplicateRef } from './handleDuplicates';
 
 type KeyArgs = FieldPolicy<unknown>['keyArgs'];
 
+/**
+ * This ApolloRefObject is the type of data coming to this function
+ * when we define custom keyFields in the typePolicies
+ */
+type ApolloRefObject = { __ref: string };
+
 export function userActivityPagination(
   keyArgs: KeyArgs = false,
-): FieldPolicy<Array<UserActivity>> {
+): FieldPolicy<Array<ApolloRefObject>> {
   return {
     keyArgs,
     merge(existing, incoming, { args }) {
-      let merged: Array<UserActivity> = existing ? existing.slice(0) : [];
+      let merged: Array<ApolloRefObject> = existing ? existing.slice(0) : [];
 
       if (args) {
         const { offset = 0 } = args;
@@ -25,17 +29,19 @@ export function userActivityPagination(
         merged = [...merged, ...incoming];
       }
 
-      const filteredArr = merged.reduce((acc: Array<UserActivity>, current) => {
-        const duplicateValue = acc.find(
-          (item) =>
-            item.postId === current.postId &&
-            item.actionType === current.actionType,
-        );
-        if (!duplicateValue) {
-          return acc.concat([current]);
-        }
-        return acc;
-      }, []);
+      const filteredArr = merged.reduce(
+        (acc: Array<ApolloRefObject>, current) => {
+          const duplicateValue = acc.find(
+            // eslint-disable-next-line no-underscore-dangle
+            (item) => item.__ref === current.__ref,
+          );
+          if (!duplicateValue) {
+            return acc.concat([current]);
+          }
+          return acc;
+        },
+        [],
+      );
 
       return filteredArr;
     },

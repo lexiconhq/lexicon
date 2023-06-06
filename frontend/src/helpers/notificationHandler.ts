@@ -1,6 +1,7 @@
 /* eslint no-underscore-dangle: 0 */
 import { Alert } from 'react-native';
 
+import { FIRST_POST_NUMBER } from '../constants';
 import {
   Notification as NotificationDataType,
   RawNotificationsType,
@@ -76,14 +77,14 @@ export function notificationHandler(
           case NotificationType.BookmarkReminder: {
             return navToPostDetail({
               topicId,
-              postNumber: item.postNumber || undefined,
+              postNumber: item.postNumber ?? undefined,
             });
           }
           case NotificationType.SendMessage:
           case NotificationType.InviteMessage: {
             return navToMessageDetail({
               id: topicId,
-              postPointer: item.postNumber || 1,
+              postNumber: item.postNumber ?? FIRST_POST_NUMBER,
               hyperlinkUrl: '',
               hyperlinkTitle: '',
             });
@@ -102,7 +103,7 @@ export function notificationHandler(
       ) {
         return navToPostDetail({
           topicId,
-          postNumber: item.postNumber || undefined,
+          postNumber: item.postNumber ?? undefined,
         });
       } else {
         Alert.alert(t('Warning'), t('This feature not available yet'), [

@@ -1,5 +1,5 @@
 import snakecaseKey from 'snakecase-keys';
-import { FieldResolver, mutationField, intArg } from '@nexus/schema';
+import { FieldResolver, mutationField, intArg, list } from 'nexus';
 
 import { errorHandler, getTopicTimings } from '../../helpers';
 import { Context } from '../../types';
@@ -31,8 +31,8 @@ export let timingsResolver: FieldResolver<'Mutation', 'timings'> = async (
 export let timingsMutation = mutationField('timings', {
   type: 'String',
   args: {
-    postNumbers: intArg({ list: true, required: true }),
-    topicId: intArg({ required: true }),
+    postNumbers: list(intArg()),
+    topicId: intArg(),
   },
   resolve: timingsResolver,
 });

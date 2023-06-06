@@ -13,16 +13,17 @@ import {
   LoadingOrError,
 } from '../../components';
 import { FloatingButton } from '../../core-ui';
-import { Message } from '../../generated/server/Message';
+import { MessageQuery } from '../../generated/server';
 import { errorHandler, getParticipants, useStorage } from '../../helpers';
 import { useMessageList } from '../../hooks';
 import { makeStyles, useTheme } from '../../theme';
 import { MessageParticipants, StackNavProp } from '../../types';
+import { FIRST_POST_NUMBER } from '../../constants';
 
 import { MessageCard } from './Components';
 
 type MessageType = NonNullable<
-  Message['privateMessage']['topicList']['topics']
+  MessageQuery['privateMessage']['topicList']['topics']
 >[number];
 
 type MessageRenderItem = { item: MessageType; index: number };
@@ -145,7 +146,7 @@ export default function Messages() {
       message={item.title}
       messageParticipants={participants[index]}
       allowedUserCount={item.allowedUserCount}
-      postPointer={item.lastReadPostNumber || 1}
+      postNumber={item.lastReadPostNumber ?? FIRST_POST_NUMBER}
       date={item.lastPostedAt || ''}
       seen={!item.unseen}
     />

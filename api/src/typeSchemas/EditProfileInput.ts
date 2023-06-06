@@ -1,12 +1,12 @@
-import { inputObjectType } from '@nexus/schema';
+import { inputObjectType } from 'nexus';
 
 export let EditProfileInput = inputObjectType({
   name: 'EditProfileInput',
   definition(t) {
-    t.string('name');
-    t.string('bioRaw');
-    t.string('website');
-    t.string('location');
-    t.string('dateOfBirth');
+    t.nullable.string('name');
+    t.nullable.string('bioRaw');
+    t.nullable.string('website');
+    t.nullable.string('location');
+    t.nullable.string('dateOfBirth');
   },
 });

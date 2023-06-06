@@ -5,27 +5,25 @@ import {
 } from '@apollo/client';
 
 import {
-  EditProfile as EditProfileType,
-  EditProfileVariables,
-} from '../../generated/server/EditProfile';
-import {
-  Profile as ProfileType,
-  ProfileVariables,
-} from '../../generated/server/Profile';
-import { EDIT_PROFILE } from '../../graphql/server/editProfile';
-import { PROFILE } from '../../graphql/server/profile';
+  EditProfileMutation as EditProfileType,
+  EditProfileMutationVariables,
+  ProfileQuery as ProfileType,
+  ProfileQueryVariables,
+  EditProfileDocument,
+  ProfileDocument,
+} from '../../generated/server';
 import { ErrorAlertOptionType } from '../../types';
 import { useLazyQuery, useMutation, useQuery } from '../../utils';
 
 export function useProfile(
-  options?: QueryHookOptions<ProfileType, ProfileVariables>,
+  options?: QueryHookOptions<ProfileType, ProfileQueryVariables>,
   errorAlert: ErrorAlertOptionType = 'SHOW_ALERT',
 ) {
   const { data, loading, error, refetch } = useQuery<
     ProfileType,
-    ProfileVariables
+    ProfileQueryVariables
   >(
-    PROFILE,
+    ProfileDocument,
     {
       ...options,
     },
@@ -36,11 +34,14 @@ export function useProfile(
 }
 
 export function useLazyProfile(
-  options?: LazyQueryHookOptions<ProfileType, ProfileVariables>,
+  options?: LazyQueryHookOptions<ProfileType, ProfileQueryVariables>,
   errorAlert: ErrorAlertOptionType = 'SHOW_ALERT',
 ) {
-  const [getProfile, { data }] = useLazyQuery<ProfileType, ProfileVariables>(
-    PROFILE,
+  const [getProfile, { data }] = useLazyQuery<
+    ProfileType,
+    ProfileQueryVariables
+  >(
+    ProfileDocument,
     {
       ...options,
     },
@@ -51,12 +52,12 @@ export function useLazyProfile(
 }
 
 export function useEditProfile(
-  options?: MutationHookOptions<EditProfileType, EditProfileVariables>,
+  options?: MutationHookOptions<EditProfileType, EditProfileMutationVariables>,
 ) {
   const [editProfile, { loading }] = useMutation<
     EditProfileType,
-    EditProfileVariables
-  >(EDIT_PROFILE, {
+    EditProfileMutationVariables
+  >(EditProfileDocument, {
     ...options,
   });
 

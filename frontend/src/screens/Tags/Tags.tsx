@@ -6,7 +6,10 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 
 import { CustomHeader, HeaderItem, ModalHeader } from '../../components';
 import { Button, Text } from '../../core-ui';
-import { SearchTags, SearchTagsVariables } from '../../generated/server/Search';
+import {
+  SearchTagsQuery,
+  SearchTagsQueryVariables,
+} from '../../generated/server';
 import { client } from '../../graphql/client';
 import { SEARCH_TAGS } from '../../graphql/server/search';
 import { formatTag } from '../../helpers';
@@ -57,10 +60,12 @@ export default function Tags() {
 
   useEffect(() => {
     try {
-      const cache = client.readQuery<SearchTags, SearchTagsVariables>({
-        query: SEARCH_TAGS,
-        variables: { q: searchValue, selectedTags: currentTagsIds },
-      });
+      const cache = client.readQuery<SearchTagsQuery, SearchTagsQueryVariables>(
+        {
+          query: SEARCH_TAGS,
+          variables: { q: searchValue, selectedTags: currentTagsIds },
+        },
+      );
 
       if (cache) {
         setTags(cache.searchTag);

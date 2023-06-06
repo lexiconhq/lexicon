@@ -18,11 +18,11 @@ export default function PostImagePreview() {
     useNavigation<RootStackNavProp<'PostImagePreview'>>();
 
   const {
-    params: { imageUri, prevScreen },
+    params: { imageUri, prevScreen, title },
   } = useRoute<RootStackRouteProp<'PostImagePreview'>>();
 
   const uploading = () => {
-    navigate(prevScreen, { imageUri });
+    navigate(prevScreen, { imageUri, title });
   };
 
   return (

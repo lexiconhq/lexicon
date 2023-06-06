@@ -1,4 +1,4 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let Badge = objectType({
   name: 'Badge',
@@ -10,7 +10,7 @@ export let Badge = objectType({
     t.boolean('allowTitle');
     t.boolean('multipleGrant');
     t.string('icon');
-    t.string('image', { nullable: true });
+    t.nullable.string('image');
     t.boolean('listable');
     t.boolean('enabled');
     t.int('badgeGroupingId');
@@ -18,7 +18,7 @@ export let Badge = objectType({
     t.string('slug');
     t.boolean('manuallyGrantable');
     t.int('badgeTypeId');
-    t.boolean('hasBadge', { nullable: true });
-    t.string('longDescription', { nullable: true });
+    t.nullable.boolean('hasBadge');
+    t.nullable.string('longDescription');
   },
 });

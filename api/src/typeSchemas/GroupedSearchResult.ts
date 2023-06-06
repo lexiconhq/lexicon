@@ -1,20 +1,20 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let GroupedSearchResult = objectType({
   name: 'GroupedSearchResult',
   definition(t) {
     t.boolean('canCreateTopic');
-    t.int('categoryIds', { list: true });
-    t.int('groupIds', { list: true });
-    t.boolean('moreCategories', { nullable: true });
-    t.boolean('moreFullPageResults', { nullable: true });
-    t.boolean('morePosts', { nullable: true });
-    t.boolean('moreUsers', { nullable: true });
-    t.int('postIds', { list: true });
+    t.list.int('categoryIds');
+    t.list.int('groupIds');
+    t.nullable.boolean('moreCategories');
+    t.nullable.boolean('moreFullPageResults');
+    t.nullable.boolean('morePosts');
+    t.nullable.boolean('moreUsers');
+    t.list.int('postIds');
     t.int('searchLogId');
-    t.int('tagIds', { list: true });
+    t.list.int('tagIds');
     t.string('term');
-    t.int('userIds', { list: true });
+    t.list.int('userIds');
   },
 });
 

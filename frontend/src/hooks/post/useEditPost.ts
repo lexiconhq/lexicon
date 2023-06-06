@@ -1,19 +1,19 @@
 import { MutationHookOptions } from '@apollo/client';
 
 import {
-  EditPost as EditPostType,
-  EditPostVariables,
-} from '../../generated/server/GetTopicDetail';
-import { EDIT_POST } from '../../graphql/server/getTopicDetail';
+  EditPostMutation as EditPostType,
+  EditPostMutationVariables,
+  EditPostDocument,
+} from '../../generated/server';
 import { useMutation } from '../../utils';
 
 export function useEditPost(
-  options?: MutationHookOptions<EditPostType, EditPostVariables>,
+  options?: MutationHookOptions<EditPostType, EditPostMutationVariables>,
 ) {
-  const [editPost, { loading }] = useMutation<EditPostType, EditPostVariables>(
-    EDIT_POST,
-    { ...options },
-  );
+  const [editPost, { loading }] = useMutation<
+    EditPostType,
+    EditPostMutationVariables
+  >(EditPostDocument, { ...options });
 
   return { editPost, loading };
 }

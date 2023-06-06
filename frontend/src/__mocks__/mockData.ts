@@ -1,4 +1,4 @@
-import { EmailAddress, Message, Notification, Post } from '../types';
+import { EmailAddress, Notification, Post } from '../types';
 
 const MOCK_IMG = 'https://dummyimage.com/600x400/000/fff';
 
@@ -86,7 +86,6 @@ const MOCK_POSTS: Array<Post> = [
     title: 'Example',
     content: MOCK_CONTENT,
     hidden: false,
-    images: [MOCK_IMG],
     username: MOCK_USERS[0].username,
     avatar: MOCK_IMG,
     replyCount: 3010,
@@ -138,7 +137,6 @@ const MOCK_POSTS: Array<Post> = [
     title: 'KodeFox',
     content: MOCK_CONTENT,
     hidden: false,
-    images: [MOCK_IMG, MOCK_IMG, MOCK_IMG],
     username: MOCK_USERS[1].username,
     avatar: MOCK_IMG,
     replyCount: 3,
@@ -227,47 +225,6 @@ const MOCK_MESSAGES = [
   },
 ];
 
-const MOCK_MESSAGES2: Message = {
-  members: [
-    { id: 1, username: 'Natasha William', avatar: MOCK_IMG },
-    { id: 2, username: 'Jacob Alexander', avatar: MOCK_IMG },
-    { id: 3, username: 'Me', avatar: MOCK_IMG },
-    { id: 4, username: 'NotMe', avatar: MOCK_IMG },
-  ],
-  contents: [
-    {
-      id: 1,
-      userId: 1,
-      time: '2020-08-28T22:45:15.634Z',
-      message: 'Test',
-    },
-    {
-      id: 2,
-      userId: 1,
-      time: '2020-08-28T23:02:15.634Z',
-      message: 'Hello, Internet Citizens! Welcome to this multi-chat!',
-    },
-    {
-      id: 3,
-      userId: 1,
-      time: '2020-08-28T23:07:15.634Z',
-      message: 'Here we can talk about anything that is happening in our life!',
-    },
-    {
-      id: 4,
-      userId: 2,
-      time: '2020-08-28T23:12:15.634Z',
-      message: 'Hello Nat! Nice to meet you',
-    },
-    {
-      id: 5,
-      userId: 3,
-      time: '2020-08-28T23:17:15.634Z',
-      message: 'Hey guys, nice to meet you all on this platform!',
-    },
-  ],
-};
-
 export default {
   posts: MOCK_POSTS,
   channels: MOCK_CHANNELS,
@@ -278,5 +235,4 @@ export default {
   notifications: MOCK_NOTIFICATIONS,
   emailAddress: MOCK_EMAIL_ADDRESS,
   messages: MOCK_MESSAGES,
-  messages2: MOCK_MESSAGES2,
 };

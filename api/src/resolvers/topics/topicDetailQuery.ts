@@ -1,40 +1,76 @@
-/* eslint-disable @typescript-eslint/camelcase */
-import camelcaseKey from 'camelcase-keys';
-import { FieldResolver, queryField, intArg } from '@nexus/schema';
+import { FieldResolver, queryField, booleanArg, nullable } from 'nexus';
 
-import { errorHandler, getTopicPostPath } from '../../helpers';
+import { FIRST_POST_NUMBER, LIKE_ACTION_ID } from '../../constants';
+import {
+  validateTopicDetailOptionalArgs,
+  errorHandler,
+  fetchPost,
+  fetchTopicDetail,
+  getTopicDetailBaseArgs,
+} from '../../helpers';
 import { Context } from '../../types';
-import { ACCEPTED_LANGUAGE } from '../../constants';
 
 let topicDetailQueryResolver: FieldResolver<'Query', 'topicDetail'> = async (
   _,
-  { topicId, posts, postPointer },
-  context: Context,
+  { topicId, postIds, postNumber, includeFirstPost },
+  { client }: Context,
 ) => {
-  const config = {
-    headers: {
-      'Accept-Language': ACCEPTED_LANGUAGE,
-    },
-    params: { post_ids: posts, include_raw: true },
-  };
-
   try {
-    let postPath = getTopicPostPath(posts, postPointer);
-    let url = `/t/${topicId}${postPath}.json`;
-    let { data: topicDetailResult } = await context.client.get(url, config);
+    validateTopicDetailOptionalArgs({ postIds, postNumber, includeFirstPost });
+    const data = await fetchTopicDetail({
+      client,
+      topicId,
+      postIds,
+      postNumber,
+    });
+    const firstPostOfData = data.postStream.posts[0];
+    if (firstPostOfData) {
+      const summary = firstPostOfData.actionsSummary.find(
+        ({ id }: { id: number }) => id === LIKE_ACTION_ID,
+      );
 
-    return camelcaseKey(topicDetailResult, { deep: true });
+      data.liked = summary?.acted ?? false;
+    }
+
+    if (firstPostOfData.postNumber === FIRST_POST_NUMBER) {
+      data.postStream.posts = data.postStream.posts.slice(1);
+      if (includeFirstPost) {
+        data.postStream.firstPost = firstPostOfData;
+      }
+      return data;
+    }
+
+    if (!includeFirstPost) {
+      return data;
+    }
+
+    const firstPostId = data.postStream.stream?.[0];
+    if (!firstPostId) {
+      throw new Error('First post ID is not provided in topic stream');
+    }
+    const firstPostOfTopic = await fetchPost({ client, postId: firstPostId });
+    data.postStream.firstPost = firstPostOfTopic;
+    return data;
   } catch (error) {
     throw errorHandler(error);
   }
 };
 
+/**
+ * By specifying postNumber, Discourse API will return posts
+ * with the following conditions:
+ *  if total post <= 20: all posts
+ *  else if postNumber <= 5: the first 20 posts
+ *  else if postNumber > total post - 20 + 5: 20 latest posts
+ *  else if postNumber > 5: 20 posts starting from postNumber - 5
+ * Note that 20 is the maximum post counts per fetch
+ * and 5 is the value from Discourse
+ */
 let topicDetailQuery = queryField('topicDetail', {
   type: 'TopicDetailOutput',
   args: {
-    posts: intArg({ list: true }),
-    topicId: intArg({ required: true }),
-    postPointer: intArg(),
+    ...getTopicDetailBaseArgs(),
+    includeFirstPost: nullable(booleanArg()),
   },
   resolve: topicDetailQueryResolver,
 });

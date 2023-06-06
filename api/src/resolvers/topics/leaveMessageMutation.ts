@@ -4,7 +4,8 @@ import {
   booleanArg,
   intArg,
   stringArg,
-} from '@nexus/schema';
+  nullable,
+} from 'nexus';
 
 import { ACCEPTED_LANGUAGE, CONTENT_JSON } from '../../constants';
 import { errorHandler } from '../../helpers';
@@ -41,9 +42,9 @@ export let leaveMessageResolver: FieldResolver<
 export let leaveMessageMutation = mutationField('leaveMessage', {
   type: 'String',
   args: {
-    topicId: intArg({ required: true }),
-    owner: booleanArg(),
-    username: stringArg({ required: true }),
+    topicId: intArg(),
+    owner: nullable(booleanArg()),
+    username: stringArg(),
   },
   resolve: leaveMessageResolver,
 });

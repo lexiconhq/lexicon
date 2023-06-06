@@ -1,24 +1,21 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
-import { PROSE_DISCOURSE_UPLOAD_HOST } from '../constants';
+import { getNormalizedUrlTemplate } from '../resolvers/utils';
 
 export let Participant = objectType({
   name: 'Participant',
   definition(t) {
     t.int('id');
     t.string('username');
-    t.string('name', { nullable: true });
-    t.string('avatarTemplate', (participant) => {
-      let { avatarTemplate } =
-        'avatarTemplate' in participant ? participant : { avatarTemplate: '' };
-      return avatarTemplate.includes('http')
-        ? avatarTemplate
-        : PROSE_DISCOURSE_UPLOAD_HOST.concat(avatarTemplate);
+    t.nullable.string('name');
+    t.string('avatarTemplate', {
+      resolve: (participant) => getNormalizedUrlTemplate(participant),
+      sourceType: 'string',
     });
     t.int('postCount');
-    t.string('primaryGroupName', { nullable: true });
-    t.string('primaryGroupFlairUrl', { nullable: true });
-    t.string('primaryGroupFlairColor', { nullable: true });
-    t.string('primaryGroupFlairBgColor', { nullable: true });
+    t.nullable.string('primaryGroupName');
+    t.nullable.string('primaryGroupFlairUrl');
+    t.nullable.string('primaryGroupFlairColor');
+    t.nullable.string('primaryGroupFlairBgColor');
   },
 });

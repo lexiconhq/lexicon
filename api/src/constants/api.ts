@@ -10,7 +10,7 @@ import { EXIT_CODE_INVALID_ARGUMENT } from './exitCodes';
 const shouldValidate = process.env.SKIP_VALIDATION === undefined;
 
 const DEFAULT_PROSE_APP_HOSTNAME = '0.0.0.0';
-const DEFAULT_PROSE_APP_PORT = 80;
+export const DEFAULT_PROSE_APP_PORT = 80;
 
 // Per Express's requirement, ensure that the hostname does not have the scheme (http://, etc.)
 // included in it.
@@ -38,21 +38,33 @@ if (shouldValidate) {
   }
 }
 
-function getAppPort() {
-  const { PROSE_APP_PORT } = process.env;
-  if (!PROSE_APP_PORT) {
+export function getAppPort(nodePort?: string, prosePort?: string) {
+  const definedPort = nodePort ?? prosePort;
+  if (!definedPort) {
     return DEFAULT_PROSE_APP_PORT;
   }
 
-  const parsed = Number.parseInt(PROSE_APP_PORT, 10);
+  let parsed = Number.parseInt(definedPort, 10);
+  if (!Number.isNaN(parsed)) {
+    return parsed;
+  }
+
+  // Check prose port if the definedPort value is different from prose port
+  if (!prosePort || definedPort === prosePort) {
+    return DEFAULT_PROSE_APP_PORT;
+  }
+
+  parsed = Number.parseInt(prosePort, 10);
   if (Number.isNaN(parsed)) {
     return DEFAULT_PROSE_APP_PORT;
   }
-
   return parsed;
 }
 
-export const PROSE_APP_PORT = getAppPort();
+export const PROSE_APP_PORT = getAppPort(
+  process.env.PORT,
+  process.env.PROSE_APP_PORT,
+);
 
 export const PROSE_APP_HOSTNAME =
   process.env.PROSE_APP_HOSTNAME ?? DEFAULT_PROSE_APP_HOSTNAME;

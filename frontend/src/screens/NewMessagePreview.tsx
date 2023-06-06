@@ -14,9 +14,10 @@ import { MESSAGE } from '../graphql/server/message';
 import {
   errorHandlerAlert,
   getPostShortUrl,
-  handleSpecialMarkdown,
+  handleUnsupportedMarkdown,
   sortImageUrl,
   useStorage,
+  generateMarkdownContent,
 } from '../helpers';
 import { useLookupUrls, useNewMessage } from '../hooks';
 import { makeStyles } from '../theme';
@@ -133,9 +134,10 @@ export default function NewMessagePreview() {
         <View style={styles.contentContainer}>
           <ChatBubble
             message={t('{message}', {
-              message: handleSpecialMarkdown(raw),
+              message: handleUnsupportedMarkdown(
+                generateMarkdownContent(raw, imageUrls),
+              ),
             })}
-            imageUrls={imageUrls}
             bgColor={'primary'}
             nonClickable={true}
           />

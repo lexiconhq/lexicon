@@ -5,9 +5,16 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Animated, PixelRatio, Platform, View } from 'react-native';
+import { PixelRatio, Platform, View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Constants from 'expo-constants';
+import Animated, {
+  Extrapolate,
+  interpolate,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+} from 'react-native-reanimated';
 
 import {
   FooterLoadingIndicator,
@@ -17,39 +24,48 @@ import {
   SegmentedControl,
 } from '../../components';
 import {
-  DEFAULT_CHANNEL,
   NO_CHANNEL_FILTER,
   isNoChannelFilter,
-  NO_EXCERPT_WORDING,
   isChannelFilter,
 } from '../../constants';
 import { FloatingButton } from '../../core-ui';
-import { TopicsSortEnum } from '../../generated/server/types';
-import { Topics, TopicsVariables } from '../../generated/server/Topics';
-import { client } from '../../graphql/client';
-import { TOPICS } from '../../graphql/server/topics';
 import {
+  TopicsSortEnum,
+  TopicsQuery,
+  TopicsQueryVariables,
+  TopicsDocument,
+  TopicFragmentDoc,
+  TopicFragment,
+} from '../../generated/server';
+import { client } from '../../graphql/client';
+import {
+  clamp,
   errorHandler,
   errorHandlerAlert,
-  getImage,
   getToken,
+  isFlatList,
   LoginError,
   removeToken,
   setToken,
   showLogoutAlert,
+  transformTopicToPost,
   useStorage,
 } from '../../helpers';
 import {
   useAbout,
   useChannels,
-  useLazyActivity,
   useLazyTopicList,
   useRefreshToken,
   useSiteSettings,
 } from '../../hooks';
 import { makeStyles } from '../../theme';
-import { Post, StackNavProp, TabNavProp, TabRouteProp } from '../../types';
-import { usePost } from '../../utils';
+import {
+  PostWithoutId,
+  StackNavProp,
+  TabNavProp,
+  TabRouteProp,
+} from '../../types';
+import { HomePostItem } from '../../components/PostItem/HomePostItem';
 
 import { HomeNavBar, SearchBar } from './components';
 
@@ -65,6 +81,8 @@ let sortOptionsArray = Object.entries(sortTypes).map(
 const NAV_BAR_TITLE_SIZE = 24;
 const IOS_BAR = 60;
 const ANDROID_BAR = 64;
+const MAX_SCROLL = 300; // at maximum 300 unit will be calculated for interpolation
+const MIN_SCROLL = -200; // at minimum scroll 200 unit before starting hide animation
 
 const fontScale = PixelRatio.getFontScale();
 const normalizedSize = NAV_BAR_TITLE_SIZE * (fontScale - 1);
@@ -78,12 +96,12 @@ const headerViewHeight = 92;
 type SortOption = typeof sortOptionsArray[number];
 
 export default function Home() {
-  const { topicsData, likedTopic, setTopicsData, setLikedTopic } = usePost();
-  const { refetch: siteRefetch, error: siteError } = useSiteSettings();
+  const { refetch: siteRefetch } = useSiteSettings();
   const styles = useStyles();
 
   const tabNavigation = useNavigation<TabNavProp<'Home'>>();
-  const stackNavigation = useNavigation<StackNavProp<'TabNav'>>();
+  const { reset, addListener, navigate } =
+    useNavigation<StackNavProp<'TabNav'>>();
 
   const { params } = useRoute<TabRouteProp<'Home'>>();
   const receivedChannelId = params === undefined ? 0 : params.selectedChannelId;
@@ -94,23 +112,38 @@ export default function Home() {
   const storage = useStorage();
   const username = storage.getItem('user')?.username || '';
 
-  const headerY = useRef(new Animated.Value(0)).current;
-  const diffClamp = Animated.diffClamp(headerY, -200, 500);
-  const headerTranslateY = diffClamp.interpolate({
-    inputRange: [0, 500],
-    outputRange: [actionBarHeight, -(actionBarHeight + headerViewHeight)],
-    extrapolateLeft: 'clamp',
+  const scrollOffset = useSharedValue(0);
+  const scrollHandler = useAnimatedScrollHandler<{ prevY?: number }>({
+    onScroll: (event, ctx) => {
+      const { y } = event.contentOffset;
+      const diff = y - (ctx?.prevY ?? 0);
+      scrollOffset.value = clamp(
+        scrollOffset.value + diff,
+        MIN_SCROLL,
+        MAX_SCROLL,
+      );
+      ctx.prevY = event.contentOffset.y;
+    },
+    onBeginDrag: (event, ctx) => {
+      ctx.prevY = event.contentOffset.y;
+    },
+  });
+  const headerTranslateY = useAnimatedStyle(() => {
+    const interpolateY = interpolate(
+      scrollOffset.value,
+      [0, MAX_SCROLL],
+      [actionBarHeight, -(actionBarHeight + headerViewHeight)],
+      Extrapolate.CLAMP,
+    );
+
+    return {
+      transform: [{ translateY: interpolateY }],
+    };
   });
 
   useEffect(() => {
-    if (siteError) {
-      if (siteError.message === 'Not found or private.') {
-        stackNavigation.reset({ index: 0, routes: [{ name: 'Login' }] });
-      }
-    } else if (siteRefetch) {
-      siteRefetch();
-    }
-  }, [siteError, stackNavigation, siteRefetch]);
+    siteRefetch?.();
+  }, [siteRefetch]);
 
   useEffect(() => {
     if (routeParams === true) {
@@ -123,13 +156,14 @@ export default function Home() {
   );
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [activityLoading, setActivityLoading] = useState(false);
   const [selectedChannelId, setSelectedChannelId] = useState(
     NO_CHANNEL_FILTER.id,
   );
-  const [dataReady, setDataReady] = useState(false);
+  const [topicsData, setTopicsData] = useState<Array<PostWithoutId> | null>(
+    null,
+  );
   const [page, setPage] = useState(FIRST_PAGE);
-  const [hasOlderTopics, setHasOlderTopics] = useState(false);
+  const [hasMoreTopics, setHasMoreTopics] = useState(false);
   const [allTopicCount, setAllTopicCount] = useState(0);
   const [width, setWidth] = useState(0);
 
@@ -148,7 +182,7 @@ export default function Home() {
       storage.removeItem('user');
       showLogoutAlert();
     }
-  }, [tokenResponse, tokenError, stackNavigation.reset, storage]);
+  }, [tokenResponse, tokenError, reset, storage]);
 
   const { loading: channelsLoading, error: channelsError } = useChannels(
     {
@@ -165,7 +199,7 @@ export default function Home() {
     'HIDE_ALERT',
   );
 
-  const { getAbout, error: aboutError } = useAbout(
+  const { getAbout } = useAbout(
     {
       onCompleted: (data) => {
         if (data) {
@@ -177,112 +211,39 @@ export default function Home() {
     'HIDE_ALERT',
   );
 
-  const {
-    getActivity,
-    data: activityData,
-    error: activityError,
-  } = useLazyActivity(
-    {
-      variables: { username, offset: 0, filter: '1' },
-      onCompleted: ({ userActivity }) => {
-        let likedTopic = userActivity.filter(
-          (topic) => topic.actionType === 1 && topic.postNumber === 1,
-        );
-        let tempTopic: Array<number> = [];
-        likedTopic.forEach((topic) => {
-          tempTopic.push(topic.topicId ? topic.topicId : 0);
-        });
-        setLikedTopic(tempTopic);
-        setActivityLoading(false);
-      },
-      onError: () => setActivityLoading(false),
-    },
-    'HIDE_ALERT',
-  );
-
   const setData = useCallback(
-    ({ topics }: Topics) => {
+    ({ topics }: TopicsQuery) => {
       let rawTopicsData = topics?.topicList?.topics
         ? topics.topicList.topics
         : [];
-      let usersData = topics?.users || [];
       let channelsData = storage.getItem('channels');
-      let normalizedTopicsData: Array<Post> = rawTopicsData.map(
-        ({
-          posters,
-          id,
-          title,
-          excerpt,
-          visible,
-          authorUserId,
-          pinned,
-          liked,
-          likeCount,
-          postsCount,
-          imageUrl,
-          tags,
-          bumpedAt: createdAt,
-          views,
-          categoryId,
-        }) => {
-          let authorUser = usersData.find(({ id }) => id === authorUserId);
-          let frequentUser = posters.map(({ userId, user }) => {
-            let userData = usersData.find(
-              ({ id }) => id === userId || user?.id === id,
-            );
-            return {
-              id: userData?.id || 0,
-              username: userData?.username || '',
-              avatar: getImage(userData?.avatar ?? ''),
-            };
+      let normalizedTopicsData: Array<PostWithoutId> = rawTopicsData.map(
+        (topic) => {
+          return transformTopicToPost({
+            ...topic,
+            channels: channelsData ?? [],
           });
-          let channel = channelsData?.find(
-            (channel) => channel.id === categoryId,
-          );
-
-          return {
-            id,
-            topicId: id,
-            title,
-            content: excerpt || NO_EXCERPT_WORDING,
-            hidden: !visible,
-            username: authorUser?.username || '',
-            postId: authorUserId || 0,
-            images: imageUrl ? [imageUrl] : undefined,
-            avatar: authorUser ? getImage(authorUser.avatar) : '',
-            pinned,
-            replyCount: postsCount - 1,
-            likeCount,
-            viewCount: views,
-            isLiked: liked || false,
-            channel: channel || DEFAULT_CHANNEL,
-            tags: tags || [],
-            createdAt,
-            freqPosters: frequentUser,
-          };
         },
       );
       if (normalizedTopicsData.length === allTopicCount) {
-        setHasOlderTopics(false);
+        setHasMoreTopics(false);
       } else {
-        setHasOlderTopics(true);
+        setHasMoreTopics(true);
       }
       setTopicsData(normalizedTopicsData);
-      setDataReady(true);
     },
-    [allTopicCount, setTopicsData, storage],
+    [allTopicCount, storage],
   );
 
   const {
     getTopicList,
-    loading: topicsLoading,
     error: topicsError,
     refetch: refetchTopics,
     fetchMore: fetchMoreTopics,
   } = useLazyTopicList({
     variables: isNoChannelFilter(selectedChannelId)
-      ? { sort: sortState, page }
-      : { sort: sortState, categoryId: selectedChannelId, page },
+      ? { sort: sortState, page, username }
+      : { sort: sortState, categoryId: selectedChannelId, page, username },
     onError: () => {
       setRefreshing(false);
       setLoading(false);
@@ -296,10 +257,10 @@ export default function Home() {
   });
 
   const getData = useCallback(
-    (variables: TopicsVariables) => {
+    (variables: TopicsQueryVariables) => {
       try {
-        const data: Topics | null = client.readQuery({
-          query: TOPICS,
+        const data: TopicsQuery | null = client.readQuery({
+          query: TopicsDocument,
           variables,
         });
         data && setData(data);
@@ -312,7 +273,13 @@ export default function Home() {
   );
 
   useLayoutEffect(() => {
-    postListRef.current?.scrollToIndex({ index: 0, viewOffset: 80 });
+    if (!isFlatList(postListRef.current)) {
+      return;
+    }
+    postListRef.current.scrollToIndex({
+      index: 0,
+      viewOffset: headerViewHeight,
+    });
   }, [selectedChannelId]);
 
   useEffect(() => {
@@ -324,7 +291,7 @@ export default function Home() {
       setSelectedChannelId(NO_CHANNEL_FILTER.id);
     }
 
-    const unsubscribe = stackNavigation.addListener('focus', () => {
+    const unsubscribe = addListener('focus', () => {
       let categoryId = receivedChannelId;
       if (receivedChannelId) {
         categoryId = isNoChannelFilter(receivedChannelId)
@@ -332,7 +299,7 @@ export default function Home() {
           : receivedChannelId;
       }
 
-      const variables: TopicsVariables = {
+      const variables: TopicsQueryVariables = {
         sort: sortState,
         categoryId,
         page: FIRST_PAGE,
@@ -345,39 +312,31 @@ export default function Home() {
         }
       });
       getAbout();
-      if (username) {
-        getActivity();
-      }
     });
 
     return unsubscribe;
   }, [
     getRefreshToken,
     getAbout,
-    getActivity,
-    stackNavigation,
     receivedChannelId,
     username,
     storage,
     sortState,
     page,
     getData,
+    addListener,
   ]);
 
-  useEffect(() => {
-    if (!aboutError) {
-      return;
-    }
-    stackNavigation.reset({ index: 0, routes: [{ name: 'Login' }] });
-  }, [aboutError, stackNavigation]);
-
-  const postListRef = useRef<PostListRef>(null);
-  if (routeParams) {
-    postListRef.current?.scrollToIndex({ index: 0, viewOffset: 80 });
+  const postListRef = useRef<PostListRef<PostWithoutId>>(null);
+  if (routeParams && isFlatList(postListRef.current)) {
+    postListRef.current.scrollToIndex({
+      index: 0,
+      viewOffset: headerViewHeight,
+    });
   }
 
   const onPressTitle = () => {
-    stackNavigation.navigate('Channels', {
+    navigate('Channels', {
       prevScreen: 'Home',
       selectedChannelId: selectedChannelId,
     });
@@ -386,17 +345,17 @@ export default function Home() {
   const onPressAdd = () => {
     const currentUserId = storage.getItem('user')?.id;
     if (currentUserId) {
-      stackNavigation.navigate('NewPost', {
+      navigate('NewPost', {
         selectedChannelId,
         selectedTagsIds: [],
       });
     } else {
-      errorHandlerAlert(LoginError, stackNavigation.navigate);
+      errorHandlerAlert(LoginError, navigate);
     }
   };
 
   const onPressSearch = () => {
-    stackNavigation.navigate('Search');
+    navigate('Search');
   };
 
   const onRefresh = () => {
@@ -414,51 +373,67 @@ export default function Home() {
     const sortState: TopicsSortEnum =
       name === 'LATEST' ? TopicsSortEnum.Latest : TopicsSortEnum.Top;
     setSortState(sortState);
-    const variables: TopicsVariables = isNoChannelFilter(selectedChannelId)
+    const variables: TopicsQueryVariables = isNoChannelFilter(selectedChannelId)
       ? { sort: sortState, page: FIRST_PAGE }
       : {
           sort: sortState,
           categoryId: selectedChannelId,
           page: FIRST_PAGE,
         };
-    setTopicsData([]);
+    setTopicsData(null);
     setPage(FIRST_PAGE);
     getData(variables);
   };
 
-  const onPressReply = (postId: number) => {
-    let clickedPost = topicsData.filter((post) => post.id === postId);
-    stackNavigation.navigate('PostReply', {
-      topicId: postId,
-      title: clickedPost[0].title,
-      focusedPostNumber: clickedPost[0].replyCount,
-    });
-  };
+  const onPressReply = useCallback(
+    (param: { topicId: number }) => {
+      let { topicId } = param;
+      const cacheTopic = client.readFragment<TopicFragment>({
+        id: `Topic:${topicId}`,
+        fragment: TopicFragmentDoc,
+      });
+      if (!cacheTopic) {
+        return null;
+      }
+      let { title, replyCount } = transformTopicToPost(cacheTopic);
+      navigate('PostReply', {
+        topicId,
+        title,
+        focusedPostNumber: replyCount,
+      });
+    },
+    [navigate],
+  );
+
+  let isFetchingMoreTopics = useRef(false);
 
   const onEndReached = async () => {
-    if (!hasOlderTopics) {
+    if (!hasMoreTopics || isFetchingMoreTopics.current || !fetchMoreTopics) {
       return;
     }
     const nextPage = page + 1;
-    if (fetchMoreTopics) {
-      let variables: TopicsVariables;
-      if (isNoChannelFilter(selectedChannelId)) {
-        variables = { sort: sortState, page: nextPage };
-      } else {
-        variables = {
-          sort: sortState,
-          page: nextPage,
-          categoryId: selectedChannelId,
-        };
-      }
-
+    let variables: TopicsQueryVariables;
+    if (isNoChannelFilter(selectedChannelId)) {
+      variables = { sort: sortState, page: nextPage };
+    } else {
+      variables = {
+        sort: sortState,
+        page: nextPage,
+        categoryId: selectedChannelId,
+      };
+    }
+    try {
+      isFetchingMoreTopics.current = true;
       let result = await fetchMoreTopics({ variables });
+      isFetchingMoreTopics.current = false;
       if (result.data.topics.topicList?.topics?.length === 0) {
-        setHasOlderTopics(false);
+        setHasMoreTopics(false);
       } else {
-        setData(result.data);
         setPage(nextPage);
       }
+      setLoading(false);
+    } catch (error) {
+      isFetchingMoreTopics.current = false;
       setLoading(false);
     }
   };
@@ -487,30 +462,19 @@ export default function Home() {
     if (channelsError) {
       return <LoadingOrError message={errorHandler(channelsError, true)} />;
     }
-    if (activityError) {
-      return <LoadingOrError message={errorHandler(activityError, true)} />;
-    }
     if (topicsError) {
       return <LoadingOrError message={errorHandler(topicsError, true)} />;
     }
-    if (
-      (((topicsLoading && topicsData.length < 1) ||
-        channelsLoading ||
-        (activityLoading && !activityData)) &&
-        !refreshing) ||
-      loading
-    ) {
+    if (!topicsData || channelsLoading || loading) {
       return <LoadingOrError loading />;
     }
-    if (topicsData.length < 1 && dataReady) {
+    if (topicsData && topicsData.length < 1) {
       return <LoadingOrError message={t('No Posts available')} />;
     }
     return (
       <PostList
-        ref={postListRef}
+        postListRef={postListRef}
         data={topicsData}
-        onPressReply={onPressReply}
-        showImageRow
         contentInset={{ top: headerViewHeight }}
         contentOffset={{
           x: 0,
@@ -522,18 +486,21 @@ export default function Home() {
         refreshing={refreshing}
         style={styles.fill}
         contentContainerStyle={styles.postListContent}
-        numberOfLines={5}
-        prevScreen={'Home'}
-        likedTopic={likedTopic}
         scrollEventThrottle={16}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: headerY } } }],
-          { useNativeDriver: false },
-        )}
+        onScroll={scrollHandler}
         onEndReachedThreshold={0.1}
         onEndReached={onEndReached}
+        renderItem={({ item }) => {
+          return (
+            <HomePostItem
+              topicId={item.topicId}
+              prevScreen={'Home'}
+              onPressReply={onPressReply}
+            />
+          );
+        }}
         ListFooterComponent={
-          <FooterLoadingIndicator isHidden={!hasOlderTopics || !dataReady} />
+          <FooterLoadingIndicator isHidden={!hasMoreTopics || !topicsData} />
         }
       />
     );
@@ -554,12 +521,7 @@ export default function Home() {
           onPressAdd={onPressAdd}
           style={styles.navBar}
         />
-        <Animated.View
-          style={[
-            styles.header,
-            { transform: [{ translateY: headerTranslateY }] },
-          ]}
-        >
+        <Animated.View style={[styles.header, headerTranslateY]}>
           <SearchBar
             placeholder={t('Search posts, categories, etc.')}
             onPressSearch={onPressSearch}

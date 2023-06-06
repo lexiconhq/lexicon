@@ -1,3 +1,4 @@
+import { PostReplyParams } from './Navigation';
 import { Channel } from './Types';
 
 export type User = {
@@ -12,25 +13,27 @@ export type Post = {
   topicId: number;
   title: string;
   content: string;
-  hidden?: boolean;
-  images?: Array<string>;
-  mentionedUsers?: Array<string>;
   username: string;
   avatar: string;
   viewCount: number;
   replyCount: number;
-  pinned?: boolean;
   likeCount: number;
   isLiked: boolean;
   channel: Channel;
-  tags?: Array<string>;
-  createdAt: string;
   freqPosters: Array<User>;
+  createdAt: string;
+  hidden?: boolean;
+  mentionedUsers?: Array<string>;
+  pinned?: boolean;
+  tags?: Array<string>;
   postNumber?: number;
   replyToPostNumber?: number | null;
   canEdit?: boolean;
   canFlag?: boolean;
+  imageUrls?: Array<string>;
 };
+
+export type PostWithoutId = Omit<Post, 'id'>;
 
 export type Topic = {
   id: number;
@@ -41,7 +44,7 @@ export type Topic = {
   likeCount: number;
   replyCount: number;
   selectedTag: Array<string>;
-  selectedChanelId: number;
+  selectedChannelId: number;
 };
 
 export type NewPost = {
@@ -58,5 +61,6 @@ export type ReplyPost = {
   content: string;
   topicId: number;
   createdAt: string;
-  post?: Post;
-};
+  postNumber?: number;
+  channelId?: number;
+} & Pick<PostReplyParams, 'replyToPostId'>;

@@ -4,7 +4,7 @@ export const UPLOAD = gql`
   mutation Upload(
     $type: UploadTypeEnum!
     $userId: Int
-    $file: Upload!
+    $file: File!
     $token: Int
   ) {
     upload(file: $file, type: $type, userId: $userId, token: $token) {

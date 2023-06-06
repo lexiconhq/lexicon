@@ -1,4 +1,4 @@
-import { FieldResolver, queryField, intArg } from '@nexus/schema';
+import { FieldResolver, queryField, intArg, nullable } from 'nexus';
 
 import { ACCEPTED_LANGUAGE } from '../../constants';
 import { errorHandler } from '../../helpers';
@@ -17,7 +17,6 @@ let replyingToQueryResolver: FieldResolver<'Query', 'replyingTo'> = async (
       'Accept-Language': ACCEPTED_LANGUAGE,
     },
     params: {
-      // eslint-disable-next-line @typescript-eslint/camelcase
       max_replies: 1,
     },
   };
@@ -45,7 +44,8 @@ let replyingToQueryResolver: FieldResolver<'Query', 'replyingTo'> = async (
 let replyingToQuery = queryField('replyingTo', {
   type: 'Post',
   args: {
-    postId: intArg({ required: true }),
+    postId: intArg(),
+    replyToPostId: nullable(intArg()), //unused args on backend but needed as FE workaround to fetch local state
   },
   resolve: replyingToQueryResolver,
 });

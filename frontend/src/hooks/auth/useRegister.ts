@@ -1,19 +1,19 @@
 import { MutationHookOptions } from '@apollo/client';
 
 import {
-  Register as RegisterType,
-  RegisterVariables,
-} from '../../generated/server/Auth';
-import { REGISTER } from '../../graphql/server/auth';
+  RegisterMutation as RegisterType,
+  RegisterMutationVariables,
+  RegisterDocument,
+} from '../../generated/server';
 import { useMutation } from '../../utils';
 
 export function useRegister(
-  options?: MutationHookOptions<RegisterType, RegisterVariables>,
+  options?: MutationHookOptions<RegisterType, RegisterMutationVariables>,
 ) {
-  const [register, { loading }] = useMutation<RegisterType, RegisterVariables>(
-    REGISTER,
-    { ...options },
-  );
+  const [register, { loading }] = useMutation<
+    RegisterType,
+    RegisterMutationVariables
+  >(RegisterDocument, { ...options });
 
   return { register, loading };
 }

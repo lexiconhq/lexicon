@@ -1,7 +1,13 @@
 import { stringify } from 'querystring';
 
 import camelcaseKeys from 'camelcase-keys';
-import { FieldResolver, mutationField, intArg, stringArg } from '@nexus/schema';
+import {
+  FieldResolver,
+  mutationField,
+  intArg,
+  stringArg,
+  nullable,
+} from 'nexus';
 
 import { ACCEPTED_LANGUAGE, CONTENT_FORM_URLENCODED } from '../../constants';
 import { errorHandler } from '../../helpers';
@@ -20,7 +26,6 @@ export let flagPostResolver: FieldResolver<'Mutation', 'flagPost'> = async (
   };
   let body = {
     id: postId,
-    // eslint-disable-next-line @typescript-eslint/camelcase
     post_action_type_id: postActionTypeId,
   };
   try {
@@ -38,9 +43,9 @@ export let flagPostResolver: FieldResolver<'Mutation', 'flagPost'> = async (
 export let flagPostMutation = mutationField('flagPost', {
   type: 'Post',
   args: {
-    postId: intArg({ required: true }),
-    postActionTypeId: intArg({ required: true }),
-    message: stringArg(),
+    postId: intArg(),
+    postActionTypeId: intArg(),
+    message: nullable(stringArg()),
     //you can add flagTopic in args
   },
   resolve: flagPostResolver,

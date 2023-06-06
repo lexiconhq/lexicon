@@ -1,4 +1,4 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let UserOption = objectType({
   name: 'UserOption',
@@ -22,7 +22,7 @@ export let UserOption = objectType({
     t.boolean('emailInReplyTo');
     t.int('likeNotificationFrequency');
     t.boolean('includeTl0InDigests');
-    t.int('themeIds', { list: true });
+    t.list.int('themeIds');
     t.int('themeKeySeq');
     t.boolean('allowPrivateMessages');
     t.boolean('enableAllowedPmUsers');

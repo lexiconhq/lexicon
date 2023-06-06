@@ -1,10 +1,10 @@
 import { DEFAULT_CHANNEL } from '../constants';
-import { ActionSummary as ActionsSummaryServer } from '../generated/server/types';
+import { ActionSummary as ActionsSummaryServer } from '../generated/server';
 import { Channel, Post, Topic, TopicDetail, User } from '../types';
 
 import { getImage } from './getUserImage';
 
-enum ActionsSummaryType {
+export enum ActionsSummaryType {
   Bookmark = 1,
   Like = 2,
   FlagOffTopic = 3,
@@ -26,8 +26,8 @@ export function ActionsSummaryHandler(
   actionsSummary?.forEach(({ id, count, acted }) => {
     switch (id) {
       case ActionsSummaryType.Like: {
-        likeCount = count || 0;
-        isLiked = acted || false;
+        likeCount = count ?? 0;
+        isLiked = acted ?? false;
         break;
       }
       case ActionsSummaryType.FlagOffTopic:
@@ -86,76 +86,107 @@ export function postDetailContentHandler({
     id,
     title: title || 'Untitled',
     firstPostId: postStream?.stream ? postStream?.stream[0] : 0,
-    canEditTopic: details?.canEdit || false,
+    canEditTopic: details?.canEdit ?? false,
     replyCount: postsCount ? postsCount - 1 : 0,
-    likeCount: likeCount ? likeCount : 0,
-    viewCount: views || 0,
-    selectedTag: tags || [],
-    selectedChanelId: categoryId || 1,
+    likeCount: likeCount ?? 0,
+    viewCount: views ?? 0,
+    selectedTag: tags ?? [],
+    selectedChannelId: categoryId ?? DEFAULT_CHANNEL.id,
   };
 
-  const posts: Array<Post> = [];
-  let { posts: basePosts, stream } = postStream;
+  const postComments: Array<Post> = [];
+  let {
+    stream,
+    posts: basePostComments,
+    firstPost: originalFirstPost,
+  } = postStream;
 
-  basePosts.forEach(
-    ({
-      actionsSummary,
-      id,
-      topicId,
-      raw,
-      hidden,
-      listOfCooked,
-      listOfMention,
-      username,
-      avatar,
-      replyCount,
-      createdAt,
-      postNumber,
-      replyToPostNumber,
-      canEdit,
-    }) => {
-      if (!actionsSummary) {
-        throw new Error('Unexpected condition: actionsSummary was undefined');
-      }
+  basePostComments.forEach((params) => {
+    postComments.push(
+      transformPostsToFrontendPost({ post: params, channel, freqPosters }),
+    );
+  });
 
-      const { isLiked, likeCount, canFlag } =
-        ActionsSummaryHandler(actionsSummary);
+  let firstPost;
+  if (originalFirstPost) {
+    firstPost = transformPostsToFrontendPost({
+      post: originalFirstPost,
+      channel,
+      freqPosters,
+    });
+  }
 
-      posts.push({
-        id,
-        topicId,
-        title: '',
-        content: raw || '',
-        hidden,
-        images: listOfCooked || undefined,
-        mentionedUsers: listOfMention || undefined,
-        username,
-        avatar: getImage(avatar),
-        replyCount: replyCount || 0,
-        likeCount,
-        viewCount: 0,
-        isLiked,
-        channel: channel || DEFAULT_CHANNEL,
-        tags: [],
-        createdAt,
-        freqPosters,
-        postNumber,
-        replyToPostNumber: replyToPostNumber || -1,
-        canEdit,
-        canFlag,
-      });
-    },
-  );
+  let firstLoadedCommentIndex = null;
+  let lastLoadedCommentIndex = null;
 
-  const firstPostIndex =
-    stream?.findIndex((postId) => postId === posts[0].id) || 0;
-  const lastPostIndex = firstPostIndex + (posts.length - 1);
+  if (postComments.length && stream) {
+    const [{ id: firstCommentId }] = postComments;
+    firstLoadedCommentIndex = stream.findIndex(
+      (postId) => postId === firstCommentId,
+    );
+    if (firstLoadedCommentIndex === -1) {
+      firstLoadedCommentIndex = null;
+    } else {
+      lastLoadedCommentIndex =
+        firstLoadedCommentIndex + (postComments.length - 1);
+    }
+  }
 
   return {
     stream,
     topic,
-    posts,
-    firstPostIndex,
-    lastPostIndex,
+    postComments,
+    firstPost,
+    firstLoadedCommentIndex,
+    lastLoadedCommentIndex,
   };
 }
+
+let transformPostsToFrontendPost = (params: {
+  post: TopicDetail['postStream']['posts'][0];
+  channel?: Channel;
+  freqPosters: Array<User>;
+}): Post => {
+  let {
+    actionsSummary,
+    id,
+    topicId,
+    markdownContent,
+    hidden,
+    mentions,
+    username,
+    avatar,
+    replyCount,
+    createdAt,
+    postNumber,
+    replyToPostNumber,
+    canEdit,
+  } = params.post;
+  if (!actionsSummary) {
+    throw new Error('Unexpected condition: actionsSummary was undefined');
+  }
+
+  const { isLiked, likeCount, canFlag } = ActionsSummaryHandler(actionsSummary);
+  return {
+    id,
+    topicId,
+    title: '',
+    content: markdownContent ?? '',
+    hidden,
+    mentionedUsers: mentions ?? undefined,
+    username,
+    avatar: getImage(avatar),
+    replyCount: replyCount ?? 0,
+    likeCount,
+    viewCount: 0,
+    isLiked,
+    channel: params.channel ?? DEFAULT_CHANNEL,
+    tags: [],
+    createdAt,
+    freqPosters: params.freqPosters,
+    postNumber,
+    replyToPostNumber,
+    canEdit,
+    canFlag,
+  };
+};

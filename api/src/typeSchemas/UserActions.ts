@@ -1,43 +1,36 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
-import { PROSE_DISCOURSE_UPLOAD_HOST } from '../constants';
+import { getNormalizedUrlTemplate } from '../resolvers/utils';
 
 export let UserActions = objectType({
   name: 'UserActions',
   definition(t) {
-    t.string('actingAvatarTemplate', (userActions) => {
-      let { actingAvatarTemplate } =
-        'actingAvatarTemplate' in userActions
-          ? userActions
-          : { actingAvatarTemplate: '' };
-      return actingAvatarTemplate.includes('http')
-        ? actingAvatarTemplate
-        : PROSE_DISCOURSE_UPLOAD_HOST.concat(actingAvatarTemplate);
+    t.string('actingAvatarTemplate', {
+      resolve: (userActions) =>
+        getNormalizedUrlTemplate(userActions, 'actingAvatar'),
+      sourceType: 'string',
     });
-    t.string('actingName', { nullable: true });
+    t.nullable.string('actingName');
     t.int('actingUserId');
-    t.int('actionCode', { nullable: true });
+    t.nullable.int('actionCode');
     t.int('actionType');
     t.boolean('archived');
-    t.string('avatarTemplate', (userActions) => {
-      let { avatarTemplate } =
-        'avatarTemplate' in userActions ? userActions : { avatarTemplate: '' };
-      return avatarTemplate.includes('http')
-        ? avatarTemplate
-        : PROSE_DISCOURSE_UPLOAD_HOST.concat(avatarTemplate);
+    t.string('avatarTemplate', {
+      resolve: (userActions) => getNormalizedUrlTemplate(userActions),
+      sourceType: 'string',
     });
-    t.int('categoryId', { nullable: true });
+    t.nullable.int('categoryId');
     t.boolean('closed');
     t.string('createdAt');
     t.boolean('deleted');
     t.string('excerpt');
-    t.string('hidden', { nullable: true });
-    t.string('name', { nullable: true });
-    t.int('postId', { nullable: true });
+    t.nullable.boolean('hidden');
+    t.nullable.string('name');
+    t.nullable.int('postId');
     t.int('postNumber');
-    t.int('postType', { nullable: true });
+    t.nullable.int('postType');
     t.string('slug');
-    t.string('targetName', { nullable: true });
+    t.nullable.string('targetName');
     t.int('targetUserId');
     t.string('targetUsername');
     t.string('title');

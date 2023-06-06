@@ -1,11 +1,11 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let RefreshTokenOutput = objectType({
   name: 'RefreshTokenOutput',
   definition(t) {
     t.int('id');
     t.string('username');
-    t.string('name', { nullable: true });
+    t.nullable.string('name');
     // Auth
     t.string('token');
   },

@@ -1,11 +1,13 @@
 import * as runtypes from 'runtypes';
 
-import { GetTopicDetail } from '../generated/server/GetTopicDetail';
-import { Notification as GeneratedNotification } from '../generated/server/Notification';
-import { Profile } from '../generated/server/Profile';
-import { Site } from '../generated/server/Site';
-import { UserActivity as GeneratedUserActivity } from '../generated/server/UserActivity';
-import { SearchTags } from '../generated/server/Search';
+import {
+  GetTopicDetailQuery,
+  NotificationQuery as GeneratedNotification,
+  ProfileQuery,
+  SiteQuery,
+  UserActivityQuery as GeneratedUserActivity,
+  SearchTagsQuery,
+} from '../generated/server';
 
 import { User } from './Post';
 
@@ -47,11 +49,10 @@ export type EmailAddress = {
 
 export type MessageContent = {
   id: number;
-  userId: number;
+  username: string;
   time: string;
   message: string;
-  images?: Array<string>;
-  listOfMention?: Array<string>;
+  mentions?: Array<string>;
 };
 
 export type Message = {
@@ -96,18 +97,18 @@ export type Image = {
 };
 
 export type UserDetail = Extract<
-  Profile['userProfile']['user'],
+  ProfileQuery['userProfile']['user'],
   { __typename: 'UserDetail' }
 >;
 
-export type PostStream = GetTopicDetail['topicDetail']['postStream'];
-export type TopicDetail = NonNullable<GetTopicDetail['topicDetail']>;
+export type PostStream = GetTopicDetailQuery['topicDetail']['postStream'];
+export type TopicDetail = NonNullable<GetTopicDetailQuery['topicDetail']>;
 export type TopicDetailInner = TopicDetail['details'];
 
-export type SiteSettings = Site['site'];
+export type SiteSettings = SiteQuery['site'];
 export type RawNotificationsType = NonNullable<
   GeneratedNotification['notification']['notifications']
 >[number];
 export type UserActivity = GeneratedUserActivity['userActivity'][number];
 
-export type Tag = SearchTags['searchTag'][number];
+export type Tag = SearchTagsQuery['searchTag'][number];

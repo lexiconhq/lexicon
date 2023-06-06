@@ -1,22 +1,22 @@
 import { MutationHookOptions } from '@apollo/client';
 
 import {
-  ChangeNewPassword as ChangeNewPasswordType,
-  ChangeNewPasswordVariables,
-} from '../../generated/server/ChangePassword';
-import { CHANGE_PASSWORD } from '../../graphql/server/changePassword';
+  ChangeNewPasswordMutation as ChangeNewPasswordType,
+  ChangeNewPasswordMutationVariables,
+  ChangeNewPasswordDocument,
+} from '../../generated/server';
 import { useMutation } from '../../utils';
 
 export function useChangePassword(
   options?: MutationHookOptions<
     ChangeNewPasswordType,
-    ChangeNewPasswordVariables
+    ChangeNewPasswordMutationVariables
   >,
 ) {
   const [changeNewPassword, { loading, error }] = useMutation<
     ChangeNewPasswordType,
-    ChangeNewPasswordVariables
-  >(CHANGE_PASSWORD, {
+    ChangeNewPasswordMutationVariables
+  >(ChangeNewPasswordDocument, {
     ...options,
   });
 

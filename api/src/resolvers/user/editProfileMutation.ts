@@ -6,7 +6,8 @@ import {
   arg,
   intArg,
   stringArg,
-} from '@nexus/schema';
+  nullable,
+} from 'nexus';
 
 import { ACCEPTED_LANGUAGE, CONTENT_JSON } from '../../constants';
 import { errorHandler } from '../../helpers';
@@ -67,10 +68,10 @@ export let editProfileMutation: FieldResolver<
 export let editProfile = mutationField('editProfile', {
   type: 'UserDetail',
   args: {
-    editProfileInput: arg({ type: 'EditProfileInput' }),
-    username: stringArg({ required: true }),
-    newUsername: stringArg(),
-    uploadId: intArg(),
+    editProfileInput: nullable(arg({ type: 'EditProfileInput' })),
+    username: stringArg(),
+    newUsername: nullable(stringArg()),
+    uploadId: nullable(intArg()),
   },
   resolve: editProfileMutation,
 });

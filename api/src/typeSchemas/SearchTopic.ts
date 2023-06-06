@@ -1,4 +1,4 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let SearchTopic = objectType({
   name: 'SearchTopic',
@@ -11,24 +11,30 @@ export let SearchTopic = objectType({
     t.int('replyCount');
     t.int('highestPostNumber');
     t.string('createdAt');
-    t.string('lastPostedAt', { nullable: true });
+    t.nullable.string('lastPostedAt');
     t.boolean('bumped');
     t.string('bumpedAt');
-    t.string('archetype', { nullable: true });
+    t.nullable.string('archetype');
     t.boolean('unseen');
     t.boolean('pinned');
-    t.string('excerpt', { nullable: true }); // Must be activated
+
+    // Nullable because this is a feature that must be turned in
+    // in Discourse in order to be set.
+    t.nullable.string('excerpt');
+
     t.boolean('visible');
     t.boolean('closed');
     t.boolean('archived');
-    t.boolean('bookmarked', { nullable: true });
-    t.boolean('liked', { nullable: true });
-    t.string('tags', { nullable: true, list: true });
-    t.int('categoryId', { nullable: true });
-    t.int('lastReadPostNumber', { nullable: true }); // Only available when logged in
-    t.int('newPosts', { nullable: true }); // Only available when logged in
-    t.int('notificationLevel', { nullable: true }); // Only available when logged in
-    t.int('unread', { nullable: true }); // Only available when logged in
+    t.nullable.boolean('bookmarked');
+    t.nullable.boolean('liked');
+    t.nullable.list.string('tags');
+    t.nullable.int('categoryId');
+
+    // The below properties are only available when logged in.
+    t.nullable.int('lastReadPostNumber');
+    t.nullable.int('newPosts');
+    t.nullable.int('notificationLevel');
+    t.nullable.int('unread');
   },
 });
 

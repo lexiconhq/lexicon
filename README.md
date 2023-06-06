@@ -46,11 +46,13 @@ This will simultaneously launch two processes:
 - The Prose GraphQL API Server
 - The local Expo dev server, which will enable you to launch the React Native app from your device
 
-The `quickstart` commands are designed to point at an existing Discourse server, [Discourse Meta](https://meta.discourse.org).
+The `quickstart` commands are designed to point at an existing **public** Discourse server, [Discourse Meta](https://meta.discourse.org).
 
 Configuring it to point at your own Discourse site will take additional configuration.
 
-You can learn more about this in the [Lexicon Documentation](https://docs.lexicon.is/quick-start).
+We guide you through the basics of this in the next section below.
+
+You can also learn more about this process in detail in the [Lexicon Documentation](https://docs.lexicon.is/quick-start).
 
 ## Example: Specifying a custom Discourse Site URL
 
@@ -58,36 +60,52 @@ This is a brief example to demonstrate how to quickly point the project at a cus
 
 In the example below, we'll use the [Rust Users forum](https://users.rust-lang.org).
 
-If you'd like, simply change that URL to the URL for your Discourse site in order to follow along with your own site.
+You can also follow along using your own site if you'd like.
 
 After running `yarn && yarn generate` from the project root, execute the following:
 
 ```
 $ echo "PROSE_DISCOURSE_HOST=https://users.rust-lang.org" > api/.env
-$ echo "MOBILE_PROSE_URL=http://localhost" > frontend/.env
 ```
 
-The above statements setup the required environment variables for the Prose GraphQL API and the frontend.
+The above command sets the required environment variable for the Prose GraphQL API.
 
-- The API (via `PROSE_DISCOURSE_HOST`) has been instructed to attempt to connect to a Discourse instance at `https://users.rust-lang.org`.
+Next, open up `frontend/Config.ts`, and set the value at `config.localDevelopment.proseUrl` to `http://localhost`.
 
-- The frontend (via `MOBILE_HOST_PROSE`) has been instructed to attempt to connect to a Prose GraphQL API running at `http://localhost` (port 80).
+```ts
+const config = {
+  localDevelopment: {
+    proseUrl: 'http://localhost',
+  },
+  // ...
+};
+```
+
+This instructs the frontend to attempt to connect to a Prose GraphQL API running at `http://localhost`.
+
+To bring it all together:
+
+- The frontend (via `localDevelopment.proseUrl`) has been instructed to connect to a Prose GraphQL API running at `http://localhost` (port 80).
+
+- The Prose GraphQL API (via `PROSE_DISCOURSE_HOST`) has been instructed to connect to a Discourse instance at `https://users.rust-lang.org`.
+
+- When you launch the Mobile App via [Expo Go](https://expo.dev/client), it will reach out to the API running at `http://localhost`, which will contact the Discourse server at `https://users.rust-lang.org`, and the content of that server will appear in the Mobile App.
 
 ### Important Notes
 
-The API default config instructs the server to listen on a hostname of `0.0.0.0` (the public interface) and port 80.
+The API's default config instructs the server to listen on a hostname of `0.0.0.0` (the public interface) and port 80.
 
-<details><summary>The frontend takes some additional steps so that you can use the app on your mobile device... <b>(Read More)</b></summary>
+<details><summary>The frontend takes some additional steps so that you can test the app with Expo Go on your mobile device... <b>(Read More)</b></summary>
 
 This may seem confusing at first, but it actually saves you a bit of time.
 
-In this scenario, the frontend app is running on your mobile device via Expo Go, and the Prose GraphQL API is running on your development machine (e.g. laptop).
+In this scenario, the frontend app is running on your mobile device via Expo Go, and the Prose GraphQL API is running on your development machine (e.g., your laptop).
 
 So, how could we expect the mobile app to be able to locate a server running on a different device, when we have only told the frontend app to attempt to connect to the API on `localhost`? The API isn't running on your mobile device.
 
 The traditional way to deal with this is to force you to manually lookup your local IP address on the network that your mobile device is also connected to. It would be a value like `192.168.0.53`.
 
-Then, you'd have to update `frontend/.env` with that value.
+Then, you'd have to update `frontend/Config.ts` with that value.
 
 Even worse, if your local IP address ever changes, everything would break, and you'd have to update the environment variable again.
 
@@ -122,7 +140,7 @@ forwarding Discourse requests to https://users.rust-lang.org
 💡   🧘 Yoga -   Running GraphQL Server at http://0.0.0.0:8999/graphql
 ```
 
-### Start Expo to run the frontend app
+### Start Expo Go to run the frontend app
 
 After that, **in a separate shell**, start Expo to run the frontend app:
 
@@ -168,24 +186,4 @@ If you'd like to contribute to it, or just want to browse it locally, you can ru
 ```
 yarn docs:install
 yarn docs:start
-```
-
-### Note: Node 16 required
-
-Our tooling, Docusaurus v2, requires Node version 16 in order to work with it.
-
-You can check your current Node version by running the following command:
-
-```
-$ node --version
-v14.17.0
-```
-
-In order to make this process simpler, we recommend installing [nvm](https://github.com/nvm-sh/nvm) (Node version manager) onto your development machine.
-
-Then you'll be able to quickly switch between versions without issue:
-
-```
-$ nvm use 14
-Now using node v14.17.0 (npm v8.15.1)
 ```

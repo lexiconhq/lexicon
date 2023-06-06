@@ -1,86 +1,73 @@
-import React from 'react';
-import { TouchableOpacity, View, ViewProps } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import React, { useCallback } from 'react';
+import { TouchableOpacity, View, ViewProps } from 'react-native';
 
 import { NO_EXCERPT_WORDING } from '../../constants';
 import { CustomImage, Text } from '../../core-ui';
 import { formatRelativeTime, useStorage } from '../../helpers';
 import { Color, makeStyles, useTheme } from '../../theme';
-import { Post, StackNavProp } from '../../types';
+import { Channel, StackNavProp } from '../../types';
 import { Author } from '../Author';
 import { Markdown } from '../Markdown';
 
 import { PostGroupings } from './PostGroupings';
 import { PostHidden } from './PostHidden';
-import { PostItemFooter } from './PostItemFooter';
 
 type Props = ViewProps & {
-  data: Post;
-  postList: boolean;
+  topicId: number;
+  title: string;
+  content: string;
+  username: string;
+  avatar: string;
+  channel: Channel;
+  createdAt: string;
+  isLiked: boolean;
+  tags?: Array<string>;
+  hidden?: boolean;
   showLabel?: boolean;
   currentUser?: string;
-  hasFooter?: boolean;
   numberOfLines?: number;
   showImageRow?: boolean;
   nonclickable?: boolean;
   prevScreen?: string;
-  onPressReply?: (postId: number) => void;
-  likedTopic?: Array<number>;
-  onPressAuthor?: (username: string) => void;
-  content?: string;
   images?: Array<string>;
-  mentionedUsers?: Array<string>;
   isHidden?: boolean;
+  footer?: React.ReactNode;
+  mentionedUsers?: Array<string>;
   onPressViewIgnoredContent?: () => void;
 };
 
-export function PostItem(props: Props) {
+function BasePostItem(props: Props) {
   const { navigate } = useNavigation<StackNavProp<'TabNav'>>();
   const storage = useStorage();
   const styles = useStyles();
   const { colors } = useTheme();
 
   const {
-    data,
-    postList,
+    topicId,
+    title,
+    username,
+    avatar,
+    channel,
+    createdAt,
+    isLiked,
+    tags,
+    hidden,
     showLabel,
     currentUser,
-    hasFooter = true,
+    prevScreen,
+    content,
+    style,
     numberOfLines = 0,
     showImageRow = false,
     nonclickable = false,
-    style,
-    prevScreen,
-    onPressReply,
-    likedTopic,
-    onPressAuthor,
-    content: contentFromPrevScreen,
-    images: imagesFromPrevScreen,
-    mentionedUsers: mentionFromPrevScreen,
+    images,
+    mentionedUsers,
     isHidden = false,
+    footer,
     onPressViewIgnoredContent = () => {},
     ...otherProps
   } = props;
-
-  const {
-    title,
-    avatar,
-    username,
-    channel,
-    tags,
-    content: contentFromGetTopics,
-    images: imagesFromGetTopics,
-    mentionedUsers: mentionFromGetTopics,
-    hidden: flagged,
-    id,
-    topicId,
-    viewCount,
-    replyCount,
-    likeCount,
-    isLiked,
-    freqPosters,
-    createdAt,
-  } = data;
 
   const time =
     createdAt === ''
@@ -88,31 +75,27 @@ export function PostItem(props: Props) {
       : (prevScreen === 'Home' ? t('Last Activity ') : '') +
         formatRelativeTime(createdAt);
 
-  const isTopicOwner = username === storage.getItem('user')?.username;
+  const isCreator = username === storage.getItem('user')?.username;
+
+  const color: Color = hidden ? 'textLight' : 'textNormal';
+
+  const isTapToView = content === NO_EXCERPT_WORDING;
 
   const onPressPost = () => {
     navigate('PostDetail', {
       topicId,
       prevScreen,
       focusedPostNumber: undefined,
+      hidden: isHidden,
     });
   };
 
-  const color: Color = flagged ? 'textLight' : 'textNormal';
-
-  const content = flagged
-    ? contentFromPrevScreen ?? contentFromGetTopics
-    : contentFromGetTopics;
-
-  const images = flagged
-    ? imagesFromPrevScreen ?? imagesFromGetTopics
-    : imagesFromGetTopics;
-
-  const mentionedUsers = flagged
-    ? mentionFromPrevScreen ?? mentionFromGetTopics
-    : mentionFromGetTopics;
-
-  const isTapToView = content === NO_EXCERPT_WORDING;
+  const onPressAuthor = useCallback(
+    (username: string) => {
+      navigate('UserInformation', { username });
+    },
+    [navigate],
+  );
 
   const contentTitle = (
     <Text style={styles.spacingBottom} variant="semiBold" size="l">
@@ -129,7 +112,6 @@ export function PostItem(props: Props) {
       subtitleStyle={styles.textTime}
       onPressAuthor={onPressAuthor}
       onPressEmptySpaceInPost={onPressPost}
-      postList={postList}
     />
   );
 
@@ -139,17 +121,16 @@ export function PostItem(props: Props) {
       {isHidden ? (
         <PostHidden
           style={styles.markdown}
-          author={isTopicOwner}
+          author={isCreator}
           numberOfLines={numberOfLines}
           onPressViewIgnoredContent={onPressViewIgnoredContent}
         />
       ) : numberOfLines === 0 ? (
         <Markdown
           style={styles.markdown}
-          imageUrls={images}
           content={content}
           fontColor={colors[color]}
-          listOfMention={mentionedUsers}
+          mentions={mentionedUsers}
         />
       ) : (
         <Text
@@ -205,24 +186,7 @@ export function PostItem(props: Props) {
   return (
     <View style={[styles.container, style]} {...otherProps}>
       {wrappedMainContent}
-      {hasFooter && (
-        <PostItemFooter
-          postId={id}
-          topicId={topicId}
-          postList={postList}
-          viewCount={viewCount}
-          baseLikeCount={likeCount}
-          replyCount={replyCount}
-          onPressReply={onPressReply}
-          baseIsLiked={isLiked}
-          isCreator={isTopicOwner}
-          frequentPosters={freqPosters.slice(1)}
-          style={styles.spacingTop}
-          onPressView={onPressPost}
-          title={title}
-          likedTopic={likedTopic}
-        />
-      )}
+      {footer}
     </View>
   );
 }
@@ -247,9 +211,6 @@ const useStyles = makeStyles(({ colors, fontSizes, shadow, spacing }) => ({
   spacingBottom: {
     marginBottom: spacing.xl,
   },
-  spacingTop: {
-    paddingTop: spacing.m,
-  },
   text: {
     marginTop: spacing.xl,
     marginBottom: spacing.m,
@@ -258,3 +219,5 @@ const useStyles = makeStyles(({ colors, fontSizes, shadow, spacing }) => ({
     fontSize: fontSizes.s,
   },
 }));
+let PostItem = React.memo(BasePostItem);
+export { Props as PostItemProps, PostItem };

@@ -1,19 +1,19 @@
 import { MutationHookOptions } from '@apollo/client';
 
 import {
-  PostRaw as PostRawType,
-  PostRawVariables,
-} from '../../generated/server/PostRaw';
-import { POST_RAW } from '../../graphql/server/postRaw';
+  PostRawQuery as PostRawType,
+  PostRawQueryVariables,
+  PostRawDocument,
+} from '../../generated/server';
 import { useLazyQuery } from '../../utils';
 
 export function usePostRaw(
-  options?: MutationHookOptions<PostRawType, PostRawVariables>,
+  options?: MutationHookOptions<PostRawType, PostRawQueryVariables>,
 ) {
-  const [postRaw, { loading }] = useLazyQuery<PostRawType, PostRawVariables>(
-    POST_RAW,
-    { ...options },
-  );
+  const [postRaw, { loading }] = useLazyQuery<
+    PostRawType,
+    PostRawQueryVariables
+  >(PostRawDocument, { ...options });
 
   return { postRaw, loading };
 }

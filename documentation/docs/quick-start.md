@@ -4,11 +4,16 @@ title: Quick Start
 
 ## Prerequisites
 
-- Node.js 12.19.0 or newer
-- The latest version of NPM or Yarn, compatible with Node 12.19.0 or newer
-- Expo-CLI 3.22.1 or newer
+- Node.js 16.14 or newer
+- The latest version of NPM or Yarn, compatible with Node 16.14 or newer
+- Expo CLI 6.0.6 or newer
+- EAS CLI 2.6.0 or newer to build and publish the App
 - An active Discourse site
   - If you don’t have one, please follow the instructions in [Development Setup](setup#discourse-host)
+
+:::note
+Follow the instructions in [Setup Guidance](tutorial/setup) to install the prerequisite depedencies, such as NPM, the Expo CLI, and the EAS CLI.
+:::
 
 ## Installation
 
@@ -33,10 +38,7 @@ Note that `npm run generate` involves two steps.
 
 - This allows the frontend codebase to stay in sync with, and not duplicate the code for, the types from the `api` directory.
 
-This is a necessary process from our tooling, [Apollo](https://github.com/apollographql/apollo-tooling).
-
-To learn more about this process, check out the [apollo client:codegen](https://github.com/apollographql/apollo-tooling#apollo-clientcodegen-output) documentation.
-Click [here](https://github.com/apollographql/apollo-tooling#apollo-clientcodegen-output) to learn more about why we do this.
+The code shared from the API is then used by [Apollo](https://github.com/apollographql/apollo-tooling), the GraphQL library we use on the frontend, which enables the Mobile App to query the API correctly.
 
 ## Launch the Mobile App
 

@@ -11,6 +11,7 @@ export * from './Dot';
 export * from './FloatingButton';
 export * from './Icon';
 export * from './IconWithLabel';
+export * from './Link';
 export * from './MentionedText';
 export * from './RadioButton';
 export * from './Text';

@@ -1,5 +1,5 @@
 ---
-title: Setting up a Cloud Server (Optional)
+title: Setup a Cloud Server (Optional)
 ---
 
 import useBaseUrl from '@docusaurus/useBaseUrl';

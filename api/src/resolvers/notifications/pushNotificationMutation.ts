@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/camelcase */
-import { FieldResolver, mutationField, stringArg } from '@nexus/schema';
+import { FieldResolver, mutationField, nullable, stringArg } from 'nexus';
 
 import { ACCEPTED_LANGUAGE, CONTENT_JSON } from '../../constants';
 import { errorHandler } from '../../helpers';
@@ -34,9 +33,9 @@ export let pushNotificationMutation: FieldResolver<
 export let pushNotification = mutationField('pushNotification', {
   type: 'String',
   args: {
-    expoPnToken: stringArg(),
-    applicationName: stringArg(),
-    platform: stringArg(),
+    expoPnToken: nullable(stringArg()),
+    applicationName: nullable(stringArg()),
+    platform: nullable(stringArg()),
   },
   resolve: pushNotificationMutation,
 });

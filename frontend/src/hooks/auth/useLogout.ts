@@ -1,19 +1,19 @@
 import { MutationHookOptions } from '@apollo/client';
 
 import {
-  Logout as LogoutType,
-  LogoutVariables,
-} from '../../generated/server/Auth';
+  LogoutMutation as LogoutType,
+  LogoutMutationVariables,
+} from '../../generated/server';
 import { LOGOUT } from '../../graphql/server/auth';
 import { useMutation } from '../../utils';
 
 export function useLogout(
-  options?: MutationHookOptions<LogoutType, LogoutVariables>,
+  options?: MutationHookOptions<LogoutType, LogoutMutationVariables>,
 ) {
-  const [logout, { loading }] = useMutation<LogoutType, LogoutVariables>(
-    LOGOUT,
-    { ...options },
-  );
+  const [logout, { loading }] = useMutation<
+    LogoutType,
+    LogoutMutationVariables
+  >(LOGOUT, { ...options });
 
   return { logout, loading };
 }
