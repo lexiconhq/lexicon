@@ -10,7 +10,7 @@ import {
 import { errorHandlerAlert } from '../helpers';
 import { ErrorAlertOptionType } from '../types';
 
-export function useLazyQuery<TData, TVariables = OperationVariables>(
+export function useLazyQuery<TData, TVariables extends OperationVariables>(
   query: DocumentNode,
   options?: LazyQueryHookOptions<TData, TVariables>,
   errorAlert: ErrorAlertOptionType = 'SHOW_ALERT',

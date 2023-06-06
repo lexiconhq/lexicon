@@ -1,11 +1,14 @@
-import { QueryHookOptions } from '@apollo/client';
+import { QueryHookOptions, OperationVariables } from '@apollo/client';
 
 import { DEFAULT_CHANNEL } from '../../constants';
 import { SiteQuery, SiteDocument } from '../../generated/server';
 import { useQuery } from '../../utils';
 
 export function useSiteSettings(options?: QueryHookOptions<SiteQuery>) {
-  let { data, loading, error, refetch } = useQuery<SiteQuery>(
+  let { data, loading, error, refetch } = useQuery<
+    SiteQuery,
+    OperationVariables
+  >(
     SiteDocument,
     {
       notifyOnNetworkStatusChange: true,

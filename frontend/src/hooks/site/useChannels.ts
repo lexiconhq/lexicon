@@ -1,4 +1,4 @@
-import { QueryHookOptions } from '@apollo/client';
+import { QueryHookOptions, OperationVariables } from '@apollo/client';
 
 import {
   GetChannelsQuery as ChannelsType,
@@ -11,7 +11,7 @@ export function useChannels(
   options?: QueryHookOptions<ChannelsType>,
   errorAlert: ErrorAlertOptionType = 'SHOW_ALERT',
 ) {
-  const { data, loading, error } = useQuery<ChannelsType>(
+  const { data, loading, error } = useQuery<ChannelsType, OperationVariables>(
     GetChannelsDocument,
     {
       ...options,

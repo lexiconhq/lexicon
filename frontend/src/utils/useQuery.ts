@@ -10,7 +10,7 @@ import {
 import { errorHandlerAlert } from '../helpers';
 import { ErrorAlertOptionType } from '../types';
 
-export function useQuery<TData, TVariables = OperationVariables>(
+export function useQuery<TData, TVariables extends OperationVariables>(
   query: DocumentNode,
   options?: QueryHookOptions<TData, TVariables>,
   errorAlert: ErrorAlertOptionType = 'SHOW_ALERT',

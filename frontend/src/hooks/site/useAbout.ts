@@ -1,4 +1,4 @@
-import { LazyQueryHookOptions } from '@apollo/client';
+import { LazyQueryHookOptions, OperationVariables } from '@apollo/client';
 
 import { AboutQuery as AboutType, AboutDocument } from '../../generated/server';
 import { ErrorAlertOptionType } from '../../types';
@@ -8,7 +8,7 @@ export function useAbout(
   options?: LazyQueryHookOptions<AboutType>,
   errorAlert: ErrorAlertOptionType = 'SHOW_ALERT',
 ) {
-  const [getAbout, { error }] = useLazyQuery<AboutType>(
+  const [getAbout, { error }] = useLazyQuery<AboutType, OperationVariables>(
     AboutDocument,
     {
       ...options,

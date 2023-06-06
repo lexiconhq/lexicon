@@ -1,4 +1,4 @@
-import { LazyQueryHookOptions } from '@apollo/client';
+import { LazyQueryHookOptions, OperationVariables } from '@apollo/client';
 
 import {
   RefreshTokenQuery,
@@ -11,7 +11,10 @@ export function useRefreshToken(
   options?: LazyQueryHookOptions<RefreshTokenQuery>,
   errorAlert: ErrorAlertOptionType = 'SHOW_ALERT',
 ) {
-  const [getRefreshToken, { data, error }] = useLazyQuery<RefreshTokenQuery>(
+  const [getRefreshToken, { data, error }] = useLazyQuery<
+    RefreshTokenQuery,
+    OperationVariables
+  >(
     RefreshTokenDocument,
     {
       ...options,
