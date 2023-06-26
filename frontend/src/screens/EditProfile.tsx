@@ -267,10 +267,10 @@ export default function EditProfile(props: ProfileProps) {
         aspect: [1, 1],
         quality: 1,
       });
-      if (!result.cancelled) {
-        let format = getFormat(result.uri);
+      if (!result.canceled) {
+        let format = getFormat(result.assets[0].uri);
         if (normalizedExtensions.includes(format)) {
-          const reactNativeFile = createReactNativeFile(result.uri);
+          const reactNativeFile = createReactNativeFile(result.assets[0].uri);
           upload({
             variables: {
               file: reactNativeFile,
