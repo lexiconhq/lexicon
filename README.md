@@ -1,5 +1,3 @@
-For more detailed information, updates, and discussions, please visit the [Lexicon Discussions](https://github.com/lexiconhq/lexicon/discussions) section on GitHub.
-
 ## Lexicon
 
 Lexicon is a customizable, open source mobile **App Template** that provides an elegant mobile discussions experience. Built on top of [Discourse](https://www.discourse.org), a platform for communities.
@@ -13,6 +11,10 @@ Lexicon is a customizable, open source mobile **App Template** that provides an 
 ### Project Roadmap
 
 Lexicon is currently under active development. You can stay up to date on the features we're working on by viewing the [Project Roadmap](https://github.com/orgs/lexiconhq/projects/1/views/1).
+
+### Discussions
+
+For more detailed information, updates, and discussions, please visit the [Lexicon Discussions](https://github.com/lexiconhq/lexicon/discussions) section on GitHub.
 
 ## Installation
 
