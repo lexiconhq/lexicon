@@ -1,7 +1,7 @@
 {
   "scripts": {
     "start": "expo start",
-    "quickstart": "expo r -c",
+    "quickstart": "expo -c",
     "typecheck": "tsc --noEmit -p .",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
