@@ -43,6 +43,7 @@ import { makeStyles, useTheme } from '../../theme';
 import { Post, StackNavProp, StackRouteProp } from '../../types';
 
 import { useNotificationScroll } from './hooks';
+import PostDetailSkeletonLoading from './PostDetailSkeletonLoading';
 
 // postNumber of the topic is 1
 // scrollToIndex is postNumber -2 for replies because the postNumber will start at 2
@@ -456,8 +457,8 @@ export default function PostDetail() {
     // The setTimeout behavior removed as this will create infinite loop
   };
 
-  if (loading || replyLoading || error) {
-    let isLoading = (loading || replyLoading) && !error;
+  let isLoading = (loading || replyLoading) && !error;
+  if (error) {
     return (
       <LoadingOrError
         message={
@@ -469,11 +470,12 @@ export default function PostDetail() {
               : undefined
             : t('Post is not available')
         }
-        loading={isLoading}
       />
     );
   }
-  return (
+  return isLoading ? (
+    <PostDetailSkeletonLoading isLoading={isLoading} />
+  ) : (
     <>
       <SafeAreaView style={styles.container}>
         {showOptions && (
@@ -484,6 +486,7 @@ export default function PostDetail() {
             noShadow
           />
         )}
+
         <CustomFlatList
           onLayout={() => {
             setFlatListReady(true);

@@ -1,7 +1,8 @@
 {
   "expo": {
     "name": "<insert your app name>",
-    "slug": "<insert your app slug>",
+    "slug": "<insert your app name>",
+    "scheme": "<your-scheme-here>",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -14,6 +15,7 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
+    "jsEngine": "hermes",
     "assetBundlePatterns": ["**/*"],
     "packagerOpts": {
       "config": "metro.config.js",

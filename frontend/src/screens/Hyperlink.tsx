@@ -22,7 +22,12 @@ export default function Hyperlink() {
     params: { prevScreen, title, id, replyToPostId, postNumber },
   } = useRoute<RootStackRouteProp<'HyperLink'>>();
 
-  const { control, errors, formState, getValues } = useForm<HyperlinkForm>({
+  const {
+    control,
+    formState: { errors },
+    formState,
+    getValues,
+  } = useForm<HyperlinkForm>({
     mode: 'onChange',
   });
 
@@ -92,7 +97,7 @@ export default function Hyperlink() {
           defaultValue=""
           rules={{ required: true }}
           control={control}
-          render={({ value, onChange, onBlur }) => (
+          render={({ field: { value, onChange, onBlur } }) => (
             <TextInput
               label={t('URL')}
               placeholder={t('Insert URL')}
@@ -111,7 +116,7 @@ export default function Hyperlink() {
           name="title"
           defaultValue=""
           control={control}
-          render={({ value, onChange, onBlur }) => (
+          render={({ field: { value, onChange, onBlur } }) => (
             <TextInput
               inputRef={titleInputRef}
               label={t('Title (Optional)')}

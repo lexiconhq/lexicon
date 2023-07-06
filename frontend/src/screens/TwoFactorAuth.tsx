@@ -11,15 +11,17 @@ import { errorHandler, getImage, setToken, useStorage } from '../helpers';
 import { useLogin } from '../hooks';
 import { makeStyles, useColorScheme } from '../theme';
 import { StackNavProp, StackRouteProp } from '../types';
+import { useRedirect } from '../utils';
 
 type TwoFactorForm = {
-  code: number;
+  code: string;
 };
 
 export default function TwoFactorAuth() {
   const { colorScheme } = useColorScheme();
   const storage = useStorage();
   const styles = useStyles();
+  const { redirectPath, setRedirectPath, handleRedirect } = useRedirect();
 
   const { reset, navigate } = useNavigation<StackNavProp<'TwoFactorAuth'>>();
 
@@ -41,7 +43,13 @@ export default function TwoFactorAuth() {
           name: user.name ?? '',
           avatar: getImage(user.avatar),
         });
-        reset({ index: 0, routes: [{ name: 'TabNav' }] });
+
+        if (redirectPath) {
+          handleRedirect();
+          setRedirectPath('');
+        } else {
+          reset({ index: 0, routes: [{ name: 'TabNav' }] });
+        }
       } else if (responseType === 'SecondFactorRequired') {
         setErrorMsg(authUser.error);
       }
@@ -51,8 +59,14 @@ export default function TwoFactorAuth() {
     },
   });
 
-  const { control, handleSubmit, errors, formState } = useForm<TwoFactorForm>({
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    formState,
+  } = useForm<TwoFactorForm>({
     mode: 'onChange',
+    defaultValues: { code: '' },
   });
 
   const onPressSignup = () => {
@@ -63,7 +77,7 @@ export default function TwoFactorAuth() {
   const onSubmit = handleSubmit(({ code }) => {
     Keyboard.dismiss();
     const { email, password } = params;
-    const token = code.toString();
+    const token = code ?? '';
 
     login({
       variables: {
@@ -106,15 +120,14 @@ export default function TwoFactorAuth() {
 
         <Controller
           name="code"
-          defaultValue=""
           rules={{ required: true }}
           control={control}
-          render={({ onChange, value }) => (
+          render={({ field: { onChange, value } }) => (
             <TextInput
               label={t('Code')}
               placeholder={t('Insert your code')}
               error={errors.code != null}
-              value={value}
+              value={(value && value.toString()) || ''}
               onChangeText={onChange}
               textContentType="oneTimeCode"
               keyboardType="number-pad"

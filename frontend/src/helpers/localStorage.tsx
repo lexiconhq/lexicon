@@ -1,4 +1,4 @@
-import { Literal, Number, Record, String } from 'runtypes';
+import { Boolean, Literal, Number, Record, String } from 'runtypes';
 
 import { ChannelList } from '../types';
 
@@ -17,12 +17,20 @@ export let User = Record({
   avatar: String,
 });
 
+export let PushNotificationsPreferences = Record({
+  shouldShowAlert: Boolean,
+  shouldPlaySound: Boolean,
+  shouldSetBadge: Boolean,
+});
+
 let [StorageProvider, useStorage] = createCachedStorage(
   {
     colorScheme: (value) => ColorScheme.check(value),
     aesthetic: (value) => Aesthetic.check(value),
     user: (value) => User.check(value),
+    expoPushToken: (value) => String.check(value),
     channels: (value) => ChannelList.check(value),
+    pushNotifications: (value) => PushNotificationsPreferences.check(value),
   },
   '@Cached/',
 );

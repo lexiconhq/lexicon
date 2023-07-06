@@ -15,7 +15,13 @@ module.exports = {
     'White Labeling': ['white-labeling', 'assets', 'theming'],
     'Deploying Prose': ['deployment', 'env-prose', 'dedicated'],
     'Configuring Discourse': ['optimal'],
-    'Publishing your App': ['app-store', 'play-store', 'lexicon-updates'],
+    'Publishing your App': [
+      'app-store',
+      'play-store',
+      'lexicon-updates',
+      'troubleshooting-build',
+    ],
+    Plugin: ['pushNotifications/introduction'],
   },
   tutorial: {
     Tutorial: [
@@ -31,4 +37,24 @@ module.exports = {
       'tutorial/updating',
     ],
   },
+  plugin: [
+    {
+      type: 'doc',
+      id: 'pushNotifications/introduction', // document ID
+      label: 'Introduction', // sidebar label
+    },
+    {
+      type: 'doc',
+      id: 'pushNotifications/plugin-interaction', // document ID
+      label: 'How Push Notifications work with Lexicon', // sidebar label
+    },
+    {
+      type: 'category',
+      label: 'Setup',
+      items: [
+        'pushNotifications/setup/enable-plugin',
+        'pushNotifications/setup/testing-mobile-push-notification',
+      ],
+    },
+  ],
 };

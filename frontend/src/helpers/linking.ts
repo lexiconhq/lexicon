@@ -3,8 +3,8 @@ import {
   deepRoutes,
   PostOrMessageDetailRoute,
 } from '../constants';
-import { navigate } from '../navigation/NavigationService';
-import { MessageDetailParams, RootStackParamList } from '../types';
+import { reset } from '../navigation/NavigationService';
+import { MessageDetailParams, Routes } from '../types';
 
 export type DetailParamsOutcome = 'valid-params' | 'invalid-post-number';
 
@@ -29,7 +29,7 @@ export type DetailParamsOutcome = 'valid-params' | 'invalid-post-number';
  * a replacement to `postNumber` was necessary, or if a valid `postNumber` was received.
  *
  */
-function getValidDetailParams(params: Array<string>):
+export function getValidDetailParams(params: Array<string>):
   | {
       topicId: number;
       postNumber: number;
@@ -43,7 +43,8 @@ function getValidDetailParams(params: Array<string>):
     return;
   }
 
-  const [topicId, postNumber] = params.map((param) => {
+  const [, , ...otherParams] = params;
+  const [topicId, postNumber] = otherParams.map((param) => {
     const parsed = Number.parseInt(param, 10);
     return Number.isNaN(parsed) ? undefined : parsed;
   });
@@ -72,16 +73,24 @@ export function navigatePostOrMessageDetail(
   pathParams: Array<string>,
 ) {
   const detailParams = getValidDetailParams(pathParams);
+  let navigationRoutes: Routes;
 
   // We weren't able to extract any meaningful information from the parameters.
   // Navigate to the closest valid screen.
   if (!detailParams) {
-    const closestScreen: RootStackParamList['Main'] =
+    navigationRoutes =
       route === deepRoutes['message-detail']
-        ? { screen: 'Messages' }
-        : { screen: 'TabNav', params: { screen: 'Home' } };
+        ? [
+            { name: 'TabNav', state: { routes: [{ name: 'Profile' }] } },
+            { name: 'Messages' },
+          ]
+        : [{ name: 'TabNav', state: { routes: [{ name: 'Home' }] } }];
 
-    navigate(['Main', closestScreen]);
+    reset({
+      index: navigationRoutes.length - 1,
+      routes: navigationRoutes,
+    });
+
     return;
   }
 
@@ -89,7 +98,6 @@ export function navigatePostOrMessageDetail(
   // screen. `outcome` contains the specifics of how much was extracted.
   const { topicId, postNumber } = detailParams;
 
-  let targetScreen: RootStackParamList['Main'];
   if (route === deepRoutes['message-detail']) {
     const messageParams: MessageDetailParams = {
       id: topicId,
@@ -99,14 +107,52 @@ export function navigatePostOrMessageDetail(
       source: 'deeplink',
     };
 
-    targetScreen = { screen: 'MessageDetail', params: messageParams };
+    navigationRoutes = [
+      { name: 'TabNav', state: { routes: [{ name: 'Profile' }] } },
+      { name: 'Messages' },
+      { name: 'MessageDetail', params: messageParams },
+    ];
   } else {
-    targetScreen = {
-      screen: 'PostDetail',
-      params: { topicId, postNumber, source: 'deeplink' },
-    };
+    navigationRoutes = [
+      { name: 'TabNav', state: { routes: [{ name: 'Home' }] } },
+      {
+        name: 'PostDetail',
+        params: { topicId, postNumber, source: 'deeplink' },
+      },
+    ];
   }
 
-  navigate(['Main', targetScreen]);
+  reset({
+    index: navigationRoutes.length - 1,
+    routes: navigationRoutes,
+  });
+
   return;
+}
+
+export function extractPathname(url: string) {
+  /**
+   * This function is used to check whether or not a slash appeard in the URL after the hostname.
+   *
+   * For example this URL: 'https://test-url.com'.
+   * It doesn't have a '/' after the hostname, so we know that this URL doesn't have a path.
+   *
+   * But with this URL: 'https://test-url.com/t'.
+   * It has a '/' after the hostname, so ther is a posibility that the URL have a path.
+   *
+   * The plus 2 is used to skip the '//' after 'https:'.
+   */
+  const slashIndex = url.indexOf('/', url.indexOf('//') + 2);
+
+  if (slashIndex === -1) {
+    return '';
+  }
+
+  const [pathname] = url.slice(slashIndex + 1).split('?');
+  let regex = /t\/([a-z'-]+)\/\d+(\/\d)?/;
+  if (!regex.test(pathname)) {
+    return '';
+  }
+
+  return pathname;
 }

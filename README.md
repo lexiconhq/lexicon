@@ -12,6 +12,10 @@ Lexicon is a customizable, open source mobile **App Template** that provides an 
 
 Lexicon is currently under active development. You can stay up to date on the features we're working on by viewing the [Project Roadmap](https://github.com/orgs/lexiconhq/projects/1/views/1).
 
+### Discussions
+
+For more detailed information, updates, and discussions, please visit the [Lexicon Discussions](https://github.com/lexiconhq/lexicon/discussions) section on GitHub.
+
 ## Installation
 
 Clone the repository and navigate into it:

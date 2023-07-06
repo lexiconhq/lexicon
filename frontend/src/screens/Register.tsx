@@ -57,7 +57,12 @@ export default function Register() {
   const nameInputRef = useRef<TextInputType>(null);
   const passwordInputRef = useRef<TextInputType>(null);
 
-  const { control, handleSubmit, errors, formState } = useForm<Form>({
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    formState,
+  } = useForm<Form>({
     mode: 'onChange',
   });
 
@@ -108,7 +113,7 @@ export default function Register() {
             },
           }}
           control={control}
-          render={({ onChange, value, onBlur }) => (
+          render={({ field: { onChange, value, onBlur } }) => (
             <TextInput
               label={t('Email Address')}
               placeholder={t('Insert your email address')}
@@ -131,7 +136,7 @@ export default function Register() {
           defaultValue=""
           rules={usernameInputRules}
           control={control}
-          render={({ onChange, value, onBlur }) => (
+          render={({ field: { onChange, value, onBlur } }) => (
             <TextInput
               inputRef={usernameInputRef}
               label={t('Username')}
@@ -153,7 +158,7 @@ export default function Register() {
           defaultValue=""
           rules={nameInputRules}
           control={control}
-          render={({ onChange, value, onBlur }) => (
+          render={({ field: { onChange, value, onBlur } }) => (
             <TextInput
               inputRef={nameInputRef}
               label={t('Name')}
@@ -174,7 +179,7 @@ export default function Register() {
           defaultValue=""
           rules={passwordInputRules}
           control={control}
-          render={({ onChange, value, onBlur }) => (
+          render={({ field: { onChange, value, onBlur } }) => (
             <TextInput
               inputRef={passwordInputRef}
               label={t('Password')}

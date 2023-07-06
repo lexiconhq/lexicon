@@ -24,7 +24,10 @@ export function useLazyTopicList(
   const [getTopicList, { loading, error, refetch, fetchMore }] = useLazyQuery<
     TopicListType,
     TopicListVariables
-  >(TopicsDocument, { context: { queryDeduplication: true }, ...options });
+  >(TopicsDocument, {
+    context: { queryDeduplication: true },
+    ...options,
+  });
 
   return { getTopicList, loading, error, refetch, fetchMore };
 }

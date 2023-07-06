@@ -1,5 +1,7 @@
 import { replaceQuotesWithMarkdown } from '../replaceQuotesWithMarkdown';
 
+jest.mock('expo-linking');
+
 describe('replace quote bb code with blockquote markdown', () => {
   it('should replace quote bb code in string with blockquote markdown', () => {
     expect(

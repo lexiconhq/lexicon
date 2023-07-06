@@ -6,6 +6,8 @@ import {
   sortImageUrl,
 } from '../processRawContent';
 
+jest.mock('expo-linking');
+
 describe('getPostShortUrl return short urls from raw content', () => {
   it('should return short url from image markdown', () => {
     expect(

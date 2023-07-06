@@ -31,16 +31,19 @@ export async function pickImage(extensions?: Array<string>) {
     // If this ever changes in the future, be sure to update `result`
     // to reflect that it will be an array of `uri`s.
     const [firstResult] = pendingResults;
-    result = 'cancelled' in firstResult ? firstResult : { cancelled: true };
+    result =
+      'canceled' in firstResult
+        ? firstResult
+        : { canceled: true, assets: null };
   }
 
-  if (result.cancelled) {
+  if (result.canceled || !result.assets.length) {
     return {
       error: 'cancelled',
     };
   }
 
-  let format = getFormat(result.uri);
+  let format = getFormat(result.assets[0].uri);
 
   if (extensions && !extensions.includes(format)) {
     return {
@@ -49,6 +52,6 @@ export async function pickImage(extensions?: Array<string>) {
   }
 
   return {
-    uri: result.uri,
+    uri: result.assets[0].uri,
   };
 }

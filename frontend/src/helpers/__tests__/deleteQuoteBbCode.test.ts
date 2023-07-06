@@ -1,5 +1,7 @@
 import { deleteQuoteBbCode } from '../deleteQuoteBbCode';
 
+jest.mock('expo-linking');
+
 describe('delete quote bb code', () => {
   it('should return string without quote bb code', () => {
     expect(

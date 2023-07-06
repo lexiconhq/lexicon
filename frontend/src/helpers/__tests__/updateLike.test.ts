@@ -6,6 +6,8 @@ import {
 } from '../updateLike';
 import { ActionsSummaryType } from '../postDetailContentHandler';
 
+jest.mock('expo-linking');
+
 describe('Get updated like props', () => {
   it('should return the value of previousCount -1 when liked value is false', () => {
     const previousCount = 2;

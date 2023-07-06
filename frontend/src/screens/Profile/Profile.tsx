@@ -57,14 +57,12 @@ export default function Profile() {
     return unsubscribe;
   }, [navigation, getProfile]);
 
-  const { logout, loading: logoutLoading } = useLogout({
-    variables: { username },
-  });
+  const { logout, loading: logoutLoading } = useLogout();
 
   const userImage = getImage(data?.userProfile.user.avatar || '', 'xl');
 
   const onLogout = async () => {
-    await logout();
+    await logout({ username });
     await client.clearStore();
     removeToken();
     storage.removeItem('user');

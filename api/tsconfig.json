@@ -7,7 +7,7 @@
     "resolveJsonModule": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "reset.d.ts"]
 }

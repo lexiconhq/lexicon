@@ -44,12 +44,10 @@ export const DEEP_LINK_SCREEN_CONFIG: PathConfigMap<RootStackParamList> = {
       // Route to the specific detail scenes when the path is provided
       // with the needed parameters.
       MessageDetail: {
-        path: `${deepRoutes['message-detail']}/:id/:postNumber`,
-        exact: true,
+        path: `${deepRoutes['message-detail']}/t/:slug/:id/:postNumber`,
       },
       PostDetail: {
-        path: `${deepRoutes['post-detail']}/:topicId/:postNumber?`,
-        exact: true,
+        path: `${deepRoutes['post-detail']}/t/:slug/:topicId/:postNumber?`,
       },
     },
   },

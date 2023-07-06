@@ -4,40 +4,10 @@ import { Alert } from 'react-native';
 import { FIRST_POST_NUMBER } from '../constants';
 import {
   Notification as NotificationDataType,
+  NotificationType,
   RawNotificationsType,
   StackParamList,
 } from '../types';
-
-enum NotificationType {
-  Mention = 1,
-  ReplyPost = 2,
-  QuotePost = 3,
-  EditPost = 4,
-  LikePost = 5,
-  SendMessage = 6,
-  InviteMessage = 7,
-  // InviteeAccepted = 8,
-  ReplyMessage = 9,
-  MovePost = 10,
-  LinkPost = 11,
-  // ObtainBadge = 12,
-  InviteTopic = 13,
-  Custom = 14,
-  GroupMention = 15,
-  // ModeratorsInbox = 16,
-  WatchingTopic = 17,
-  TopicReminder = 18,
-  LikeMultiplePosts = 19,
-  PostApproved = 20,
-  CodeReviewCommitApproved = 21,
-  MembershipRequestAccepted = 22,
-  MembershipRequestConsolidated = 23,
-  BookmarkReminder = 24,
-  Reaction = 25,
-  VotesReleased = 26,
-  EventReminder = 27,
-  EventInvitation = 28,
-}
 
 export function notificationHandler(
   data: Array<RawNotificationsType>,
@@ -156,7 +126,8 @@ export function notificationHandler(
         switch (notificationType) {
           // TODO : Do more research about more notificationTypes
           case NotificationType.Mention:
-          case NotificationType.GroupMention: {
+          case NotificationType.GroupMention:
+          case NotificationType.ChatMention: {
             message = t('Mentioned you in ') + topicTitle;
             break;
           }

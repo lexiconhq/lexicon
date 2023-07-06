@@ -8,23 +8,58 @@ import {
 } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import * as Linking from 'expo-linking';
+import * as Notifications from 'expo-notifications';
 
 import { useColorScheme } from '../theme';
 import { RootStackParamList } from '../types';
-import { DEEP_LINK_SCREEN_CONFIG, isPostOrMessageDetail } from '../constants';
-import { navigatePostOrMessageDetail } from '../helpers';
+import {
+  DEEP_LINK_SCREEN_CONFIG,
+  EXPO_PREFIX,
+  handleUrl,
+  isPostOrMessageDetail,
+  onSubscribe,
+} from '../constants';
+import { getToken, navigatePostOrMessageDetail } from '../helpers';
+import { useRedirect } from '../utils';
 
 import RootStackNavigator from './RootStackNavigator';
 import { navigationRef } from './NavigationService';
 
 export default function AppNavigator() {
   const { colorScheme } = useColorScheme();
+  const { setRedirectPath } = useRedirect();
   const darkMode = colorScheme === 'dark';
 
-  const prefix = Linking.createURL('/');
   const linking: LinkingOptions<RootStackParamList> = {
-    prefixes: [prefix], // NOTE: Add app scheme prefix, ex: 'exp://'
+    prefixes: [EXPO_PREFIX],
     config: { screens: DEEP_LINK_SCREEN_CONFIG },
+    subscribe: onSubscribe,
+    async getInitialURL() {
+      // First, you may want to do the default deep link handling
+      // Check if app was opened from a deep link
+      const initialUrl = await Linking.getInitialURL();
+
+      if (initialUrl == null) {
+        return initialUrl;
+      }
+
+      // Handle URL from expo push notifications
+      const response = await Notifications.getLastNotificationResponseAsync();
+      if (response) {
+        return handleUrl(response);
+      }
+
+      const [, pathname] = initialUrl.split('://');
+      if (!pathname) {
+        return;
+      }
+
+      const [route] = pathname.split('/');
+      if (route && isPostOrMessageDetail(route)) {
+        setRedirectPath(pathname);
+      }
+      return initialUrl;
+    },
     getStateFromPath: (fullPath, config) => {
       // Split off any search params (`?a=1&b=2`)
       // Then, Extract the leading part of the path as the `route`.
@@ -40,8 +75,15 @@ export default function AppNavigator() {
         return getStateFromPath(fullPath, config);
       }
 
-      // From here on out, we know that `route` is either `message-detail` | `post-detail`.
-      navigatePostOrMessageDetail(route, pathParams);
+      getToken().then((token) => {
+        if (!token) {
+          setRedirectPath(pathname);
+          return;
+        }
+
+        // From here on out, we know that `route` is either `message-detail` | `post-detail`.
+        navigatePostOrMessageDetail(route, pathParams);
+      });
     },
   };
 

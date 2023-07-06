@@ -28,13 +28,16 @@
     "graphql": "^16.5.0",
     "nexus": "^1.4.0-next.11",
     "querystring": "^0.2.0",
-    "snakecase-keys": "3.2.0",
+    "set-cookie-parser": "^2.5.1",
+    "snakecase-keys": "^3.2.0",
     "tough-cookie": "^4.0.0"
   },
   "devDependencies": {
+    "@total-typescript/ts-reset": "^0.4.2",
     "@types/form-data": "^2.5.0",
     "@types/jest": "^26.0.9",
     "@types/node": "^14.0.27",
+    "@types/set-cookie-parser": "^2.4.2",
     "@types/tough-cookie": "^4.0.0",
     "@types/ws": "^7.2.6",
     "cross-env": "^7.0.3",

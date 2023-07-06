@@ -42,6 +42,7 @@ function BaseHomePostItem(props: Props) {
      */
     return <LoadingOrError message="Post not found" />;
   }
+
   let channelsData = storage.getItem('channels');
   let {
     title,

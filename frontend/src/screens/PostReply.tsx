@@ -27,10 +27,10 @@ import {
   formatExtensions,
   getHyperlink,
   insertHyperlink,
+  insertImageUploadStatus,
   mentionHelper,
   newPostIsValid,
-  reformatMarkdownAfterUpload,
-  reformatMarkdownBeforeUpload,
+  getReplacedImageUploadStatus,
   useStorage,
 } from '../helpers';
 import {
@@ -42,6 +42,7 @@ import {
 import { makeStyles, useTheme } from '../theme';
 import {
   CursorPosition,
+  Form,
   Image,
   ReplyPost,
   RootStackNavProp,
@@ -50,10 +51,6 @@ import {
 } from '../types';
 import { useModal } from '../utils';
 import { client } from '../graphql/client';
-
-type Form = {
-  raw: string;
-};
 
 export default function PostReply() {
   const { modal, setModal } = useModal();
@@ -126,7 +123,13 @@ export default function PostReply() {
 
   const debounced = useDebouncedCallback((value, token) => {
     if (imagesArray[token - 1]) {
-      reformatMarkdownAfterUpload(value, imagesArray, token, setValue);
+      let newText = getReplacedImageUploadStatus(
+        value,
+        token,
+        imagesArray[token - 1].link,
+      );
+
+      setValue('raw', newText);
     }
   }, 1500);
 
@@ -161,12 +164,12 @@ export default function PostReply() {
     setCurrentUploadToken(currentUploadToken + 1);
     const reactNativeFile = createReactNativeFile(uri);
     const { raw } = getValues();
-    reformatMarkdownBeforeUpload(
+    let result = insertImageUploadStatus(
       raw,
       cursorPosition.start,
-      imagesArray,
-      setValue,
+      imagesArray.length + 1,
     );
+    setValue('raw', result);
     upload({
       variables: {
         file: reactNativeFile,
@@ -293,6 +296,10 @@ export default function PostReply() {
     }
   }, [editPostId, getValues, oldContent, title, uploadsInProgress]);
 
+  const setMentionValue = (text: string) => {
+    setValue('raw', text);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <CustomHeader
@@ -325,7 +332,7 @@ export default function PostReply() {
               mentionLoading={mentionLoading}
               rawText={getValues('raw')}
               textRef={postReplyRef}
-              setMentionValue={setValue}
+              setMentionValue={setMentionValue}
               setShowUserList={setShowUserList}
             />
             <BottomMenu
@@ -350,7 +357,7 @@ export default function PostReply() {
           defaultValue={oldContent}
           rules={{ required: true }}
           control={control}
-          render={({ onChange, value }) => (
+          render={({ field: { onChange, value } }) => (
             <TextArea
               value={value}
               large

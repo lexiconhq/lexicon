@@ -30,6 +30,7 @@ export let Post = objectType({
         if (!cooked) {
           return raw;
         }
+
         return generateMarkdownContent(raw, cooked);
       },
     });

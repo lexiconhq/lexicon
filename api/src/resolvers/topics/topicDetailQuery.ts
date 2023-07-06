@@ -25,11 +25,12 @@ let topicDetailQueryResolver: FieldResolver<'Query', 'topicDetail'> = async (
     });
     const firstPostOfData = data.postStream.posts[0];
     if (firstPostOfData) {
-      const summary = firstPostOfData.actionsSummary.find(
-        ({ id }: { id: number }) => id === LIKE_ACTION_ID,
-      );
-
-      data.liked = summary?.acted ?? false;
+      let isLiked = !!firstPostOfData.actionsSummary.find(
+        ({ id }: { id: number }) => {
+          return id === LIKE_ACTION_ID;
+        },
+      )?.acted;
+      data.liked = isLiked;
     }
 
     if (firstPostOfData.postNumber === FIRST_POST_NUMBER) {

@@ -3,6 +3,8 @@ import {
   ActionsSummaryHandler,
 } from '../postDetailContentHandler';
 
+jest.mock('expo-linking');
+
 describe('actions summary handler', () => {
   let actionsSummary: Array<ActionsSummary>;
   it('should return default when param is null', () => {

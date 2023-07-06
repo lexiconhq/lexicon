@@ -1,7 +1,9 @@
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import {
   CompositeNavigationProp,
+  NavigationState,
   NavigatorScreenParams,
+  PartialState,
   RouteProp as RoutePropBase,
 } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -181,6 +183,7 @@ export type RootStackParamList = {
   Main: NavigatorScreenParams<StackParamList>;
   Channels: ChannelsParams;
   DarkMode: undefined;
+  PushNotificationsPreferences: undefined;
   FlagPost: FlagPostParams;
   HyperLink: HyperlinkParams;
   NewMessage: NewMessageParams;
@@ -224,3 +227,5 @@ export type TabParamList = {
 export type RootStackRouteName = keyof RootStackParamList;
 export type StackRouteName = keyof StackParamList;
 export type TabRouteName = keyof TabParamList;
+
+export type Routes = PartialState<NavigationState>['routes'];

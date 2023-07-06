@@ -28,9 +28,18 @@ module.exports = {
           position: 'left',
         },
         {
+          type: 'doc',
+          docId: 'pushNotifications/introduction',
+          label: 'Push Notifications Plugin',
+          position: 'left',
+        },
+        {
           href: 'https://github.com/lexiconhq/lexicon',
           label: 'GitHub',
           position: 'right',
+        },
+        {
+          type: 'docsVersionDropdown',
         },
       ],
     },
@@ -58,7 +67,8 @@ module.exports = {
       {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
-          editUrl: 'https://github.com/lexiconhq/lexicon',
+          editUrl:
+            'https://github.com/lexiconhq/lexicon/blob/master/documentation/',
           routeBasePath: '/',
         },
         theme: {

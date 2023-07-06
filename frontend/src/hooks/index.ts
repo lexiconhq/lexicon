@@ -1,5 +1,6 @@
 export * from './auth/useLogin';
 export * from './auth/useLogout';
+export * from './auth/usePushNotifications';
 export * from './auth/useRefreshToken';
 export * from './auth/useRegister';
 

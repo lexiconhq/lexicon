@@ -23,6 +23,7 @@ import PostPreview from './PostPreview';
 import PostReply from './PostReply';
 import Preferences from './Preferences/Preferences';
 import Profile from './Profile/Profile';
+import PushNotifications from './Preferences/PushNotifications';
 import Register from './Register';
 import Search from './Search';
 import SelectUser from './SelectUser/SelectUser';
@@ -57,6 +58,7 @@ export {
   PostReply,
   Preferences,
   Profile,
+  PushNotifications,
   Register,
   Search,
   SelectUser,

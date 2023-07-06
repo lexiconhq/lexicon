@@ -5,7 +5,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { PixelRatio, Platform, View } from 'react-native';
+import { Dimensions, PixelRatio, Platform, View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Constants from 'expo-constants';
 import Animated, {
@@ -82,7 +82,14 @@ const NAV_BAR_TITLE_SIZE = 24;
 const IOS_BAR = 60;
 const ANDROID_BAR = 64;
 const MAX_SCROLL = 300; // at maximum 300 unit will be calculated for interpolation
-const MIN_SCROLL = -200; // at minimum scroll 200 unit before starting hide animation
+
+/**
+ * Ensure that the minimum scroll value is not greater than the minimum y value from the scroll when refreshing.
+ * In this case, we set the minimum scroll value to be half of the device height to account for situations where users may pull the scroll forcefully.
+ * if dimensions height is 0 we will set min scroll to be 400
+ */
+
+const MIN_SCROLL = -((Dimensions.get('screen').height || 800) / 2);
 
 const fontScale = PixelRatio.getFontScale();
 const normalizedSize = NAV_BAR_TITLE_SIZE * (fontScale - 1);
@@ -116,12 +123,15 @@ export default function Home() {
   const scrollHandler = useAnimatedScrollHandler<{ prevY?: number }>({
     onScroll: (event, ctx) => {
       const { y } = event.contentOffset;
+
       const diff = y - (ctx?.prevY ?? 0);
+
       scrollOffset.value = clamp(
         scrollOffset.value + diff,
         MIN_SCROLL,
         MAX_SCROLL,
       );
+
       ctx.prevY = event.contentOffset.y;
     },
     onBeginDrag: (event, ctx) => {
@@ -286,7 +296,6 @@ export default function Home() {
     let channels = storage.getItem('channels');
     if (channels && receivedChannelId) {
       setSelectedChannelId(receivedChannelId);
-      setPage(0);
     } else if (channels) {
       setSelectedChannelId(NO_CHANNEL_FILTER.id);
     }
@@ -295,16 +304,21 @@ export default function Home() {
       let categoryId = receivedChannelId;
       if (receivedChannelId) {
         categoryId = isNoChannelFilter(receivedChannelId)
-          ? 0
+          ? undefined
           : receivedChannelId;
+      }
+      let currentPage = page;
+
+      if (receivedChannelId && receivedChannelId !== selectedChannelId) {
+        currentPage = 0;
       }
 
       const variables: TopicsQueryVariables = {
         sort: sortState,
         categoryId,
-        page: FIRST_PAGE,
+        page: currentPage,
       };
-      setPage(FIRST_PAGE);
+      setPage(currentPage);
       getData(variables);
       getToken().then((token) => {
         if (token) {
@@ -316,6 +330,7 @@ export default function Home() {
 
     return unsubscribe;
   }, [
+    selectedChannelId,
     getRefreshToken,
     getAbout,
     receivedChannelId,
@@ -360,9 +375,6 @@ export default function Home() {
 
   const onRefresh = () => {
     setRefreshing(true);
-    let { cache } = client;
-    cache.evict({ id: 'ROOT_QUERY', fieldName: 'topics' });
-    cache.gc();
     if (refetchTopics) {
       setPage(FIRST_PAGE);
       refetchTopics().then(() => setRefreshing(false));
@@ -411,6 +423,7 @@ export default function Home() {
     if (!hasMoreTopics || isFetchingMoreTopics.current || !fetchMoreTopics) {
       return;
     }
+
     const nextPage = page + 1;
     let variables: TopicsQueryVariables;
     if (isNoChannelFilter(selectedChannelId)) {

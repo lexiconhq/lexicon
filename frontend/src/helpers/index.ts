@@ -15,6 +15,7 @@ export * from './formatExtensions';
 export * from './formatRelativeTime';
 export * from './formatTag';
 export * from './getFetchMorePostIds';
+export * from './getExpoPushTokenHandler';
 export * from './getFormat';
 export * from './getHyperlink';
 export * from './getTextInputRules';

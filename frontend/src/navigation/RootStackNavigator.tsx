@@ -12,6 +12,7 @@ import {
   PostImagePreview,
   PostPreview,
   PostReply,
+  PushNotifications,
   SelectUser,
   Tags,
   Troubleshoot,
@@ -103,6 +104,11 @@ export default function RootStackNavigator() {
         name="Troubleshoot"
         component={Troubleshoot}
         options={{ title: t('Error Details'), headerStyle: shadow }}
+      />
+      <RootStack.Screen
+        name="PushNotificationsPreferences"
+        component={PushNotifications}
+        options={{ title: t('Push Notification'), ...navModal }}
       />
     </RootStack.Navigator>
   );

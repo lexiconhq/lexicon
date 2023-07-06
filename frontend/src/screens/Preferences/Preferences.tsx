@@ -27,6 +27,11 @@ export default function Preferences() {
                 onPress={() => navigate('DarkMode')}
               />
             )}
+            <MenuItem
+              title={t('Push Notifications')}
+              iconName="NotificationActive"
+              onPress={() => navigate('PushNotificationsPreferences')}
+            />
           </View>
         </View>
       </ScrollView>

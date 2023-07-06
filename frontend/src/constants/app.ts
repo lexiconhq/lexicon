@@ -1,3 +1,4 @@
+import { makeVar } from '@apollo/client';
 import Constants from 'expo-constants';
 
 const { manifest } = Constants;
@@ -72,3 +73,5 @@ export function getProseEndpoint(
     return `http://${machineHost}${delimitedProsePort}`;
   }
 }
+
+export let discourseHostVar = makeVar<string>('');

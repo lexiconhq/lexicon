@@ -1,3 +1,5 @@
+import * as Notifications from 'expo-notifications';
+
 import { FUNCTIONAL_COLORS } from './theme';
 
 export const DEFAULT_POST_ID = 0;
@@ -32,4 +34,17 @@ export const NO_CHANNEL_FILTER = {
   color,
   description: t(`Browse topics across all channels`),
   name: t(`All Channels`),
+};
+
+export const DEFAULT_NOTIFICATION_BEHAVIOUR = {
+  shouldShowAlert: true,
+  shouldPlaySound: false,
+  shouldSetBadge: false,
+};
+
+export const DEFAULT_NOTIFICATION_CHANNEL_INPUT = {
+  name: 'default',
+  importance: Notifications.AndroidImportance.MAX,
+  vibrationPattern: [0, 250, 250, 250],
+  lightColor: '#FF231F7C',
 };

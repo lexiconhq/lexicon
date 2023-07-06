@@ -6,13 +6,17 @@ import { useSiteSettings } from '../hooks';
 import { StackNavProp } from '../types';
 import useLoadFonts from '../hooks/useLoadFonts';
 import { removeToken, useStorage } from '../helpers';
-import { errorTypes } from '../constants';
+import { discourseHostVar, errorTypes } from '../constants';
+import { useRedirect } from '../utils';
+import { useHealthQuery } from '../generated/server';
 
 const { sessionExpired, unauthorizedAccess } = errorTypes;
 
 export default function Loading() {
   const { reset } = useNavigation<StackNavProp<'Login'>>();
   const { removeItem } = useStorage();
+  const { redirectPath, setRedirectPath, handleRedirect } = useRedirect();
+
   // TODO: Make use of error from useLoadFonts
   const { loading: fontsLoading } = useLoadFonts();
 
@@ -39,7 +43,18 @@ export default function Loading() {
     },
   });
 
-  const loading = fontsLoading || settingsLoading;
+  let { loading: getHostLoading } = useHealthQuery({
+    onCompleted: ({ health }) => {
+      if (health.discourseHost) {
+        // NOTE: `discourseHostVar` has nothing to do with the health check
+        // We needed the Discourse host for In-App Linking (#1012), so we are
+        // opportunistically grabbing it when we already have it from the health check.
+        discourseHostVar(health.discourseHost);
+      }
+    },
+  });
+
+  const loading = fontsLoading || settingsLoading || getHostLoading;
 
   useEffect(() => {
     if (loading) {
@@ -47,7 +62,12 @@ export default function Loading() {
     }
 
     if (!settingsError || canSignUp) {
-      reset({ index: 0, routes: [{ name: 'TabNav' }] });
+      if (redirectPath) {
+        handleRedirect();
+        setRedirectPath('');
+      } else {
+        reset({ index: 0, routes: [{ name: 'TabNav' }] });
+      }
     } else {
       // TODO: We should only do this if error is the specific
       // login error from Discourse.
@@ -57,7 +77,15 @@ export default function Loading() {
       // contact an administrator, etc.
       reset({ index: 0, routes: [{ name: 'Login' }] });
     }
-  }, [loading, settingsError, canSignUp, reset]);
+  }, [
+    canSignUp,
+    handleRedirect,
+    loading,
+    redirectPath,
+    reset,
+    setRedirectPath,
+    settingsError,
+  ]);
 
-  return <>{settingsLoading && <LoadingOrError loading />}</>;
+  return <>{loading && <LoadingOrError loading />}</>;
 }

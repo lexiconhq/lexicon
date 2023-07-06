@@ -7,11 +7,11 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { CustomHeader, HeaderItem, ModalHeader } from '../../components';
 import { Button, Text } from '../../core-ui';
 import {
+  SearchTagsDocument,
   SearchTagsQuery,
   SearchTagsQueryVariables,
 } from '../../generated/server';
 import { client } from '../../graphql/client';
-import { SEARCH_TAGS } from '../../graphql/server/search';
 import { formatTag } from '../../helpers';
 import { useSiteSettings, useTags } from '../../hooks';
 import { makeStyles } from '../../theme';
@@ -62,7 +62,7 @@ export default function Tags() {
     try {
       const cache = client.readQuery<SearchTagsQuery, SearchTagsQueryVariables>(
         {
-          query: SEARCH_TAGS,
+          query: SearchTagsDocument,
           variables: { q: searchValue, selectedTags: currentTagsIds },
         },
       );
@@ -70,6 +70,8 @@ export default function Tags() {
       if (cache) {
         setTags(cache.searchTag);
         setLoading(false);
+      } else {
+        getTags();
       }
     } catch (e) {
       setLoading(true);

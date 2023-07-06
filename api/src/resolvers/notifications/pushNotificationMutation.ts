@@ -1,13 +1,18 @@
-import { FieldResolver, mutationField, nullable, stringArg } from 'nexus';
+import axios from 'axios';
+import { FieldResolver, mutationField, stringArg } from 'nexus';
 
 import { ACCEPTED_LANGUAGE, CONTENT_JSON } from '../../constants';
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';
 
-export let pushNotificationMutation: FieldResolver<
+export let pushNotificationsMutation: FieldResolver<
   'Mutation',
-  'pushNotification'
-> = async (_, { expoPnToken, applicationName, platform }, context: Context) => {
+  'pushNotifications'
+> = async (
+  _,
+  { PushNotificationsToken, applicationName, platform, experienceId },
+  context: Context,
+) => {
   const config = {
     headers: {
       'Accept-Language': ACCEPTED_LANGUAGE,
@@ -16,26 +21,32 @@ export let pushNotificationMutation: FieldResolver<
   };
   try {
     await context.client.post(
-      `/expo_pn/subscribe.json`,
+      `/lexicon/push_notifications/subscribe.json`,
       {
-        expo_pn_token: expoPnToken,
+        push_notifications_token: PushNotificationsToken,
         application_name: applicationName,
         platform: platform,
+        experience_id: experienceId,
       },
       config,
     );
     return 'success';
   } catch (e) {
+    if (axios.isAxiosError(e) && e.response?.status === 404) {
+      // mean discourse instance doesn't have lexicon plugin
+      return 'lexicon plugin not installed';
+    }
     throw errorHandler(e);
   }
 };
 
-export let pushNotification = mutationField('pushNotification', {
+export let pushNotification = mutationField('pushNotifications', {
   type: 'String',
   args: {
-    expoPnToken: nullable(stringArg()),
-    applicationName: nullable(stringArg()),
-    platform: nullable(stringArg()),
+    PushNotificationsToken: stringArg(),
+    experienceId: stringArg(),
+    applicationName: stringArg(),
+    platform: stringArg(),
   },
-  resolve: pushNotificationMutation,
+  resolve: pushNotificationsMutation,
 });

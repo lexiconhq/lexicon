@@ -83,10 +83,15 @@ export default function EditProfile(props: ProfileProps) {
   const extensions = authorizedExtensions?.split('|');
   const normalizedExtensions = formatExtensions(extensions);
 
-  const { control, handleSubmit, errors, setValue, getValues } =
-    useForm<ProfileForm>({
-      mode: 'onChange',
-    });
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    getValues,
+  } = useForm<ProfileForm>({
+    mode: 'onChange',
+  });
 
   const [show, setShow] = useState(false);
   const [currentUserData, setCurrentUserData] = useState(selectedUser);
@@ -264,10 +269,10 @@ export default function EditProfile(props: ProfileProps) {
         aspect: [1, 1],
         quality: 1,
       });
-      if (!result.cancelled) {
-        let format = getFormat(result.uri);
+      if (!result.canceled && result.assets.length) {
+        let format = getFormat(result.assets[0].uri);
         if (normalizedExtensions.includes(format)) {
-          const reactNativeFile = createReactNativeFile(result.uri);
+          const reactNativeFile = createReactNativeFile(result.assets[0].uri);
           upload({
             variables: {
               file: reactNativeFile,
@@ -374,7 +379,7 @@ export default function EditProfile(props: ProfileProps) {
               defaultValue={currentUserData.username}
               rules={usernameInputRules}
               control={control}
-              render={({ onChange, value }) => (
+              render={({ field: { onChange, value } }) => (
                 <TextInput
                   label={t('Username')}
                   error={errors.username != null}
@@ -400,10 +405,10 @@ export default function EditProfile(props: ProfileProps) {
             />
             <Controller
               name="name"
-              defaultValue={currentUserData.name}
+              defaultValue={currentUserData.name || ''}
               rules={nameInputRules}
               control={control}
-              render={({ onChange, value }) => (
+              render={({ field: { onChange, value } }) => (
                 <TextInput
                   inputRef={nameInputRef}
                   label={t('Name')}
@@ -426,9 +431,9 @@ export default function EditProfile(props: ProfileProps) {
             />
             <Controller
               name="website"
-              defaultValue={currentUserData.websiteName}
+              defaultValue={currentUserData.websiteName || ''}
               control={control}
-              render={({ onChange, value }) => (
+              render={({ field: { onChange, value } }) => (
                 <TextInput
                   inputRef={websiteInputRef}
                   label={t('Website')}
@@ -452,9 +457,9 @@ export default function EditProfile(props: ProfileProps) {
             />
             <Controller
               name="bio"
-              defaultValue={currentUserData.bioRaw}
+              defaultValue={currentUserData.bioRaw || ''}
               control={control}
-              render={({ onChange, value }) => (
+              render={({ field: { onChange, value } }) => (
                 <TextInput
                   inputRef={bioInputRef}
                   label={t('Bio')}
@@ -478,9 +483,9 @@ export default function EditProfile(props: ProfileProps) {
             />
             <Controller
               name="location"
-              defaultValue={currentUserData.location}
+              defaultValue={currentUserData.location || ''}
               control={control}
-              render={({ onChange, value }) => (
+              render={({ field: { onChange, value } }) => (
                 <TextInput
                   inputRef={locationInputRef}
                   label={t('Location')}

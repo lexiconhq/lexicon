@@ -17,3 +17,6 @@ dist/
 # macOS
 .DS_Store
 /coverage
+
+#firebase
+google-services.json

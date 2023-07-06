@@ -37,10 +37,10 @@ import {
   formatExtensions,
   getHyperlink,
   insertHyperlink,
+  insertImageUploadStatus,
   mentionHelper,
   newPostIsValid,
-  reformatMarkdownAfterUpload,
-  reformatMarkdownBeforeUpload,
+  getReplacedImageUploadStatus,
   useStorage,
 } from '../helpers';
 import {
@@ -52,6 +52,7 @@ import {
 import { makeStyles, useTheme } from '../theme';
 import {
   CursorPosition,
+  FormTitle,
   Image,
   RootStackNavProp,
   RootStackParamList,
@@ -59,11 +60,6 @@ import {
 } from '../types';
 import { useModal } from '../utils';
 import { isNoChannelFilter } from '../constants';
-
-type Form = {
-  title: string;
-  raw: string;
-};
 
 export default function NewPost() {
   const { modal, setModal } = useModal();
@@ -128,11 +124,23 @@ export default function NewPost() {
 
   const debounced = useDebouncedCallback((value, token) => {
     if (imagesArray[token - 1]) {
-      reformatMarkdownAfterUpload(value, imagesArray, token, setValue);
+      let newText = getReplacedImageUploadStatus(
+        value,
+        token,
+        imagesArray[token - 1].link,
+      );
+
+      setValue('raw', newText);
     }
   }, 1500);
 
-  const { control, handleSubmit, errors, setValue, getValues } = useForm<Form>({
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    getValues,
+  } = useForm<FormTitle>({
     mode: 'onChange',
     reValidateMode: 'onChange',
   });
@@ -243,12 +251,12 @@ export default function NewPost() {
     setCurrentUploadToken(currentUploadToken + 1);
     const reactNativeFile = createReactNativeFile(uri);
     const { raw } = getValues();
-    reformatMarkdownBeforeUpload(
+    let result = insertImageUploadStatus(
       raw,
       cursorPosition.start,
-      imagesArray,
-      setValue,
+      imagesArray.length + 1,
     );
+    setValue('raw', result);
     upload({
       variables: {
         file: reactNativeFile,
@@ -346,6 +354,10 @@ export default function NewPost() {
     [postValidity, modal, navigation, uploadsInProgress],
   );
 
+  const setMentionValue = (text: string) => {
+    setValue('raw', text);
+  };
+
   const Header = () =>
     ios ? (
       <ModalHeader
@@ -382,7 +394,7 @@ export default function NewPost() {
                 mentionLoading={mentionLoading}
                 rawText={getValues('raw')}
                 textRef={newPostRef}
-                setMentionValue={setValue}
+                setMentionValue={setMentionValue}
                 setShowUserList={setShowUserList}
               />
               <BottomMenu
@@ -400,7 +412,7 @@ export default function NewPost() {
                 defaultValue={oldTitle}
                 rules={{ required: true }}
                 control={control}
-                render={({ onChange, value }) => (
+                render={({ field: { onChange, value } }) => (
                   <TextInput
                     value={value}
                     label={t('Title')}
@@ -526,7 +538,7 @@ export default function NewPost() {
               defaultValue={oldContent}
               rules={{ required: true }}
               control={control}
-              render={({ onChange, value }) => (
+              render={({ field: { onChange, value } }) => (
                 <TextArea
                   value={value}
                   isKeyboardShow={isKeyboardShow}

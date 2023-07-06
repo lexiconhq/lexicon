@@ -1,4 +1,8 @@
-import { generateMarkdownContent, getCompleteImageVideoUrls } from '../helpers';
+import {
+  generateMarkdownContent,
+  getCompleteImageVideoUrls,
+  getEmojiImageUrls,
+} from '../helpers';
 
 describe('getCompleteImageUrls return image urls from html tags', () => {
   it('should return the last url from srcset in img tag if any', () => {
@@ -147,5 +151,38 @@ describe('generateMarkdownContent returns markdown content with complete urls, o
     ).toBe(
       `${markdownContent} ${completeImageUrl} ${secondCompleteUrlInMarkdown}`,
     );
+  });
+});
+
+describe('generate emoji url from image tag', () => {
+  it('it should return image url from image tags', () => {
+    const content =
+      '<img src="https://kflounge-staging.kfox.io/images/emoji/twitter/smile.png?v=12" title=":smile:" class="emoji only-emoji" alt=":smile:" loading="lazy" width="20" height="20">';
+    const content2 =
+      '<p>Test. <img src="https://kflounge-staging.kfox.io/images/emoji/twitter/high_heel.png?v=12" title=":high_heel:" class="emoji only-emoji" alt=":high_heel:" loading="lazy" width="20" height="20"> <img src="https://kflounge-staging.kfox.io/images/emoji/twitter/man/5.png?v=12" title=":man:t5:" class="emoji" alt=":man:t5:" loading="lazy" width="20" height="20"></p>';
+
+    const content3 =
+      '<img src="https://kflounge-staging.kfox.io/images/emoji/twitter/high_heel.png?v=12" class="emoji only-emoji" alt=":high_heel:" loading="lazy" width="20" height="20">';
+
+    expect(getEmojiImageUrls(content)).toEqual([
+      {
+        emojiTitle: ':smile:',
+        emojiUrl:
+          'https://kflounge-staging.kfox.io/images/emoji/twitter/smile.png',
+      },
+    ]);
+    expect(getEmojiImageUrls(content2)).toEqual([
+      {
+        emojiTitle: ':high_heel:',
+        emojiUrl:
+          'https://kflounge-staging.kfox.io/images/emoji/twitter/high_heel.png',
+      },
+      {
+        emojiTitle: ':man:t5:',
+        emojiUrl:
+          'https://kflounge-staging.kfox.io/images/emoji/twitter/man/5.png',
+      },
+    ]);
+    expect(getEmojiImageUrls(content3)).toEqual([]);
   });
 });

@@ -9,6 +9,7 @@ import {
   errorTypes,
   ERROR_HANDLED_BY_LINK,
   getProseEndpoint,
+  NO_CHANNEL_FILTER,
 } from '../constants';
 import {
   appendPagination,
@@ -69,15 +70,12 @@ const cache = new InMemoryCache({
            * https://github.com/kodefox/lexicon/issues/926
            */
           keyArgs: (_, context) => {
-            if (
-              !context.variables ||
-              !context.variables.categoryId ||
-              !context.variables.sort
-            ) {
+            if (!context.variables || !context.variables.sort) {
               return '';
             }
+
             let { categoryId, sort } = context.variables;
-            return `${categoryId}-${sort}`;
+            return `${categoryId ?? NO_CHANNEL_FILTER.id}-${sort}`;
           },
           merge: (existing, incoming, { variables }) => {
             if (!variables) {
@@ -196,6 +194,18 @@ const errorLink = onError(({ graphQLErrors, networkError, operation }) => {
        * showing error alert because it's already handled in error link
        */
       sessionExpired.message = ERROR_HANDLED_BY_LINK;
+      return;
+    }
+
+    let incorrectCredentials = graphQLErrors.find(({ message }) => {
+      const normalized = message.toLowerCase();
+      return normalized.includes(errorTypes.incorrectCredentials);
+    });
+
+    // We don't want to display the error toast from incorrect credentials, because that is
+    // a valid error for the user to enter incorrect credentials. It doesn't indicate an issue
+    // with the request itself.
+    if (incorrectCredentials) {
       return;
     }
   }
