@@ -17,7 +17,7 @@ type Props = {
   size?: IconSize;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
-  hitSlop?: Insets;
+  hitSlop?: Insets | null | number;
 };
 
 export { Props as IconProps };

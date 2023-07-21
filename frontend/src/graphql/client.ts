@@ -173,6 +173,7 @@ const errorLink = onError(({ graphQLErrors, networkError, operation }) => {
     if (operation.operationName === 'Site') {
       return;
     }
+
     let sessionExpired = graphQLErrors.find(({ message }) =>
       message.includes(errorTypes.sessionExpired),
     );

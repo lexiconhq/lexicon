@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TouchableOpacity, TouchableOpacityProps } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 import { formatRelativeTime } from '../../../helpers';
@@ -10,7 +10,7 @@ import { MessageAvatar } from './MessageAvatar';
 import { MessageContent } from './MessageContent';
 import { MessageNotification } from './MessageNotification';
 
-type Props = TouchableOpacityProps & {
+type Props = {
   id: number;
   message: string;
   messageParticipants: MessageParticipants;

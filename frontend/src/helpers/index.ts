@@ -43,3 +43,4 @@ export * from './transformTopicToPost';
 export * from './updateLike';
 export * from './linking';
 export * from './checkImageFile';
+export * from './PrivateTopicAlert';

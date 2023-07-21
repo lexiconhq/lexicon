@@ -33,8 +33,9 @@ export function usePushNotificationsMutation(
   >,
 ) {
   const defaultVariable = {
-    applicationName: Constants.manifest?.name ?? 'Lexicon Mobile App',
-    experienceId: Constants.manifest?.id ?? '',
+    applicationName: Constants.expoConfig?.name ?? 'Lexicon Mobile App',
+    experienceId:
+      (Constants.expoConfig?.currentFullName || Constants.manifest2?.id) ?? '',
     platform: Platform.OS,
   };
 

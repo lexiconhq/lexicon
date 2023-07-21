@@ -15,7 +15,6 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "jsEngine": "hermes",
     "assetBundlePatterns": ["**/*"],
     "packagerOpts": {
       "config": "metro.config.js",
@@ -46,6 +45,7 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": ["expo-localization"]
   }
 }

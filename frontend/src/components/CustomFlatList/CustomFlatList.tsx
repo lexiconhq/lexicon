@@ -39,6 +39,7 @@ type Props<ItemType> = Omit<
   ) => ReactElement;
   refreshControlTintColor?: string;
   paginationSize?: number;
+  data: Array<ItemType>; // This change was made because in React Native version 0.72, the type of the FlatList component's data prop was changed to ArrayLike, which does not have the slice method available. Therefore, we cannot use the slice method directly on the data prop.
 };
 
 type CustomFlatlistRefType = {

@@ -31,6 +31,7 @@ import {
   handleUnsupportedMarkdown,
   LoginError,
   postDetailContentHandler,
+  privateTopicAlert,
   useStorage,
 } from '../../helpers';
 import {
@@ -114,7 +115,14 @@ export default function PostDetail() {
     refetch,
     fetchMore,
   } = useTopicDetail(
-    { variables: { topicId, postNumber, includeFirstPost: true } },
+    {
+      variables: { topicId, postNumber, includeFirstPost: true },
+      onError: (error) => {
+        if (error.message.includes('private')) {
+          privateTopicAlert();
+        }
+      },
+    },
     'HIDE_ALERT',
   );
 
@@ -123,7 +131,6 @@ export default function PostDetail() {
       setContent(markdownContent);
       setMentionedUsers(mentions);
     },
-    onError: () => {},
   });
 
   let postDetailContent = useMemo(() => {
@@ -492,7 +499,7 @@ export default function PostDetail() {
             setFlatListReady(true);
           }}
           ref={customFlatListRef}
-          data={postComments}
+          data={postComments ?? []}
           renderItem={renderItem}
           keyExtractor={keyExtractor}
           initialNumToRender={5}

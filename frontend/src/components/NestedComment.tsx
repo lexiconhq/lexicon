@@ -38,7 +38,7 @@ export type PressReplyParams = Pick<LocalRepliedPostProps, 'replyToPostId'>;
  * - onLayout : Because we creating customOnLayout
  * - postId : Because it is equivalent with id from type Post
  */
-type Props = Omit<ViewProps, 'onLayout'> &
+type Props = Omit<ViewProps, 'onLayout' | 'id'> &
   Omit<RepliedPostProps, 'postId'> & {
     showOptions: boolean;
     hasMetrics?: boolean;

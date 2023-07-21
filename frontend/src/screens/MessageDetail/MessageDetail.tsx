@@ -568,7 +568,7 @@ export default function MessageDetail() {
             tintColor={colors.primary}
           />
         }
-        data={data?.contents}
+        data={data?.contents ?? []}
         getItem={getItem}
         getItemCount={getItemCount}
         renderItem={renderItem}
