@@ -13,6 +13,8 @@ RUN yarn
 COPY tsconfig.json ./
 COPY ./src ./src
 
+RUN yarn generate
+
 RUN yarn build
 
 COPY pm2.json .
