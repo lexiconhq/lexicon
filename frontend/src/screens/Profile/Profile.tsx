@@ -5,11 +5,11 @@ import Constants from 'expo-constants';
 
 import { Markdown, ShowImageModal } from '../../components';
 import { Avatar, Button, Divider, Text } from '../../core-ui';
-import { client } from '../../graphql/client';
-import { getImage, removeToken, useStorage } from '../../helpers';
+import { getImage, useStorage } from '../../helpers';
 import { useLazyProfile, useLogout } from '../../hooks';
 import { makeStyles, useTheme } from '../../theme';
 import { StackNavProp, UserDetail } from '../../types';
+import { useAuth } from '../../utils/AuthProvider';
 
 import MenuItem from './components/MenuItem';
 
@@ -60,13 +60,14 @@ export default function Profile() {
   const { logout, loading: logoutLoading } = useLogout();
 
   const userImage = getImage(data?.userProfile.user.avatar || '', 'xl');
-
+  const useAuthResults = useAuth();
   const onLogout = async () => {
-    await logout({ username });
-    await client.clearStore();
-    removeToken();
-    storage.removeItem('user');
-    reset({ index: 0, routes: [{ name: 'InstanceLoading' }] });
+    logout({ username });
+    reset({
+      index: 0,
+      routes: [{ name: 'InstanceLoading' }],
+    });
+    await useAuthResults.cleanSession();
   };
 
   useEffect(() => {

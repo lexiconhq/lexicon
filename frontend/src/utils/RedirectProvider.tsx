@@ -30,7 +30,7 @@ export function RedirectProvider({ children }: Props) {
   }, []);
 
   const handleRedirect = useCallback(() => {
-    const [route, , ...pathParams] = redirectPath.split('/');
+    const [route, ...pathParams] = redirectPath.split('/');
 
     if (isPostOrMessageDetail(route)) {
       navigatePostOrMessageDetail(route, pathParams);

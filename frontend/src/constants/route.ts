@@ -60,6 +60,7 @@ export const onSubscribe = (listener: (url: string) => void) => {
   );
 
   return () => {
+    // Clean up the event listeners
     event.remove();
     subscription.remove();
   };

@@ -26,13 +26,10 @@ export default function Channels() {
 
   const onPress = (id: number) => {
     if (prevScreen === 'Home') {
-      navigate('Main', {
-        screen: 'TabNav',
+      navigate('TabNav', {
+        screen: 'Home',
         params: {
-          screen: 'Home',
-          params: {
-            selectedChannelId: id,
-          },
+          selectedChannelId: id,
         },
       });
     } else {

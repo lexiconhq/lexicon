@@ -20,7 +20,11 @@ export function navigate(
     navigationRef.navigate(...params);
   }
 }
-export function reset(params: PartialState<NavigationState> | NavigationState) {
+export function reset(
+  params:
+    | PartialState<NavigationState<RootStackParamList>>
+    | NavigationState<RootStackParamList>,
+) {
   if (navigationRef.isReady()) {
     navigationRef.reset(params);
   }

@@ -70,14 +70,11 @@ export default function PostPreview() {
   }: StackRouteProp<'PostDetail'>['params']) => {
     const prevScreen = 'PostPreview';
 
-    navigate('Main', {
-      screen: 'PostDetail',
-      params: {
-        topicId,
-        selectedChannelId,
-        focusedPostNumber,
-        prevScreen,
-      },
+    navigate('PostDetail', {
+      topicId,
+      selectedChannelId,
+      focusedPostNumber,
+      prevScreen,
     });
   };
 
@@ -92,7 +89,7 @@ export default function PostPreview() {
     onCompleted: ({ newTopic: result }) => {
       reset({
         index: 0,
-        routes: [{ name: 'Main' }],
+        routes: [{ name: 'InstanceLoading' }],
       });
       navToPostDetail({
         topicId: result.topicId,
@@ -291,7 +288,7 @@ export default function PostPreview() {
         />
 
         {/* NOTE: Earlier, this file contained the functionality to show default image if imageUrl is empty and short url length is not 0.
-          
+
           It was removed because we already handle invalid url to use default image inside customImage.
           If we later want to check the old implementation we can check it in PR: https://github.com/kodefox/lexicon/pull/987>
          */}

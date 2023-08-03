@@ -14,6 +14,7 @@ import {
   PushNotificationsProvider,
   RedirectProvider,
 } from './utils';
+import { AuthProvider } from './utils/AuthProvider';
 
 if (Platform.OS === 'android') {
   require('intl');
@@ -46,7 +47,9 @@ export default function App() {
                     <ModalProvider>
                       <RedirectProvider>
                         <RequestError>
-                          <AppNavigator />
+                          <AuthProvider>
+                            <AppNavigator />
+                          </AuthProvider>
                         </RequestError>
                       </RedirectProvider>
                     </ModalProvider>

@@ -24,7 +24,7 @@ import { makeStyles, useTheme } from '../../theme';
 import {
   Notification as NotificationDataType,
   StackNavProp,
-  StackParamList,
+  RootStackParamList,
 } from '../../types';
 
 import NotificationItem from './components/NotificationItem';
@@ -37,18 +37,20 @@ export default function Notifications() {
 
   const { navigate } = useNavigation<StackNavProp<'Notifications'>>();
 
-  const navToPostDetail = (postDetailParams: StackParamList['PostDetail']) => {
+  const navToPostDetail = (
+    postDetailParams: RootStackParamList['PostDetail'],
+  ) => {
     navigate('PostDetail', postDetailParams);
   };
 
   const navToMessageDetail = (
-    messageDetailParams: StackParamList['MessageDetail'],
+    messageDetailParams: RootStackParamList['MessageDetail'],
   ) => {
     navigate('MessageDetail', messageDetailParams);
   };
 
   const navToUserInformation = (
-    userInformationParams: StackParamList['UserInformation'],
+    userInformationParams: RootStackParamList['UserInformation'],
   ) => {
     navigate('UserInformation', userInformationParams);
   };

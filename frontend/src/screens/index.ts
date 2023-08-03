@@ -8,8 +8,8 @@ import EmailAddress from './EmailAddress/EmailAddress';
 import FlagPost from './FlagPost';
 import Home from './Home/Home';
 import Hyperlink from './Hyperlink';
-import ImagePreview from './MessageDetail/ImagePreview';
 import InstanceLoading from './InstanceLoading';
+import ImagePreview from './MessageDetail/ImagePreview';
 import Login from './Login';
 import MessageDetail from './MessageDetail/MessageDetail';
 import Messages from './Messages/Messages';
@@ -43,8 +43,8 @@ export {
   FlagPost,
   Home,
   Hyperlink,
-  ImagePreview,
   InstanceLoading,
+  ImagePreview,
   Login,
   MessageDetail,
   Messages,

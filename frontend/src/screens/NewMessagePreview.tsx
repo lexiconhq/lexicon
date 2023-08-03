@@ -53,7 +53,7 @@ export default function NewMessagePreview() {
 
   const { newMessage, loading } = useNewMessage({
     onCompleted: () => {
-      navigate('Main', { screen: 'Messages' });
+      navigate('Messages');
     },
     onError: (error) => {
       errorHandlerAlert(error);

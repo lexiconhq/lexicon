@@ -6,14 +6,14 @@ import {
   Notification as NotificationDataType,
   NotificationType,
   RawNotificationsType,
-  StackParamList,
+  RootStackParamList,
 } from '../types';
 
 export function notificationHandler(
   data: Array<RawNotificationsType>,
-  navToPostDetail: (params: StackParamList['PostDetail']) => void,
-  navToMessageDetail: (params: StackParamList['MessageDetail']) => void,
-  navToUserInformation: (params: StackParamList['UserInformation']) => void,
+  navToPostDetail: (params: RootStackParamList['PostDetail']) => void,
+  navToMessageDetail: (params: RootStackParamList['MessageDetail']) => void,
+  navToUserInformation: (params: RootStackParamList['UserInformation']) => void,
 ): Array<NotificationDataType> {
   let tempNotification: Array<NotificationDataType> = [];
 

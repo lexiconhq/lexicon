@@ -14,17 +14,16 @@ import {
 import {
   appendPagination,
   getTopicDetailOutputCacheBehavior,
-  getToken,
   prependAppendPagination,
   replaceDataPagination,
   userActivityPagination,
-  removeToken,
   showLogoutAlert,
   handleDuplicates,
 } from '../helpers';
 import { networkStatusVar, requestFailedVar } from '../components/RequestError';
 import { reset } from '../navigation/NavigationService';
 import Config from '../../Config';
+import { logoutTokenVar, setTokenState, tokenVar } from '../reactiveVars';
 
 const cache = new InMemoryCache({
   typePolicies: {
@@ -128,16 +127,35 @@ const cache = new InMemoryCache({
   },
 });
 
-const authLink = setContext(async (_, { headers }) => {
-  const token = await getToken();
+const authLink = setContext(async (graphqlRequest, { headers }) => {
+  const token = tokenVar();
+  const logoutToken = logoutTokenVar();
 
   // It is recommended to always include `User Agent` header in all requests
   const userAgent = await ExpoConstants.getWebViewUserAgentAsync();
+  const additionalHeaders: Record<string, string> = {};
+  if (token) {
+    additionalHeaders.Authorization = token;
+  }
+
+  /**
+   * We specifically use different token for logout request
+   * This is needed as the tokenVar will be turned to null on logout
+   * Otherwise if we want to stick to using tokenVar,
+   * we will needed to await the logout request
+   */
+  if (graphqlRequest.operationName === 'Logout' && logoutToken) {
+    additionalHeaders.Authorization = logoutToken;
+    logoutTokenVar(null);
+  }
+
+  if (userAgent) {
+    additionalHeaders['User-Agent'] = userAgent;
+  }
   return {
     headers: {
       ...headers,
-      Authorization: token,
-      'User-Agent': userAgent,
+      ...additionalHeaders,
     },
   };
 });
@@ -179,13 +197,12 @@ const errorLink = onError(({ graphQLErrors, networkError, operation }) => {
     );
     if (sessionExpired) {
       showLogoutAlert();
-      removeToken();
+      setTokenState(null);
       reset({
         index: 0,
         routes: [
           {
-            name: 'Main',
-            params: { screen: 'InstanceLoading' },
+            name: 'InstanceLoading',
           },
         ],
       });

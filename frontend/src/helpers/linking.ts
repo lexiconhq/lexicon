@@ -72,32 +72,34 @@ export function navigatePostOrMessageDetail(
   route: PostOrMessageDetailRoute,
   pathParams: Array<string>,
 ) {
+  let navigationRoutes = postOrMessageDetailPathToRoutes({ route, pathParams });
+
+  reset({
+    index: navigationRoutes.length - 1,
+    routes: navigationRoutes,
+  });
+
+  return;
+}
+
+type postOrMessageDetailPathToRoutesParams = {
+  route: PostOrMessageDetailRoute;
+  pathParams: Array<string>;
+};
+export function postOrMessageDetailPathToRoutes({
+  route,
+  pathParams,
+}: postOrMessageDetailPathToRoutesParams): Routes {
   const detailParams = getValidDetailParams(pathParams);
-  let navigationRoutes: Routes;
-
-  // We weren't able to extract any meaningful information from the parameters.
-  // Navigate to the closest valid screen.
   if (!detailParams) {
-    navigationRoutes =
-      route === deepRoutes['message-detail']
-        ? [
-            { name: 'TabNav', state: { routes: [{ name: 'Profile' }] } },
-            { name: 'Messages' },
-          ]
-        : [{ name: 'TabNav', state: { routes: [{ name: 'Home' }] } }];
-
-    reset({
-      index: navigationRoutes.length - 1,
-      routes: navigationRoutes,
-    });
-
-    return;
+    return route === deepRoutes['message-detail']
+      ? [
+          { name: 'TabNav', state: { routes: [{ name: 'Profile' }] } },
+          { name: 'Messages' },
+        ]
+      : [{ name: 'TabNav', state: { routes: [{ name: 'Home' }] } }];
   }
-
-  // We were able to extract enough params to navigate to the target
-  // screen. `outcome` contains the specifics of how much was extracted.
   const { topicId, postNumber } = detailParams;
-
   if (route === deepRoutes['message-detail']) {
     const messageParams: MessageDetailParams = {
       id: topicId,
@@ -107,13 +109,13 @@ export function navigatePostOrMessageDetail(
       source: 'deeplink',
     };
 
-    navigationRoutes = [
+    return [
       { name: 'TabNav', state: { routes: [{ name: 'Profile' }] } },
       { name: 'Messages' },
       { name: 'MessageDetail', params: messageParams },
     ];
   } else {
-    navigationRoutes = [
+    return [
       { name: 'TabNav', state: { routes: [{ name: 'Home' }] } },
       {
         name: 'PostDetail',
@@ -121,13 +123,6 @@ export function navigatePostOrMessageDetail(
       },
     ];
   }
-
-  reset({
-    index: navigationRoutes.length - 1,
-    routes: navigationRoutes,
-  });
-
-  return;
 }
 
 export function extractPathname(url: string) {
@@ -155,4 +150,8 @@ export function extractPathname(url: string) {
   }
 
   return pathname;
+}
+
+export function isRouteBesidePost(route: string) {
+  return route !== deepRoutes['post-detail'];
 }

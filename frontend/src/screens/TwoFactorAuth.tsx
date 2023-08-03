@@ -7,11 +7,12 @@ import { Controller, useForm } from 'react-hook-form';
 import { DarkLogo, LightLogo } from '../../assets/images';
 import { CustomHeader } from '../components';
 import { Button, Text, TextInput } from '../core-ui';
-import { errorHandler, getImage, setToken, useStorage } from '../helpers';
+import { errorHandler, getImage, useStorage } from '../helpers';
 import { useLogin } from '../hooks';
 import { makeStyles, useColorScheme } from '../theme';
 import { StackNavProp, StackRouteProp } from '../types';
 import { useRedirect } from '../utils';
+import { useAuth } from '../utils/AuthProvider';
 
 type TwoFactorForm = {
   code: string;
@@ -21,6 +22,7 @@ export default function TwoFactorAuth() {
   const { colorScheme } = useColorScheme();
   const storage = useStorage();
   const styles = useStyles();
+  const { setTokenState } = useAuth();
   const { redirectPath, setRedirectPath, handleRedirect } = useRedirect();
 
   const { reset, navigate } = useNavigation<StackNavProp<'TwoFactorAuth'>>();
@@ -35,7 +37,7 @@ export default function TwoFactorAuth() {
       const { __typename: responseType } = authUser;
 
       if (responseType === 'LoginOutput') {
-        setToken(authUser.token);
+        setTokenState(authUser.token);
         let { user } = authUser;
         storage.setItem('user', {
           id: user.id,

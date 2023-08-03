@@ -30,25 +30,19 @@ export function isPostOrMessageDetail(
 }
 
 export const DEEP_LINK_SCREEN_CONFIG: PathConfigMap<RootStackParamList> = {
-  Main: {
-    initialRouteName: 'InstanceLoading',
-    screens: {
-      // Route `message-detail` and `post-detail` to their respective
-      // closest screens as a fallback.
-      Messages: deepRoutes['message-detail'],
-      TabNav: {
-        path: deepRoutes['post-detail'],
-        screens: { screen: 'Home' },
-      },
+  // Route `message-detail` and `post-detail` to their respective
+  // closest screens as a fallback.
+  Messages: deepRoutes['message-detail'],
+  TabNav: {
+    path: deepRoutes['post-detail'],
+  },
 
-      // Route to the specific detail scenes when the path is provided
-      // with the needed parameters.
-      MessageDetail: {
-        path: `${deepRoutes['message-detail']}/t/:slug/:id/:postNumber`,
-      },
-      PostDetail: {
-        path: `${deepRoutes['post-detail']}/t/:slug/:topicId/:postNumber?`,
-      },
-    },
+  // Route to the specific detail scenes when the path is provided
+  // with the needed parameters.
+  MessageDetail: {
+    path: `${deepRoutes['message-detail']}/t/:slug/:id/:postNumber`,
+  },
+  PostDetail: {
+    path: `${deepRoutes['post-detail']}/t/:slug/:topicId/:postNumber?`,
   },
 };

@@ -1,4 +1,8 @@
-import { getValidDetailParams, extractPathname } from '../linking';
+import {
+  getValidDetailParams,
+  extractPathname,
+  isRouteBesidePost,
+} from '../linking';
 
 jest.mock('expo-linking');
 
@@ -30,4 +34,12 @@ it('should extract pathname from URL and check the format', () => {
   expect(extractPathname(url4)).toBe('t/test/12/15');
 
   expect(extractPathname(url5)).toBeFalsy();
+});
+
+it('should check is route post detail or not', () => {
+  expect(isRouteBesidePost('post-detail')).toBeFalsy();
+
+  expect(isRouteBesidePost('message-detail')).toBeTruthy();
+
+  expect(isRouteBesidePost('random-detail')).toBeTruthy();
 });

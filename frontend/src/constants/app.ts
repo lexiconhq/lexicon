@@ -1,7 +1,7 @@
 import { makeVar } from '@apollo/client';
 import Constants from 'expo-constants';
 
-const { manifest } = Constants;
+const { expoGoConfig } = Constants;
 
 export function getProseEndpoint(
   proseUrl?: string,
@@ -50,7 +50,7 @@ export function getProseEndpoint(
   // This allows the Android Emulator, as well as your own device on the same network, to
   // access your local machine to connect to a locally running Prose instance.
 
-  const { debuggerHost } = manifest ?? {};
+  const { debuggerHost } = expoGoConfig ?? {};
 
   // INFER_DEVELOPMENT_HOST is a flag from the .env file that applies only when `NODE_ENV` is not 'production'.
   // When true, it will override `http://localhost` and `http://127.0.0.1` with the host of the development machine.

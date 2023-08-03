@@ -54,15 +54,12 @@ export default function Hyperlink() {
       }
     } else if (prevScreen === 'MessageDetail') {
       if (id && postNumber) {
-        navigate('Main', {
-          screen: prevScreen,
-          params: {
-            id,
-            postNumber,
-            emptied: false,
-            hyperlinkUrl,
-            hyperlinkTitle,
-          },
+        navigate(prevScreen, {
+          id,
+          postNumber,
+          emptied: false,
+          hyperlinkUrl,
+          hyperlinkTitle,
         });
       }
     }

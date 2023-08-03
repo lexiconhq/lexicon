@@ -16,27 +16,19 @@ import { SelectedUserProps, UserDetail, UserMessageProps } from './Types';
 export type RootStackNavProp<T extends keyof RootStackParamList> =
   StackNavigationProp<RootStackParamList, T>;
 
-export type StackNavProp<T extends keyof StackParamList> =
-  CompositeNavigationProp<
-    StackNavigationProp<StackParamList, T>,
-    StackNavigationProp<RootStackParamList>
-  >;
+export type StackNavProp<T extends keyof RootStackParamList> =
+  RootStackNavProp<T>;
 
 export type TabNavProp<T extends keyof TabParamList> = CompositeNavigationProp<
   BottomTabNavigationProp<TabParamList, T>,
-  CompositeNavigationProp<
-    StackNavigationProp<StackParamList>,
-    StackNavigationProp<RootStackParamList>
-  >
+  StackNavigationProp<RootStackParamList>
 >;
 
 export type RootStackRouteProp<T extends keyof RootStackParamList> =
   RoutePropBase<RootStackParamList, T>;
 
-export type StackRouteProp<T extends keyof StackParamList> = RoutePropBase<
-  StackParamList,
-  T
->;
+export type StackRouteProp<T extends keyof RootStackParamList> =
+  RootStackRouteProp<T>;
 
 export type TabRouteProp<T extends keyof TabParamList> = RoutePropBase<
   TabParamList,
@@ -180,12 +172,12 @@ type UserInformationParams = {
 };
 
 export type RootStackParamList = {
-  Main: NavigatorScreenParams<StackParamList>;
   Channels: ChannelsParams;
   DarkMode: undefined;
   PushNotificationsPreferences: undefined;
   FlagPost: FlagPostParams;
   HyperLink: HyperlinkParams;
+  InstanceLoading: undefined;
   NewMessage: NewMessageParams;
   NewMessagePreview: NewMessagePreviewParams;
   NewPost: NewPostParams;
@@ -195,9 +187,6 @@ export type RootStackParamList = {
   SelectUser: SelectUserParams;
   Tags: TagsParams;
   Troubleshoot: TroubleshootParams;
-};
-
-export type StackParamList = {
   TabNav: NavigatorScreenParams<TabParamList>;
   Activity: undefined;
   AddEmail: undefined;
@@ -205,7 +194,6 @@ export type StackParamList = {
   EditProfile: EditProfileParams;
   EmailAddress: undefined;
   ImagePreview: ImagePreviewParams;
-  InstanceLoading: undefined;
   Login: undefined;
   Messages: undefined;
   MessageDetail: MessageDetailParams;
@@ -225,7 +213,8 @@ export type TabParamList = {
 };
 
 export type RootStackRouteName = keyof RootStackParamList;
-export type StackRouteName = keyof StackParamList;
 export type TabRouteName = keyof TabParamList;
 
-export type Routes = PartialState<NavigationState>['routes'];
+export type Routes = PartialState<
+  NavigationState<RootStackParamList>
+>['routes'];

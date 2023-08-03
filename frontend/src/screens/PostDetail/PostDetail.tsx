@@ -42,6 +42,7 @@ import {
 } from '../../hooks';
 import { makeStyles, useTheme } from '../../theme';
 import { Post, StackNavProp, StackRouteProp } from '../../types';
+import { useInitialLoad } from '../../hooks/useInitialLoad';
 
 import { useNotificationScroll } from './hooks';
 import PostDetailSkeletonLoading from './PostDetailSkeletonLoading';
@@ -65,7 +66,8 @@ export default function PostDetail() {
   const { colors } = useTheme();
 
   const navigation = useNavigation<StackNavProp<'PostDetail'>>();
-  const { navigate, setParams } = navigation;
+  const { navigate, reset, setParams } = navigation;
+  const useInitialLoadResult = useInitialLoad();
 
   const {
     params: {
@@ -118,8 +120,31 @@ export default function PostDetail() {
     {
       variables: { topicId, postNumber, includeFirstPost: true },
       onError: (error) => {
+        /**
+         * if we get error about private post which cannot be access.
+         * we need check first it is because user haven't login or because post it self only open to specific group
+         * if user not login we will redirect to login scene.
+         * But if user already login still get same error will redirect to home scene and show private post alert
+         */
+
         if (error.message.includes('private')) {
-          privateTopicAlert();
+          if (
+            !useInitialLoadResult.loading &&
+            !useInitialLoadResult.isLoggedIn
+          ) {
+            reset({
+              index: 1,
+              routes: [
+                { name: 'TabNav', state: { routes: [{ name: 'Home' }] } },
+                {
+                  name: 'Login',
+                },
+              ],
+            });
+          } else {
+            navigate('TabNav', { state: { routes: [{ name: 'Home' }] } });
+            privateTopicAlert();
+          }
         }
       },
     },

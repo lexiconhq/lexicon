@@ -7,17 +7,12 @@ import { Controller, useForm } from 'react-hook-form';
 import { DarkLogo, LightLogo } from '../../assets/images';
 import { CustomHeader } from '../components';
 import { Button, Text, TextInput, TextInputType } from '../core-ui';
-import {
-  errorHandler,
-  getImage,
-  removeToken,
-  setToken,
-  useStorage,
-} from '../helpers';
+import { errorHandler, getImage, useStorage } from '../helpers';
 import { useLogin, usePushNotificationsToken, useSiteSettings } from '../hooks';
 import { makeStyles, useColorScheme } from '../theme';
 import { StackNavProp } from '../types';
 import { useRedirect } from '../utils';
+import { useAuth } from '../utils/AuthProvider';
 
 type Form = {
   email: string;
@@ -30,6 +25,7 @@ export default function Login() {
   const { colorScheme } = useColorScheme();
   const { canSignUp = false } = useSiteSettings();
   const storage = useStorage();
+  const { setTokenState } = useAuth();
   const styles = useStyles();
   const { redirectPath, setRedirectPath, handleRedirect } = useRedirect();
 
@@ -41,7 +37,7 @@ export default function Login() {
     onCompleted: async ({ login: authUser }) => {
       // eslint-disable-next-line no-underscore-dangle
       if (authUser.__typename === 'LoginOutput') {
-        await setToken(authUser.token);
+        setTokenState(authUser.token);
         let { user } = authUser;
         storage.setItem('user', {
           id: user.id,
@@ -83,7 +79,6 @@ export default function Login() {
 
   const onSubmit = handleSubmit(async ({ email, password }) => {
     Keyboard.dismiss();
-    await removeToken(); // prevent token leftover when user session expired
 
     tempUser = { email, password };
     login({

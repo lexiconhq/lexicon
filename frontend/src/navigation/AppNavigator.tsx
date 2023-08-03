@@ -19,46 +19,62 @@ import {
   isPostOrMessageDetail,
   onSubscribe,
 } from '../constants';
-import { getToken, navigatePostOrMessageDetail } from '../helpers';
+import { isRouteBesidePost, postOrMessageDetailPathToRoutes } from '../helpers';
 import { useRedirect } from '../utils';
+import { useInitialLoad } from '../hooks/useInitialLoad';
+import { LoadingOrErrorView } from '../components';
 
 import RootStackNavigator from './RootStackNavigator';
 import { navigationRef } from './NavigationService';
 
 export default function AppNavigator() {
   const { colorScheme } = useColorScheme();
+  const useInitialLoadResult = useInitialLoad();
   const { setRedirectPath } = useRedirect();
+
   const darkMode = colorScheme === 'dark';
 
+  return (
+    <>
+      <StatusBar style={darkMode ? 'light' : 'dark'} />
+      {useInitialLoadResult.loading ? (
+        <LoadingOrErrorView loading />
+      ) : (
+        <NavigationContainer
+          linking={createLinkingConfig({
+            setRedirectPath,
+            isLoggedIn: useInitialLoadResult.isLoggedIn,
+            isPublicDiscourse: useInitialLoadResult.isPublicDiscourse,
+          })}
+          theme={darkMode ? DarkTheme : DefaultTheme}
+          ref={navigationRef}
+        >
+          <RootStackNavigator initialRouteName={'InstanceLoading'} />
+        </NavigationContainer>
+      )}
+    </>
+  );
+}
+
+type CreateLinkingConfigParams = {
+  setRedirectPath: (path: string) => void;
+  isLoggedIn: boolean;
+  isPublicDiscourse: boolean;
+};
+const createLinkingConfig = (params: CreateLinkingConfigParams) => {
+  const { setRedirectPath, isLoggedIn, isPublicDiscourse } = params;
   const linking: LinkingOptions<RootStackParamList> = {
     prefixes: [EXPO_PREFIX],
     config: { screens: DEEP_LINK_SCREEN_CONFIG },
     subscribe: onSubscribe,
     async getInitialURL() {
-      // First, you may want to do the default deep link handling
-      // Check if app was opened from a deep link
-      const initialUrl = await Linking.getInitialURL();
-
-      if (initialUrl == null) {
-        return initialUrl;
-      }
-
-      // Handle URL from expo push notifications
+      // Handle app was opened from expo push notification
       const response = await Notifications.getLastNotificationResponseAsync();
       if (response) {
         return handleUrl(response);
       }
-
-      const [, pathname] = initialUrl.split('://');
-      if (!pathname) {
-        return;
-      }
-
-      const [route] = pathname.split('/');
-      if (route && isPostOrMessageDetail(route)) {
-        setRedirectPath(pathname);
-      }
-      return initialUrl;
+      // Handle app was opened from a deep link
+      return Linking.getInitialURL();
     },
     getStateFromPath: (fullPath, config) => {
       // Split off any search params (`?a=1&b=2`)
@@ -69,34 +85,34 @@ export default function AppNavigator() {
       const [pathname] = fullPath.split('?');
       const [route, ...pathParams] = pathname.split('/');
 
+      const routeToLogin = { routes: [{ name: 'Login' }] };
       // If we're not on a known deep link path, fallback to the default behavior
       // from React Navigation.
       if (!isPostOrMessageDetail(route)) {
         return getStateFromPath(fullPath, config);
       }
 
-      getToken().then((token) => {
-        if (!token) {
-          setRedirectPath(pathname);
-          return;
-        }
+      if (!isLoggedIn) {
+        setRedirectPath(pathname);
+        /**
+         * it will check if deep link is for beside post it will require user to login scene
+         * for example in this case is message-detail where user must be login to send message
+         *
+         * And for another condition, we want to redirect the user to the login scene if the discourse is not publicly accessible and the user is not logged in.
+         */
 
-        // From here on out, we know that `route` is either `message-detail` | `post-detail`.
-        navigatePostOrMessageDetail(route, pathParams);
-      });
+        if (isRouteBesidePost(route) || !isPublicDiscourse) {
+          return routeToLogin;
+        }
+      }
+
+      let routes = postOrMessageDetailPathToRoutes({ route, pathParams });
+
+      return {
+        routes,
+        index: routes.length - 1,
+      };
     },
   };
-
-  return (
-    <>
-      <StatusBar style={darkMode ? 'light' : 'dark'} />
-      <NavigationContainer
-        linking={linking}
-        theme={darkMode ? DarkTheme : DefaultTheme}
-        ref={navigationRef}
-      >
-        <RootStackNavigator />
-      </NavigationContainer>
-    </>
-  );
-}
+  return linking;
+};
