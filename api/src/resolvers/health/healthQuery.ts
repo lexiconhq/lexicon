@@ -3,6 +3,7 @@ import { AxiosError } from 'axios';
 
 import { Context } from '../../types';
 import { PROSE_DISCOURSE_HOST } from '../../constants';
+import { logger } from '../../logger';
 
 let healthQueryResolver: FieldResolver<'Query', 'health'> = async (
   _,
@@ -19,6 +20,7 @@ let healthQueryResolver: FieldResolver<'Query', 'health'> = async (
     if (e.response === undefined) {
       isDiscourseReachable = false;
     }
+    logger.log('error', discourseError?.toString());
   }
   return {
     isDiscourseReachable,

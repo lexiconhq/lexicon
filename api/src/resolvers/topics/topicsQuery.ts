@@ -15,7 +15,6 @@ import {
 } from '../../helpers';
 import { Context, Topic, UserIcon } from '../../types';
 import { ACCEPTED_LANGUAGE, FIRST_POST_NUMBER } from '../../constants';
-import { logger } from '../../logger';
 
 let topicsQueryResolver: FieldResolver<'Query', 'topics'> = async (
   _,
@@ -70,7 +69,6 @@ let topicsQueryResolver: FieldResolver<'Query', 'topics'> = async (
 
     return topics;
   } catch (error) {
-    logger.log({ message: `Topics Query Error: ${error}`, level: 'error' });
     throw errorHandler(error);
   }
 };

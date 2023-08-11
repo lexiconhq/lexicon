@@ -20,6 +20,24 @@
       "play-store",
       "lexicon-updates",
       "troubleshooting-build"
+    ],
+    "Plugin": [
+      "discourse-plugin",
+      "discourse-plugin-installation",
+      "discourse-plugin-enable",
+      {
+        "Push Notifications": [
+          "pushNotifications/introduction",
+          "pushNotifications/plugin-interaction",
+          "pushNotifications/setup/enable-plugin",
+          "pushNotifications/setup/testing-mobile-push-notification"
+        ],
+        "Email Deep Linking": [
+          "emailDeepLinking/intro",
+          "emailDeepLinking/setup/enable-plugin",
+          "emailDeepLinking/setup/testing-email-deep-linking"
+        ]
+      }
     ]
   },
   "tutorial": {

@@ -28,7 +28,7 @@ export let changePasswordResolver: FieldResolver<
       config,
     );
     if (!data.user_found) {
-      throw new Error(`No account matches ${login}`);
+      throw new Error(`No account matches ${login}.`);
     }
     return 'success';
   } catch (e) {

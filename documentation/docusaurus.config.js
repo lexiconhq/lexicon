@@ -28,12 +28,6 @@ module.exports = {
           position: 'left',
         },
         {
-          type: 'doc',
-          docId: 'pushNotifications/introduction',
-          label: 'Push Notifications Plugin',
-          position: 'left',
-        },
-        {
           href: 'https://github.com/lexiconhq/lexicon',
           label: 'GitHub',
           position: 'right',
@@ -70,6 +64,16 @@ module.exports = {
           editUrl:
             'https://github.com/lexiconhq/lexicon/blob/master/documentation/',
           routeBasePath: '/',
+          versions: {
+            '2.0.0-beta': {
+              path: 'version-2.0.0-beta',
+              banner: 'none',
+            },
+            '1.0.0': {
+              path: 'version-1.0.0',
+              banner: 'none',
+            },
+          },
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),

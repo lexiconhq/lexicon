@@ -26,7 +26,7 @@ export function likeErrorHandler(e: AxiosError, params: Params) {
   // Like action summary is not provided for the post author
   if (!likeActionSummary) {
     throw new Error(
-      `You're not permitted to do like actions to your own ${likableEntity}`,
+      `You're not permitted to do like actions to your own ${likableEntity}.`,
     );
   }
 
@@ -37,14 +37,14 @@ export function likeErrorHandler(e: AxiosError, params: Params) {
   if (like === prevLiked) {
     throw new Error(
       like
-        ? `You've liked this ${likableEntity} before`
-        : `You can't unlike a ${likableEntity} you haven't liked before`,
+        ? `You've liked this ${likableEntity} before.`
+        : `You can't unlike a ${likableEntity} you haven't liked before.`,
     );
   }
   // Already passed the time limit to unlike
   if (!like && !canUnlike) {
     throw new Error(
-      `You've passed the time limit to unlike this ${likableEntity}`,
+      `You've passed the time limit to unlike this ${likableEntity}.`,
     );
   }
 

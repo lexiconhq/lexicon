@@ -2,6 +2,7 @@ import { FieldResolver, mutationField, stringArg, nullable } from 'nexus';
 
 import { Context } from '../../types';
 import { ACCEPTED_LANGUAGE, CONTENT_JSON } from '../../constants';
+import { logger } from '../../logger';
 
 export let logoutMutationResolver: FieldResolver<'Mutation', 'logout'> = async (
   _,
@@ -32,16 +33,14 @@ export let logoutMutationResolver: FieldResolver<'Mutation', 'logout'> = async (
        */
 
       if (error instanceof Error) {
-        // eslint-disable-next-line no-console
-        console.log(
-          'Error when hit delete token plugin API ====>',
-          error.message,
+        logger.log(
+          'Error',
+          `Error when hit delete token plugin API ====> ${error.message}`,
         );
       } else {
-        // eslint-disable-next-line no-console
-        console.log(
-          'Unknown error when hit delete token plugin API ====>',
-          error,
+        logger.log(
+          'Error',
+          `Unknown error when hit delete token plugin API ====> ${error}`,
         );
       }
     }

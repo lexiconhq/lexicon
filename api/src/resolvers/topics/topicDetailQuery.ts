@@ -52,7 +52,7 @@ let topicDetailQueryResolver: FieldResolver<'Query', 'topicDetail'> = async (
 
     const firstPostId = data.postStream.stream?.[0];
     if (!firstPostId) {
-      throw new Error('First post ID is not provided in topic stream');
+      throw new Error('First post ID is not provided in topic stream.');
     }
     const firstPostOfTopic = await fetchPost({ client, postId: firstPostId });
     data.postStream.firstPost = firstPostOfTopic;

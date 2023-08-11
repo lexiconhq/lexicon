@@ -1,10 +1,14 @@
-import { createServer as createYogaServer } from '@graphql-yoga/node';
+import {
+  createServer as createYogaServer,
+  useLogger,
+} from '@graphql-yoga/node';
 
 import { getClient } from '../../client';
 import { decodeToken } from '../../helpers/auth';
 import { schema } from '../../schema';
 import { Context } from '../../types';
 import { errorHandler } from '../../helpers';
+import { logger } from '../../logger';
 
 import { authPlugin } from './plugins';
 
@@ -43,7 +47,32 @@ export function createServer(hostname: string, port: number) {
       }
     },
     endpoint: '/',
-    plugins: [authPlugin],
+    plugins: [
+      authPlugin,
+      useLogger({
+        skipIntrospection: true,
+        logFn: (eventName, events) => {
+          switch (eventName) {
+            case 'execute-end':
+            case 'subscribe-end':
+              if (!events.result.errors) {
+                break;
+              }
+              for (let error of events.result.errors) {
+                const dateTime = new Date();
+                logger.log(
+                  'error',
+                  '[%s] [%s] %s',
+                  dateTime.toUTCString(),
+                  error.path[0],
+                  error.message,
+                );
+              }
+              break;
+          }
+        },
+      }),
+    ],
   });
 
   return graphQLServer;
