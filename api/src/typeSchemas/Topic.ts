@@ -1,8 +1,7 @@
 import { objectType } from 'nexus';
 
-type Poster = {
-  description: string;
-};
+import { getTopicAuthorUserId } from '../helpers/getTopicAuthor';
+import { getFrequentPosterUserId } from '../helpers/getFrequentPoster';
 
 export let Topic = objectType({
   name: 'Topic',
@@ -57,22 +56,10 @@ export let Topic = objectType({
       type: 'MessageParticipant',
     });
     t.nullable.int('authorUserId', {
-      resolve: ({ posters }) => {
-        const author = posters.find((p: Poster) =>
-          p.description.toLowerCase().includes('original poster'),
-        );
-
-        return author?.userId || author?.user?.id || null;
-      },
+      resolve: ({ posters }) => getTopicAuthorUserId(posters) ?? null,
     });
     t.nullable.int('frequentPosterUserId', {
-      resolve: ({ posters }) => {
-        const frequentPoster = posters.find((p: Poster) =>
-          p.description.toLowerCase().includes('frequent poster'),
-        );
-
-        return frequentPoster?.userId || frequentPoster?.user?.id || null;
-      },
+      resolve: ({ posters }) => getFrequentPosterUserId(posters) || null,
     });
     // Note: Comment out for maybe next phase
     // t.nullable.int('recentPosterUserId', {

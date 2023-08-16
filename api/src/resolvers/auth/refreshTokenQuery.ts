@@ -9,7 +9,7 @@ export let refreshTokenQueryResolver: FieldResolver<
 > = async (_, __, context: Context) => {
   try {
     if (!context.client) {
-      throw new Error('Not authorized.');
+      throw new Error('Not authorized');
     }
     return checkSession(context.client);
   } catch (unknownError) {

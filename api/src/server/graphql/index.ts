@@ -55,7 +55,7 @@ export function createServer(hostname: string, port: number) {
           switch (eventName) {
             case 'execute-end':
             case 'subscribe-end':
-              if (!events.result.errors) {
+              if ((events.result.errors?.length ?? 0) < 1) {
                 break;
               }
               for (let error of events.result.errors) {

@@ -40,9 +40,7 @@ export let likeTopicOrPostResolver: FieldResolver<
 
   try {
     if ((!postId && !topicId) || (postId && topicId)) {
-      throw new Error(
-        'Please provide either only the post ID or the topic ID.',
-      );
+      throw new Error('Please provide either only the post ID or the topic ID');
     }
 
     let likableEntity: LikableEntity = 'post';
@@ -59,7 +57,7 @@ export let likeTopicOrPostResolver: FieldResolver<
       const post = postStream.posts[0];
       postId = post.id;
       if (!postId) {
-        throw new Error('Unable to find the first post of this topic.');
+        throw new Error('Unable to find the first post of this topic');
       }
       actionsSummary = post.actionsSummary;
       currentLikedTopicResponse = {

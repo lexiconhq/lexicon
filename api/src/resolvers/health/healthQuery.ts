@@ -20,7 +20,10 @@ let healthQueryResolver: FieldResolver<'Query', 'health'> = async (
     if (e.response === undefined) {
       isDiscourseReachable = false;
     }
-    logger.log('error', discourseError?.toString());
+    logger.log(
+      'error',
+      discourseError?.toString() ?? 'An unknown Discourse error occurred',
+    );
   }
   return {
     isDiscourseReachable,

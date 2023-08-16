@@ -17,7 +17,7 @@ export function errorHandler(unknownError: unknown) {
       throw new Error("You've passed the time limit to edit this post.");
     }
     if (Array.isArray(errors) && errors[0] === ChangeUsernameError) {
-      throw new Error('This username is already taken.');
+      throw new Error('This username is already taken');
     }
     const { invalidAccess, unauthenticatedAccess } = errorTypes;
     if (errorType === unauthenticatedAccess || errorType === invalidAccess) {
