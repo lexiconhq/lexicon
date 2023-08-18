@@ -66,7 +66,39 @@ describe('getPosterTypeDetails', () => {
       });
     });
   });
-  describe('Chinese', () => {
+  describe('Simplified Chinese', () => {
+    it('handles a string where original poster is not first', () => {
+      const result = getPosterTypeDetails('频繁发帖人、原始发帖人');
+
+      expect(result).toEqual({
+        isAuthor: true,
+        isFrequentPoster: true,
+        isMostRecentPoster: false,
+      });
+    });
+
+    it('handles all three types', () => {
+      const result = getPosterTypeDetails(
+        '原始发帖人、 最新发帖人、 频繁发帖人',
+      );
+      expect(result).toEqual({
+        isAuthor: true,
+        isFrequentPoster: true,
+        isMostRecentPoster: true,
+      });
+    });
+    it('handles multiple spaces between entries', () => {
+      const result = getPosterTypeDetails(
+        '    原始发帖人、    最新发帖人、   频繁发帖人   ',
+      );
+      expect(result).toEqual({
+        isAuthor: true,
+        isFrequentPoster: true,
+        isMostRecentPoster: true,
+      });
+    });
+  });
+  describe('Traditional Chinese', () => {
     it('handles a string where original poster is not first', () => {
       const result = getPosterTypeDetails('頻繁發文者、原始作者');
 
