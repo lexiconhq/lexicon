@@ -17,5 +17,10 @@ export const ERROR_PRIVATE_POST = {
   title: 'Private Post',
   content: `We're sorry, but you don't have permission to access this private post.`,
 };
+
+export const ERROR_SETUP_PUSH_NOTIFICATIONS = {
+  title: 'Something went wrong',
+  content: 'Failed to setup push notifications',
+};
 export const ERROR_REFETCH =
   'Something went wrong when logging out. If this persists, please contact support.';

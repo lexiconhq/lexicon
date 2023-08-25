@@ -42,12 +42,8 @@ import {
   clamp,
   errorHandler,
   errorHandlerAlert,
-  getToken,
   isFlatList,
   LoginError,
-  removeToken,
-  setToken,
-  showLogoutAlert,
   transformTopicToPost,
   useStorage,
 } from '../../helpers';
@@ -55,7 +51,6 @@ import {
   useAbout,
   useChannels,
   useLazyTopicList,
-  useRefreshToken,
   useSiteSettings,
 } from '../../hooks';
 import { makeStyles } from '../../theme';
@@ -107,8 +102,7 @@ export default function Home() {
   const styles = useStyles();
 
   const tabNavigation = useNavigation<TabNavProp<'Home'>>();
-  const { reset, addListener, navigate } =
-    useNavigation<StackNavProp<'TabNav'>>();
+  const { addListener, navigate } = useNavigation<StackNavProp<'TabNav'>>();
 
   const { params } = useRoute<TabRouteProp<'Home'>>();
   const receivedChannelId = params === undefined ? 0 : params.selectedChannelId;
@@ -176,23 +170,6 @@ export default function Home() {
   const [hasMoreTopics, setHasMoreTopics] = useState(false);
   const [allTopicCount, setAllTopicCount] = useState(0);
   const [width, setWidth] = useState(0);
-
-  const {
-    getRefreshToken,
-    data: tokenResponse,
-    error: tokenError,
-  } = useRefreshToken({ fetchPolicy: 'network-only' }, 'HIDE_ALERT');
-
-  useEffect(() => {
-    const currentUserId = storage.getItem('user')?.id;
-    if (tokenResponse && tokenResponse.refreshToken.id === currentUserId) {
-      setToken(tokenResponse.refreshToken.token);
-    } else if (tokenError && currentUserId) {
-      removeToken();
-      storage.removeItem('user');
-      showLogoutAlert();
-    }
-  }, [tokenResponse, tokenError, reset, storage]);
 
   const { loading: channelsLoading, error: channelsError } = useChannels(
     {
@@ -320,18 +297,13 @@ export default function Home() {
       };
       setPage(currentPage);
       getData(variables);
-      getToken().then((token) => {
-        if (token) {
-          return getRefreshToken();
-        }
-      });
+
       getAbout();
     });
 
     return unsubscribe;
   }, [
     selectedChannelId,
-    getRefreshToken,
     getAbout,
     receivedChannelId,
     username,

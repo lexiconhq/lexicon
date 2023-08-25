@@ -9,10 +9,9 @@ import { schema } from '../../schema';
 import { Context } from '../../types';
 import { errorHandler } from '../../helpers';
 import { logger } from '../../logger';
+import { REFRESH_TOKEN_COOKIE_FIELD } from '../../constants';
 
 import { authPlugin } from './plugins';
-
-const REFRESH_TOKEN_COOKIE_FIELD = '_t=';
 
 export function createServer(hostname: string, port: number) {
   const graphQLServer = createYogaServer({
@@ -25,20 +24,28 @@ export function createServer(hostname: string, port: number) {
     // useful error messages, so here we instruct GraphQL Yoga to not mask the errors.
     maskedErrors: false,
 
-    context: async ({ request }): Promise<Context> => {
+    context: async ({ request, res }): Promise<Context> => {
       try {
         let authorization = request.headers.get('Authorization');
         let cookie = decodeToken(authorization);
         const userAgent = request.headers.get('User-Agent') ?? '';
+
         if (cookie.includes(REFRESH_TOKEN_COOKIE_FIELD)) {
           return {
-            client: await getClient({ cookies: cookie, userAgent }),
+            client: await getClient({
+              cookies: cookie,
+              userAgent,
+              context: { request, response: res },
+            }),
             isAuth: true,
           };
         }
 
         return {
-          client: await getClient({ userAgent }),
+          client: await getClient({
+            userAgent,
+            context: { request, response: res },
+          }),
           isAuth: false,
         };
       } catch (error) {

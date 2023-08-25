@@ -10,6 +10,7 @@ import {
   ERROR_HANDLED_BY_LINK,
   getProseEndpoint,
   NO_CHANNEL_FILTER,
+  CUSTOM_HEADER_NEW_TOKEN,
 } from '../constants';
 import {
   appendPagination,
@@ -235,7 +236,16 @@ const errorLink = onError(({ graphQLErrors, networkError, operation }) => {
 
 const successLink = new ApolloLink((operation, forward) => {
   return forward(operation).map((data) => {
-    networkStatusVar('Online');
+    const context = operation.getContext();
+    const {
+      response: { headers },
+    } = context;
+    const newToken = headers.map[CUSTOM_HEADER_NEW_TOKEN];
+
+    if (newToken) {
+      setTokenState(newToken);
+    }
+
     return data;
   });
 });

@@ -10,17 +10,22 @@ import {
   PushNotificationsDocument,
 } from '../../generated/server';
 import { useMutation } from '../../utils/useMutation';
-import { getExpoPushTokenHandler, useStorage } from '../../helpers';
+import {
+  getExpoPushTokenHandler,
+  pushNotificationsSetupFailAlert,
+  useStorage,
+} from '../../helpers';
 import { DEFAULT_NOTIFICATION_BEHAVIOUR } from '../../constants';
+import { getExperienceId } from '../../helpers/experienceId';
 
 export function usePushNotificationsToken() {
-  const { mutatePushNotifications } = usePushNotificationsMutation();
+  const mutatePushNotifications = usePushNotificationsMutation();
   const syncToken = useCallback(async () => {
     const { success, token } = await getExpoPushTokenHandler();
     if (!success) {
       return;
     }
-    mutatePushNotifications(token);
+    mutatePushNotifications?.mutatePushNotifications(token);
   }, [mutatePushNotifications]);
 
   return { syncToken };
@@ -32,13 +37,6 @@ export function usePushNotificationsMutation(
     PushNotificationsMutationVariables
   >,
 ) {
-  const defaultVariable = {
-    applicationName: Constants.expoConfig?.name ?? 'Lexicon Mobile App',
-    experienceId:
-      (Constants.expoConfig?.currentFullName || Constants.manifest2?.id) ?? '',
-    platform: Platform.OS,
-  };
-
   const [mutate, { loading, error }] = useMutation<
     PushNotificationsMutation,
     PushNotificationsMutationVariables
@@ -46,7 +44,24 @@ export function usePushNotificationsMutation(
     ...options,
   });
 
+  /**
+   * According to the Expo documentation, the experienceID format contains `<username>/<slug>`. For the username, it uses your Expo account username, and for the slug, it uses the slug of your app from the `app.json` file.
+   * To configure the experienceID, you can modify the value in the `app.json` file under currentFullName. Simply update the value based on your app.
+   */
+
   const mutatePushNotifications = (expoToken: string) => {
+    const experienceIdResult = getExperienceId();
+    if (!experienceIdResult.success) {
+      pushNotificationsSetupFailAlert();
+      return;
+    }
+
+    const defaultVariable = {
+      applicationName: Constants.expoConfig?.name ?? 'Lexicon Mobile App',
+      experienceId: experienceIdResult.result,
+      platform: Platform.OS,
+    };
+
     mutate({
       variables: {
         ...defaultVariable,

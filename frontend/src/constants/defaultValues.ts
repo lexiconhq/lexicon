@@ -48,3 +48,5 @@ export const DEFAULT_NOTIFICATION_CHANNEL_INPUT = {
   vibrationPattern: [0, 250, 250, 250],
   lightColor: '#FF231F7C',
 };
+
+export const CUSTOM_HEADER_NEW_TOKEN = 'X-Prose-Latest-Token';

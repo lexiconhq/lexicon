@@ -3,6 +3,7 @@
     "name": "<insert your app name>",
     "slug": "<insert your app name>",
     "scheme": "<your-scheme-here>",
+    "currentFullName": "@<username>/<slugName>",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

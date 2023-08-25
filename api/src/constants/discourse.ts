@@ -5,3 +5,5 @@ export const errorTypes = {
   invalidAccess: 'invalid_access',
   unauthenticatedAccess: 'not_logged_in',
 };
+
+export const REFRESH_TOKEN_COOKIE_FIELD = '_t=';

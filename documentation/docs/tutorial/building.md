@@ -30,7 +30,7 @@ You can see that the values in `app.json` are updated after running the command.
 
 :::info
 When publishing your app, it is necessary to deploy Prose somewhere publicly accessible, perhaps on a cloud hosting provider like AWS or DigitalOcean. If Prose is only running on your local machine, users that download your app won't be able to use it.
-Check [the documentation](deployment) to deploy Prose if you haven't already.
+Check [the documentation](../deployment.md) to deploy Prose if you haven't already.
 
 In the original release of Lexicon, the **Prose URL** was specified in `frontend/.env`. However, as part of migrating to Expo's EAS feature, we centralized the configuration into `frontend/Config.ts` to save you the trouble of needing to maintain it in more than one place, as suggested in the [Expo documentation](https://docs.expo.dev/build-reference/variables/#can-i-share-environment-variables-defined-in-easjson-with-expo-start-and-eas-update)
 :::
