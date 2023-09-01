@@ -6,36 +6,74 @@ import { NotificationType } from '../types';
 // Only for developing in Expo
 export const EXPO_PREFIX = Linking.createURL('/');
 
-export const handleUrl = (response: Notifications.NotificationResponse) => {
-  const { data } = response.notification.request.content;
-  const { type, discourse_url: discourseUrl, is_pm: isPm } = data;
+type DiscourseNotificationData = {
+  type: string; // This is a numeric string representing `NotificationType`
+  discourse_url: string;
+  is_pm: boolean;
+};
 
-  // Any custom logic to see whether the URL needs to be handled
+// TODO: #1198: replace this and its related type with proper `zod` types and `safeParse`
+
+function isNotificationFromDiscourse(
+  data: unknown,
+): data is DiscourseNotificationData {
+  if (typeof data !== 'object' || data == null) {
+    return false;
+  }
+
+  if (!('is_pm' in data) || typeof data.is_pm !== 'boolean') {
+    return false;
+  }
+
+  if (!('discourse_url' in data) || typeof data.discourse_url !== 'string') {
+    return false;
+  }
+  if (!('type' in data) || typeof data.type !== 'string') {
+    return false;
+  }
+
+  return true;
+}
+
+export const handleUrl = (response: Notifications.NotificationResponse) => {
+  const { data }: { data: unknown } = response.notification.request.content;
+
+  if (!isNotificationFromDiscourse(data)) {
+    return EXPO_PREFIX;
+  }
+
+  const { type, discourse_url: discourseUrl, is_pm: isPm } = data;
+  const notificationType = Number.parseInt(type, 10);
+  if (Number.isNaN(notificationType)) {
+    return EXPO_PREFIX;
+  }
+
+  const sceneUrl = isPm
+    ? `message-detail${discourseUrl}`
+    : `post-detail${discourseUrl}`;
+
   let url = '';
-  switch (type) {
+
+  switch (notificationType) {
     case NotificationType.Mention:
-      url = isPm
-        ? `message-detail${discourseUrl}`
-        : `post-detail${discourseUrl}`;
-      break;
     case NotificationType.ReplyPost:
-    case NotificationType.QuotePost:
-    case NotificationType.EditPost:
     case NotificationType.LikePost:
-    case NotificationType.ReplyMessage:
-    case NotificationType.MovePost:
+    case NotificationType.QuotePost:
     case NotificationType.LinkPost:
-    case NotificationType.InviteTopic:
+    case NotificationType.ReplyMessage:
+    case NotificationType.ChatMention:
     case NotificationType.GroupMention:
+    case NotificationType.SendMessage:
+      url = sceneUrl;
+      break;
+    case NotificationType.EditPost:
+    case NotificationType.MovePost:
+    case NotificationType.InviteTopic:
     case NotificationType.WatchingTopic:
     case NotificationType.TopicReminder:
     case NotificationType.BookmarkReminder:
-      url = `post-detail${discourseUrl}`;
-      break;
-    case NotificationType.SendMessage:
     case NotificationType.InviteMessage:
-    case NotificationType.ChatMention:
-      url = `message-detail${discourseUrl}`;
+      break;
   }
 
   return `${EXPO_PREFIX}${url}`;

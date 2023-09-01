@@ -7,7 +7,7 @@ export let SiteSetting = objectType({
     t.boolean('canTagTopics');
     t.boolean('canSignUp');
     t.string('authorizedExtensions');
-    t.nullable.int('uncategorizedCategoryId');
+    t.int('uncategorizedCategoryId');
     t.int('minSearchLength');
     t.boolean('taggingEnabled');
     t.int('maxTagLength');
@@ -16,6 +16,8 @@ export let SiteSetting = objectType({
     t.int('minUsernameLength');
     t.int('minPasswordLength');
     t.boolean('fullNameRequired');
+    t.string('defaultComposerCategory');
+    t.boolean('allowUncategorizedTopics');
     t.list.field('topicFlagTypes', {
       type: 'TopicFlagTypes',
     });

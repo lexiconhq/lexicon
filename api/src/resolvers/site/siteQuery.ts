@@ -3,6 +3,7 @@ import { FieldResolver, queryField } from 'nexus';
 
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';
+import { UNCATEGORIZED_CATEGORY_ID } from '../../constants';
 
 let siteResolver: FieldResolver<'Query', 'site'> = async (
   _,
@@ -17,6 +18,8 @@ let siteResolver: FieldResolver<'Query', 'site'> = async (
         can_tag_topics: canTagTopics,
         topic_flag_types: topicFlagTypes,
         post_action_types: postActionTypes,
+        uncategorized_category_id:
+          uncategorizedCategoryId = UNCATEGORIZED_CATEGORY_ID,
         ...siteData
       },
     } = await context.client.get(siteUrl);
@@ -50,6 +53,8 @@ let siteResolver: FieldResolver<'Query', 'site'> = async (
         min_username_length: minUsernameLength = 0,
         min_password_length: minPasswordLength = 0,
         full_name_required: fullNameRequired = false,
+        default_composer_category: defaultComposerCategory = '',
+        allow_uncategorized_topics: allowUncategorizedTopics = false,
       },
     } = await context.client.get(siteSettingsUrl);
 
@@ -68,6 +73,9 @@ let siteResolver: FieldResolver<'Query', 'site'> = async (
       fullNameRequired,
       topicFlagTypes,
       postActionTypes,
+      defaultComposerCategory,
+      allowUncategorizedTopics,
+      uncategorizedCategoryId,
       ...camelcaseKey(siteData, { deep: true }),
     };
   } catch (error) {

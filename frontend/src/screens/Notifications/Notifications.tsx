@@ -71,6 +71,9 @@ export default function Notifications() {
 
   const { markAsRead, loading: markAsReadLoading } = useMarkRead({
     onError: () => {},
+    onCompleted: () => {
+      refetch({ page: 1 });
+    },
   });
 
   /**
@@ -95,7 +98,6 @@ export default function Notifications() {
         async (btnIndex) => {
           if (btnIndex === 0) {
             await markAsRead();
-            refetch({ page: 1 });
           }
         },
       );
@@ -172,14 +174,8 @@ export default function Notifications() {
         isMessage={hasIcon}
         seen={seen}
         onPress={() => {
-          if (item.badgeId) {
-            onPress(item.badgeId);
-          } else {
-            onPress(topicId);
-            markAsRead({ variables: { notificationId: id } }).then(() =>
-              refetch({ page: 1 }),
-            );
-          }
+          onPress(item.badgeId ? item.badgeId : topicId);
+          markAsRead({ variables: { notificationId: id } });
         }}
       />
     );
@@ -223,7 +219,7 @@ export default function Notifications() {
                 <TouchableOpacity
                   style={styles.modalButtonContainer}
                   onPress={() => {
-                    markAsRead().then(() => refetch({ page: 1 }));
+                    markAsRead();
                     setShowMore(false);
                   }}
                 >

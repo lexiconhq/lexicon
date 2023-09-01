@@ -1,6 +1,5 @@
 import { QueryHookOptions } from '@apollo/client';
 
-import { DEFAULT_CHANNEL } from '../../constants';
 import { SiteQuery, SiteDocument } from '../../generated/server';
 import { useQuery } from '../../utils';
 
@@ -20,7 +19,7 @@ export function useSiteSettings(options?: QueryHookOptions<SiteQuery>) {
     canCreateTag,
     canSignUp,
     authorizedExtensions,
-    uncategorizedCategoryId = DEFAULT_CHANNEL.id,
+    uncategorizedCategoryId,
     minSearchLength,
     taggingEnabled,
     maxTagLength,
@@ -31,6 +30,8 @@ export function useSiteSettings(options?: QueryHookOptions<SiteQuery>) {
     fullNameRequired,
     topicFlagTypes,
     postActionTypes,
+    defaultComposerCategory,
+    allowUncategorizedTopics,
   } = data?.site || {};
 
   return {
@@ -49,6 +50,8 @@ export function useSiteSettings(options?: QueryHookOptions<SiteQuery>) {
     fullNameRequired,
     topicFlagTypes,
     postActionTypes,
+    allowUncategorizedTopics,
+    defaultComposerCategory,
     loading,
     error,
     refetch,

@@ -6,6 +6,8 @@ import {
 import { reset } from '../navigation/NavigationService';
 import { MessageDetailParams, Routes } from '../types';
 
+import { parseInt } from './parser';
+
 export type DetailParamsOutcome = 'valid-params' | 'invalid-post-number';
 
 /**
@@ -45,8 +47,7 @@ export function getValidDetailParams(params: Array<string>):
 
   const [, , ...otherParams] = params;
   const [topicId, postNumber] = otherParams.map((param) => {
-    const parsed = Number.parseInt(param, 10);
-    return Number.isNaN(parsed) ? undefined : parsed;
+    return parseInt(param);
   });
 
   // If we can't even extract a valid, positive number for `topicId` (non-negative and greater than 0),

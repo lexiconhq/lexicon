@@ -42,6 +42,7 @@ import {
   newPostIsValid,
   getReplacedImageUploadStatus,
   useStorage,
+  parseInt,
 } from '../helpers';
 import {
   useKASVWorkaround,
@@ -59,7 +60,7 @@ import {
   RootStackRouteProp,
 } from '../types';
 import { useModal } from '../utils';
-import { isNoChannelFilter } from '../constants';
+import { NO_CHANNEL_FILTER, isNoChannelFilter } from '../constants';
 
 export default function NewPost() {
   const { modal, setModal } = useModal();
@@ -70,29 +71,46 @@ export default function NewPost() {
   const user = storage.getItem('user');
   const channels = storage.getItem('channels');
 
-  const {
-    canCreateTag,
-    canTagTopics,
-    authorizedExtensions,
-    uncategorizedCategoryId,
-  } = useSiteSettings();
+  const defaultChannelId = channels?.[0].id || NO_CHANNEL_FILTER.id;
+
+  const { canCreateTag, canTagTopics, authorizedExtensions } = useSiteSettings({
+    onCompleted: ({
+      site: {
+        defaultComposerCategory,
+        allowUncategorizedTopics,
+        uncategorizedCategoryId,
+      },
+    }) => {
+      if (isNoChannelFilter(selectedChannel)) {
+        const parsed = parseInt(defaultComposerCategory);
+        if (parsed) {
+          setSelectedChannel(parsed);
+        } else {
+          setSelectedChannel(
+            allowUncategorizedTopics
+              ? uncategorizedCategoryId
+              : defaultChannelId,
+          );
+        }
+      }
+    },
+  });
+
   const extensions = authorizedExtensions?.split('|');
   const normalizedExtensions = formatExtensions(extensions);
 
   const ios = Platform.OS === 'ios';
-
-  const DEFAULT_CHANNEL_ID = channels?.[0].id || 1;
 
   const navigation = useNavigation<RootStackNavProp<'NewPost'>>();
   const { navigate, goBack } = navigation;
 
   let {
     params: {
-      selectedChannelId = DEFAULT_CHANNEL_ID,
+      selectedChannelId = defaultChannelId,
       selectedTagsIds = [],
       oldContent = '',
       oldTitle = '',
-      oldChannel = DEFAULT_CHANNEL_ID,
+      oldChannel = defaultChannelId,
       oldTags = [],
       editPostId,
       editTopicId,
@@ -103,7 +121,7 @@ export default function NewPost() {
     },
   } = useRoute<RootStackRouteProp<'NewPost'>>();
 
-  const [selectedChannel, setSelectedChannel] = useState(1);
+  const [selectedChannel, setSelectedChannel] = useState(selectedChannelId);
   const [selectedTags, setSelectedTags] = useState<Array<string>>([]);
   const [imagesArray, setImagesArray] = useState<Array<Image>>([]);
   const [uri, setUri] = useState('');
@@ -164,13 +182,11 @@ export default function NewPost() {
   }, [imageUri]);
 
   useEffect(() => {
-    setSelectedChannel(
-      isNoChannelFilter(selectedChannelId)
-        ? uncategorizedCategoryId || 1
-        : selectedChannelId,
-    );
+    if (!isNoChannelFilter(selectedChannelId)) {
+      setSelectedChannel(selectedChannelId);
+    }
     setSelectedTags(selectedTagsIds);
-  }, [uncategorizedCategoryId, selectedChannelId, selectedTagsIds]);
+  }, [defaultChannelId, selectedChannelId, selectedTagsIds]);
 
   const { mentionMembers } = useMention(
     mentionKeyword,
@@ -190,7 +206,7 @@ export default function NewPost() {
   const onPressSelectChannel = () => {
     navigate('Channels', {
       prevScreen: 'NewPost',
-      selectedChannelId: selectedChannelId,
+      selectedChannelId: selectedChannel,
     });
   };
 

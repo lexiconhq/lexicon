@@ -7,7 +7,7 @@ export const FIRST_POST_NUMBER = 1;
 export const MAX_POST_COUNT_PER_REQUEST = 20;
 
 export const DEFAULT_CHANNEL = {
-  id: 0,
+  id: 1,
   color: '0088CC',
   description: t(
     `Topics that don't need a category, or don't fit into any other existing category.`,
