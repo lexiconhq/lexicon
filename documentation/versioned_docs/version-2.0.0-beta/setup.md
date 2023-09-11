@@ -22,6 +22,16 @@ For detailed instructions on setting up a local development instance of Discours
 
 However, if you already have a deployed instance of Discourse, we'd recommend using that instead.
 
+### Install the Lexicon Discourse Plugin
+
+The Lexicon Discourse Plugin is a Discourse plugin that adds support for [push notifications](./push-notifications/introduction.md) and [email deep linking](./email-deep-linking/intro.md).
+
+You can install the plugin in your Discourse instance by following the instructions in the [Discourse plugin documentation](./discourse-plugin.md).
+
+For local development, you're only able to test out push notifications, as email deep linking requires a published app with a [valid app scheme](https://docs.expo.dev/versions/latest/config/app/#scheme).
+
+If you wish to develop against the plugin itself, you can clone the codebase [here](https://github.com/lexiconhq/discourse-lexicon-plugin.git).
+
 ### Configuration
 
 The [Lexicon Stack](concepts#architecture-of-the-lexicon-stack) requires some configuration in order to properly interact with your Discourse server.
@@ -124,6 +134,10 @@ const config = {
 In the example above, we have configured the app to point at `https://my-deployed-graphql.api` in all scenarios, including during development when running with `npm run start`.
 
 ##### Scenario 2: Run Prose Locally & Access from a Simulator
+
+:::info
+If you are running the Prose server locally, you should not expect that the mobile app will continue to function if you turn off your development machine. You must **deploy** the server before attempting to use the mobile app without depending on your development machine.
+:::
 
 This approach involves running both the Lexicon Mobile App and the Prose GraphQL API on your development machine. It is accomplished by instructing Expo to launch the Mobile App in the Android or iOS simulator.
 

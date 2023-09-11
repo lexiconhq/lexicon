@@ -6,13 +6,12 @@ title: Quick Start
 
 - Node.js 16.14 or newer
 - The latest version of NPM or Yarn, compatible with Node 16.14 or newer
-- Expo CLI 6.0.6 or newer
-- EAS CLI 2.6.0 or newer to build and publish the App
+- EAS CLI 3.7.2 or newer to build and publish the app
 - An active Discourse site
   - If you don’t have one, please follow the instructions in [Development Setup](setup#discourse-host)
 
 :::note
-Follow the instructions in [Setup Guidance](tutorial/setup) to install the prerequisite depedencies, such as NPM, the Expo CLI, and the EAS CLI.
+Follow the instructions in [Setup Guidance](tutorial/setup) to install the prerequisite depedencies, such as NPM and the EAS CLI.
 :::
 
 ## Installation

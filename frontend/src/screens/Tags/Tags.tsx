@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Platform, SafeAreaView } from 'react-native';
+import { Platform, SafeAreaView, View } from 'react-native';
 import { KeyboardAccessoryView } from 'react-native-keyboard-accessory';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+import { useFormContext } from 'react-hook-form';
 
 import { CustomHeader, HeaderItem, ModalHeader } from '../../components';
 import { Button, Text } from '../../core-ui';
@@ -15,7 +16,7 @@ import { client } from '../../graphql/client';
 import { formatTag } from '../../helpers';
 import { useSiteSettings, useTags } from '../../hooks';
 import { makeStyles } from '../../theme';
-import { RootStackNavProp, RootStackRouteProp, Tag } from '../../types';
+import { RootStackNavProp, Tag } from '../../types';
 
 import { AvailableTags, SearchBar, SelectedTags } from './components';
 
@@ -26,20 +27,18 @@ export default function Tags() {
   const { navigate, goBack } = navigation;
 
   const {
-    params: { selectedTagsIds },
-  } = useRoute<RootStackRouteProp<'Tags'>>();
-
-  const {
     canCreateTag = false,
     maxTagLength,
     maxTagsPerTopic = 5,
   } = useSiteSettings();
 
+  const { setValue, getValues } = useFormContext();
   const [loading, setLoading] = useState(true);
   const [searchValue, setSearchValue] = useState('');
   const [tags, setTags] = useState<Array<Tag>>([]);
-  const [currentTagsIds, setCurrentTagsIds] =
-    useState<Array<string>>(selectedTagsIds);
+  const [currentTagsIds, setCurrentTagsIds] = useState<Array<string>>(
+    getValues('tags'),
+  );
   const [error, setError] = useState<string | null>(null);
 
   const close = useRef(false);
@@ -156,7 +155,8 @@ export default function Tags() {
 
   function submitTags() {
     close.current = true;
-    navigate('NewPost', { selectedTagsIds: currentTagsIds });
+    setValue('tags', currentTagsIds);
+    navigate('NewPost');
   }
 
   function cancelAddTags() {
@@ -200,7 +200,14 @@ export default function Tags() {
           ]}
           style={styles.searchBar}
         />
-
+        {availableTags.length === 0 && !canCreateTag && !tagsLoading && (
+          // TODO: Make this into a component (#1221)
+          <View style={styles.tagsInfoContainer}>
+            <Text style={styles.tagsInfo}>
+              {t("You don't have permission to create tags")}
+            </Text>
+          </View>
+        )}
         <SelectedTags
           selectedTags={currentTagsIds}
           onSelectedTag={onSelectedTag}
@@ -268,4 +275,12 @@ const useStyles = makeStyles(({ colors, spacing }) => ({
     marginVertical: spacing.xl,
     marginHorizontal: spacing.xxl,
   },
+  tagsInfoContainer: {
+    backgroundColor: colors.lightYellowBackground,
+    borderRadius: spacing.m,
+    paddingHorizontal: spacing.l,
+    paddingVertical: spacing.m,
+    marginBottom: spacing.xxl,
+  },
+  tagsInfo: { color: colors.yellowText },
 }));

@@ -19,7 +19,7 @@ const color = FUNCTIONAL_COLORS.primary.slice(1);
 
 // TODO: We should eventually remove this placeholder ID as a means to
 // communicate no channel filter, and come up with a better solution.
-const NO_CHANNEL_FILTER_ID = Number.MAX_VALUE;
+export const NO_CHANNEL_FILTER_ID = Number.MAX_VALUE;
 
 export function isNoChannelFilter(channelId: number) {
   return channelId === NO_CHANNEL_FILTER_ID;

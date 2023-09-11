@@ -16,11 +16,11 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 
 If you are encountering issues related to the URL, resulting in an error message saying "please connect to network" as shown in the screenshot, it is likely due to incorrect settings. Specifically, if you are attempting to test builds locally on your mobile device and the channel field is not properly configured, the app may continuously fallback to the localDevelopment channel, even if you have set it to something else like "preview."
 
-Here some steps and note to fix this problem:
+Here some steps and notes to help resolve this:
 
 - Open the `frontend/Config.ts` file in your project.
 - Locate the `config` object within the file.
-- In the `localDevelopment` section of the `config` object, you can add the Prose URL specific to the channel you are trying to test. This section is used local development and as a fallback configuration for unknown build channels in EAS Build. Here's an example:
+- In the `localDevelopment` section of the `config` object, you can add the Prose URL specific to the channel you are trying to test. This section is used for local development and as a fallback configuration for unknown build channels in EAS Build. Here's an example:
 
   ```ts
   const config: Config = {
@@ -59,7 +59,7 @@ It is important to include the URL in the `frontend/app.json` file, which expo-u
 This configuration is essential for seamless integration with Config.ts in your project.
 :::
 
-In certain cases, you may encounter an issue related to prose API URLs when the channel name specified in the `frontend/eas.json` file does not match the corresponding key name defined in the `config` variable in `frontend/Config.ts`. This discrepancy can lead to problems because the channel name from `eas.json` is used to determine the URL that will be utilized. If the names do not match, the default `localDevelopment` URL will be used instead.
+In certain cases, you may encounter an issue related to Prose API URLs when the channel name specified in the `frontend/eas.json` file does not match the corresponding key name defined in the `config` variable in `frontend/Config.ts`. This discrepancy can lead to problems because the channel name from `eas.json` is used to determine the URL that will be utilized. If the names do not match, the default `localDevelopment` URL will be used instead.
 
 To ensure smooth functioning, it is important to use the same channel name in both the `frontend/eas.json` file and the `frontend/Config.ts` file. This will ensure proper mapping of the channel name to the corresponding URL.
 
@@ -101,7 +101,7 @@ const config: Config = {
 };
 ```
 
-## App close after splash screen
+## The app closes abruptly after the splash screen
 
 If you encounter a situation where your app closes abruptly after the splash screen, it is likely that there are missing configurations in your `app.json` file. One common cause is the absence of a scheme definition in `app.json`, which is essential during the app build process.
 

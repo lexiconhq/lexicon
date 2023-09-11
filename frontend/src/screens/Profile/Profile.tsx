@@ -61,13 +61,22 @@ export default function Profile() {
 
   const userImage = getImage(data?.userProfile.user.avatar || '', 'xl');
   const useAuthResults = useAuth();
+
   const onLogout = async () => {
+    try {
+      await useAuthResults.cleanSession();
+    } catch (error) {
+      /**
+       * This catch error requires further discussion regarding what we want to display when there's an error during the `cleanSession` process.
+       * */
+    }
+
     logout({ username });
+
     reset({
       index: 0,
       routes: [{ name: 'InstanceLoading' }],
     });
-    await useAuthResults.cleanSession();
   };
 
   useEffect(() => {

@@ -14,6 +14,7 @@ In this page, we'll cover the process of publishing it on iOS.
 - An Expo account
 - XCode is installed on your development machine
 - EAS CLI 2.6.0 or newer
+- The [Lexicon Discourse plugin](./discourse-plugin.md) is already installed on your Discourse instance
 
 To get started with TestFlight and publishing your app, you'll need an **Apple Developer account**.
 
@@ -91,9 +92,14 @@ First, you'll need to ensure you've set your app name and slug in `frontend/app.
 
 Replace these placeholders with your desired values:
 
+:::info
+Note below that `scheme` is included. If you want [email deep linking](./email-deep-linking/intro.md) support in your app, **you must specify a scheme**, and then configure the Lexicon Discourse plugin with the same scheme.
+:::
+
 ```json
-    "name": "<your app name>",
-    "slug": "<your app slug>",
+"name": "<your app name>",
+"slug": "<your app slug>",
+"scheme": "<your app scheme>",
 ```
 
 Next, configure EAS Build by running this command from the `frontend/` directory:

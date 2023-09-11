@@ -74,47 +74,39 @@ export function appendPagination<T = Reference>(
       let page;
 
       switch (screen) {
-        case 'HOME':
-          page = args?.page || 0;
-          incoming.users = handleDuplicateRef(existing.users, incoming.users);
-          if (page > 0) {
-            incoming.topicList.topics = handleDuplicateRef(
-              existing.topicList.topics,
-              incoming.topicList.topics,
-            );
-          } else {
-            incoming.topicList.topics = handleDuplicateRef(
-              incoming.topicList.topics,
-              existing.topicList.topics,
-            );
-          }
-
-          break;
         case 'SEARCH':
           page = args?.page || 1;
           if (page > 1) {
-            incoming.posts = handleDuplicateRef(existing.posts, incoming.posts);
-            incoming.topics = handleDuplicateRef(
-              existing.topics,
-              incoming.topics,
-            );
+            incoming = {
+              ...incoming,
+              posts: handleDuplicateRef(existing.posts, incoming.posts),
+              topics: handleDuplicateRef(existing.topics, incoming.topics),
+            };
           }
+
           break;
         case 'MESSAGE_DETAIL':
           page = args?.page || 0;
           if (page >= 0) {
-            incoming.topicList.topics = handleDuplicateRef(
-              incoming.topicList.topics,
-              existing.topicList.topics,
-            );
-            incoming.users = handleDuplicateRef(incoming.users, existing.users);
+            incoming = {
+              ...incoming,
+              users: handleDuplicateRef(incoming.users, existing.users),
+              topicList: {
+                ...incoming.topicList,
+                topics: handleDuplicateRef(
+                  incoming.topicList.topics,
+                  existing.topicList.topics,
+                ),
+              },
+            };
           }
           break;
         case 'NOTIFICATIONS':
-          incoming.notifications = handleDuplicateRef(
+          let newData = handleDuplicateRef(
             existing.notifications,
             incoming.notifications,
           );
+          incoming = { ...incoming, notifications: newData };
           break;
       }
 

@@ -18,6 +18,4 @@ White Label the Lexicon Mobile App to give your users the familiar look and feel
 
 Getting started is as easy as spinning up a new server for the Prose GraphQL API, and pointing it at your Discourse instance. No changes are required on your Discourse instance itself.
 
-However, to provide an [optimal experience](optimal) with features like Tagging and Topic Excerpts, you will need to make some light adjustments.
-
-This is covered in detail in [Deploying Prose](deployment).
+Note: to enable features like [Push Notifications](./push-notifications) and [Email Deep Linking](./email-deep-linking/intro.md), you can install our [Discourse Plugin](./discourse-plugin.md).

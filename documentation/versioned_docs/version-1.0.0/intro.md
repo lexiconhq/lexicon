@@ -40,6 +40,14 @@ import Carousel from 'react-bootstrap/Carousel';
 
 ---
 
+:::info
+Coming Soon!
+
+Lexicon v2.0.0 is currently in beta, and includes support for push notifications along with other features.
+
+See the [v2 documentation](../version-2.0.0-beta/intro.md) for more details.
+:::
+
 Lexicon is a customizable, pre-built mobile app that provides an elegant mobile discussions experience. Built on top of [Discourse](#what-is-discourse).
 
 ## Features

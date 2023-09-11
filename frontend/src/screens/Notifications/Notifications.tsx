@@ -26,6 +26,8 @@ import {
   StackNavProp,
   RootStackParamList,
 } from '../../types';
+import { client } from '../../graphql/client';
+import { NotificationDocument } from '../../generated/server';
 
 import NotificationItem from './components/NotificationItem';
 
@@ -66,14 +68,12 @@ export default function Notifications() {
     onError: (error) => {
       setErrorMsg(errorHandler(error, true));
     },
+    fetchPolicy: 'cache-and-network',
     nextFetchPolicy: loadMorePolicy ? 'cache-first' : 'no-cache',
   });
 
   const { markAsRead, loading: markAsReadLoading } = useMarkRead({
     onError: () => {},
-    onCompleted: () => {
-      refetch({ page: 1 });
-    },
   });
 
   /**
@@ -85,6 +85,7 @@ export default function Notifications() {
    */
 
   const onRefresh = () => {
+    setPage(1);
     refetch();
   };
 
@@ -98,6 +99,7 @@ export default function Notifications() {
         async (btnIndex) => {
           if (btnIndex === 0) {
             await markAsRead();
+            onRefresh();
           }
         },
       );
@@ -135,17 +137,55 @@ export default function Notifications() {
     return <LoadingOrError message={t('No Notifications available')} />;
   }
 
+  const handleMarkAsRead = async (notificationId: number) => {
+    try {
+      await markAsRead({ variables: { notificationId } });
+
+      /**
+       * change value notification seen to true
+       */
+
+      const newDataNotification = data?.notification?.notifications?.map(
+        (data) => {
+          if (data.id === notificationId && !data.seen) {
+            return { ...data, seen: true };
+          }
+          return data;
+        },
+      );
+
+      /**
+       * Update the Apollo Client cache for notifications list if change seen data
+       *  */
+
+      client.writeQuery({
+        query: NotificationDocument,
+        variables: { page },
+        data: {
+          notification: {
+            notifications: newDataNotification,
+            totalRowsNotifications: data?.notification.totalRowsNotifications,
+            seenNotificationId: data?.notification.seenNotificationId,
+            loadMoreNotifications: data?.notification.loadMoreNotifications,
+          },
+        },
+      });
+    } catch (error) {
+      onRefresh();
+    }
+  };
+
   const loadMore = () => {
     setLoadMorePolicy(true);
     if (!isLoadMore || loading) {
       return;
     }
     const nextPage = page + 1;
+    setPage(nextPage);
     fetchMore({
       variables: { page: nextPage },
     }).then(() => {
       setLoadMorePolicy(false);
-      setPage(nextPage);
     });
   };
 
@@ -175,7 +215,7 @@ export default function Notifications() {
         seen={seen}
         onPress={() => {
           onPress(item.badgeId ? item.badgeId : topicId);
-          markAsRead({ variables: { notificationId: id } });
+          handleMarkAsRead(id);
         }}
       />
     );
@@ -204,6 +244,7 @@ export default function Notifications() {
           renderItem={renderItem}
           keyExtractor={keyExtractor}
           getItemLayout={getItemLayout}
+          onEndReachedThreshold={0.1}
           onEndReached={loadMore}
           ListFooterComponent={
             <FooterLoadingIndicator isHidden={!isLoadMore} />
@@ -220,6 +261,7 @@ export default function Notifications() {
                   style={styles.modalButtonContainer}
                   onPress={() => {
                     markAsRead();
+                    onRefresh();
                     setShowMore(false);
                   }}
                 >

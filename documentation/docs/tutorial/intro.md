@@ -3,6 +3,10 @@ title: Overview
 slug: /tutorial
 ---
 
+:::info
+This tutorial **does not** cover the process of actually launching the app, as well as certain details about deploying to production. For support with those tasks, please refer to the documentation.
+:::
+
 ## Welcome to the Lexicon Tutorial
 
 We're really excited to help you dig in with the Lexicon Stack and learn how to deploy it in a way that benefits you and your users.
@@ -39,7 +43,5 @@ You will also have an understanding of:
 - How to configure and run the Prose GraphQL API locally or on a server you own
 - How to configure and run the Lexicon Mobile app on your device or in a simulator
 - The next steps needed to make full use of Lexicon
-
-Please note that this tutorial will not cover the process of actually launching the app, as well as certain details about deploying to production. For support with those tasks, please refer to the documentation.
 
 Let's get started!

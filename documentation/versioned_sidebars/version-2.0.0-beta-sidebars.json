@@ -15,29 +15,29 @@
     "White Labeling": ["white-labeling", "assets", "theming"],
     "Deploying Prose": ["deployment", "env-prose", "dedicated"],
     "Configuring Discourse": ["optimal"],
-    "Publishing your App": [
-      "app-store",
-      "play-store",
-      "lexicon-updates",
-      "troubleshooting-build"
-    ],
-    "Plugin": [
+    "Discourse Plugin": [
       "discourse-plugin",
       "discourse-plugin-installation",
       "discourse-plugin-enable",
       {
         "Push Notifications": [
-          "pushNotifications/introduction",
-          "pushNotifications/plugin-interaction",
-          "pushNotifications/setup/enable-plugin",
-          "pushNotifications/setup/testing-mobile-push-notification"
+          "push-notifications/introduction",
+          "push-notifications/plugin-interaction",
+          "push-notifications/setup/enable-push-notifications",
+          "push-notifications/setup/verify-push-notifications"
         ],
         "Email Deep Linking": [
-          "emailDeepLinking/intro",
-          "emailDeepLinking/setup/enable-plugin",
-          "emailDeepLinking/setup/testing-email-deep-linking"
+          "email-deep-linking/intro",
+          "email-deep-linking/setup/enable-email-deep-linking",
+          "email-deep-linking/setup/verify-email-deep-linking"
         ]
       }
+    ],
+    "Publishing your App": [
+      "app-store",
+      "play-store",
+      "lexicon-updates",
+      "troubleshooting-build"
     ]
   },
   "tutorial": {

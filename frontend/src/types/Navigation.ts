@@ -37,7 +37,6 @@ export type TabRouteProp<T extends keyof TabParamList> = RoutePropBase<
 
 type ChannelsParams = {
   prevScreen: 'Home' | 'NewPost';
-  selectedChannelId: number;
 };
 
 type EditProfileParams = {
@@ -50,7 +49,7 @@ type FlagPostParams = {
   flaggedAuthor?: string;
 };
 
-export type HomeProps = { selectedChannelId?: number; backToTop?: boolean };
+export type HomeProps = { backToTop?: boolean };
 
 type ImagePreviewParams = {
   topicId: number;
@@ -87,16 +86,12 @@ type EditedUser = {
 };
 
 type NewPostParams = {
-  selectedChannelId?: number;
-  selectedTagsIds?: Array<string>;
   hyperlinkUrl?: string;
   hyperlinkTitle?: string;
   oldTitle?: string;
   oldContent?: string;
   oldChannel?: number;
   oldTags?: Array<string>;
-  editPostId?: number;
-  editTopicId?: number;
   editedUser?: EditedUser;
   imageUri?: string;
 };
@@ -124,7 +119,6 @@ type PostDetailParams = {
   hidden?: boolean;
   postNumber?: number;
   prevScreen?: string;
-  selectedChannelId?: number;
   source?: 'deeplink';
 };
 
@@ -148,7 +142,6 @@ type SelectUserParams = {
 
 type TagsParams = {
   canCreateTag: boolean;
-  selectedTagsIds: Array<string>;
 };
 
 type TwoFactorAuthParams = {
@@ -180,7 +173,7 @@ export type RootStackParamList = {
   InstanceLoading: undefined;
   NewMessage: NewMessageParams;
   NewMessagePreview: NewMessagePreviewParams;
-  NewPost: NewPostParams;
+  NewPost: NewPostParams | undefined;
   PostPreview: PostPreviewParams;
   PostReply: PostReplyParams;
   PostImagePreview: PostImagePreviewParams;

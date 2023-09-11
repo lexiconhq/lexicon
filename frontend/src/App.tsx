@@ -2,6 +2,7 @@ import React from 'react';
 import { Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ApolloProvider } from '@apollo/client';
+import { FormProvider, useForm } from 'react-hook-form';
 
 import { client } from './graphql/client';
 import { StorageProvider } from './helpers';
@@ -15,6 +16,8 @@ import {
   RedirectProvider,
 } from './utils';
 import { AuthProvider } from './utils/AuthProvider';
+import { NewPostForm } from './types';
+import { NO_CHANNEL_FILTER_ID } from './constants';
 
 if (Platform.OS === 'android') {
   require('intl');
@@ -35,6 +38,19 @@ if (__DEV__) {
 }
 
 export default function App() {
+  const newPostMethods = useForm<NewPostForm>({
+    mode: 'onChange',
+    reValidateMode: 'onChange',
+    defaultValues: {
+      title: '',
+      raw: '',
+      tags: [],
+      channelId: NO_CHANNEL_FILTER_ID,
+      editPostId: undefined,
+      editTopicId: undefined,
+    },
+  });
+
   return (
     <ApolloProvider client={client}>
       <StorageProvider>
@@ -48,7 +64,9 @@ export default function App() {
                       <RedirectProvider>
                         <RequestError>
                           <AuthProvider>
-                            <AppNavigator />
+                            <FormProvider {...newPostMethods}>
+                              <AppNavigator />
+                            </FormProvider>
                           </AuthProvider>
                         </RequestError>
                       </RedirectProvider>

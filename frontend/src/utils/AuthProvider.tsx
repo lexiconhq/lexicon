@@ -127,7 +127,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     syncToken();
   }, [token, storage]);
   const authContextProps: AuthContextProps = useMemo(() => {
-    const baseProviderValue = { cleanSession, setTokenState };
+    const baseProviderValue = {
+      cleanSession,
+      setTokenState,
+    };
     return {
       ...baseProviderValue,
       ...(siteSettingsLoading || token === undefined
@@ -171,7 +174,8 @@ const cleanSession = async () => {
   } catch (error) {
     if (
       error instanceof ApolloError &&
-      error.message.includes(errorTypes.unauthorizedAccess)
+      (error.message.includes(errorTypes.unauthorizedAccess) ||
+        error.message.includes(errorTypes.sessionExpired))
     ) {
       /**
        * we don't expose unauthorizedAccess error to user

@@ -68,13 +68,20 @@ const createLinkingConfig = (params: CreateLinkingConfigParams) => {
     config: { screens: DEEP_LINK_SCREEN_CONFIG },
     subscribe: onSubscribe,
     async getInitialURL() {
+      // Handle app was opened from a deep link
+
+      const url = await Linking.getInitialURL();
+
+      if (url != null) {
+        return url;
+      }
+
       // Handle app was opened from expo push notification
+
       const response = await Notifications.getLastNotificationResponseAsync();
       if (response) {
         return handleUrl(response);
       }
-      // Handle app was opened from a deep link
-      return Linking.getInitialURL();
     },
     getStateFromPath: (fullPath, config) => {
       // Split off any search params (`?a=1&b=2`)

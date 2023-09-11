@@ -21,7 +21,7 @@ module.exports = {
       'lexicon-updates',
       'troubleshooting-build',
     ],
-    Plugin: ['pushNotifications/introduction'],
+    Plugin: ['push-notifications/introduction'],
   },
   tutorial: {
     Tutorial: [
@@ -40,20 +40,20 @@ module.exports = {
   plugin: [
     {
       type: 'doc',
-      id: 'pushNotifications/introduction', // document ID
+      id: 'push-notifications/introduction', // document ID
       label: 'Introduction', // sidebar label
     },
     {
       type: 'doc',
-      id: 'pushNotifications/plugin-interaction', // document ID
+      id: 'push-notifications/plugin-interaction', // document ID
       label: 'How Push Notifications work with Lexicon', // sidebar label
     },
     {
       type: 'category',
       label: 'Setup',
       items: [
-        'pushNotifications/setup/enable-plugin',
-        'pushNotifications/setup/testing-mobile-push-notification',
+        'push-notifications/setup/enable-push-notifications',
+        'push-notifications/setup/verify-push-notifications',
       ],
     },
   ],

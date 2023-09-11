@@ -3,17 +3,21 @@ import { useNavigation } from '@react-navigation/native';
 
 import { LoadingOrError } from '../components';
 import { StackNavProp } from '../types';
-import { useAuth } from '../utils/AuthProvider';
+import { useSiteSettings } from '../hooks';
 
 export default function Loading() {
   const { reset } = useNavigation<StackNavProp<'Login'>>();
-  const useAuthResult = useAuth();
+  const {
+    loading,
+    canSignUp,
+    error: siteSettingsError,
+  } = useSiteSettings({ fetchPolicy: 'network-only' });
 
   useEffect(() => {
-    if (useAuthResult.isLoading) {
+    if (loading) {
       return;
     }
-    const { siteSettingsError, canSignUp } = useAuthResult;
+
     if (!siteSettingsError || canSignUp) {
       reset({ index: 0, routes: [{ name: 'TabNav' }] });
     } else {
@@ -25,7 +29,7 @@ export default function Loading() {
       // contact an administrator, etc.
       reset({ index: 0, routes: [{ name: 'Login' }] });
     }
-  }, [useAuthResult, reset]);
+  }, [canSignUp, siteSettingsError, loading, reset]);
 
-  return <>{useAuthResult.isLoading && <LoadingOrError loading />}</>;
+  return <>{loading && <LoadingOrError loading />}</>;
 }

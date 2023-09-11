@@ -5,3 +5,10 @@ export type Form = {
 export type FormTitle = Form & {
   title: string;
 };
+
+export type NewPostForm = FormTitle & {
+  channelId: number;
+  tags: Array<string>;
+  editPostId?: number;
+  editTopicId?: number;
+};

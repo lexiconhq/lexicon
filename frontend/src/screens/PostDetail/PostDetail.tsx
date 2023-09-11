@@ -7,6 +7,7 @@ import React, {
 } from 'react';
 import { Platform, SafeAreaView, TouchableOpacity } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { useFormContext } from 'react-hook-form';
 
 import {
   ActionSheet,
@@ -107,6 +108,8 @@ export default function PostDetail() {
 
   const postIdOnFocusRef = useRef<number>();
   const postIdOnFocus = postIdOnFocusRef.current;
+
+  const { setValue } = useFormContext();
 
   const ios = Platform.OS === 'ios';
 
@@ -338,11 +341,14 @@ export default function PostDetail() {
     } = focusedPost;
 
     if (postIdOnFocus === firstPostId) {
+      setValue('title', title);
+      setValue('raw', oldContent);
+      setValue('tags', selectedTagsIds);
+      setValue('channelId', selectedChannelId);
+      setValue('editPostId', firstPostId);
+      setValue('editTopicId', id);
+
       navigate('NewPost', {
-        editPostId: firstPostId,
-        editTopicId: id,
-        selectedChannelId,
-        selectedTagsIds,
         oldContent,
         oldTitle: title,
         oldChannel: selectedChannelId,

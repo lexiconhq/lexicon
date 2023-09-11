@@ -13,6 +13,7 @@ If you don't already have a Google Developer account, note that there is a fee t
 - A [Google Developer Account](https://play.google.com/console/signup) to access the [Google Play Console](https://play.google.com/console)
 - An Expo account
 - EAS CLI 2.6.0 or newer
+- The [Lexicon Discourse plugin](./discourse-plugin.md) is already installed on your Discourse instance
 
 ## Google Play Console
 
@@ -28,11 +29,14 @@ After setting up your app in the Google Play Console, there are some other adjus
 
 Similar to the approach for [Publishing to the App Store](app-store), if you haven’t already, you'll need to set your app name and slug in `frontend/app.json`. The [slug](https://docs.expo.dev/workflow/glossary-of-terms/#slug) is used as part of the URL for your app on Expo's web services, so it is recommended to use kebab-case (e.g., `my-lexicon-app`).
 
-Replace these placeholders with your desired values:
+:::info
+Note below that `scheme` is included. If you want [email deep linking](./email-deep-linking/intro.md) support in your app, **you must specify a scheme**, and then configure the Lexicon Discourse plugin with the same scheme.
+:::
 
 ```json
-    "name": "<your app name>",
-    "slug": "<your app slug>",
+"name": "<your app name>",
+"slug": "<your app slug>",
+"scheme": "<your app scheme>",
 ```
 
 Then, you need to configure EAS Build by running the following command, or skip to the next [step](play-store#setup-config-values):

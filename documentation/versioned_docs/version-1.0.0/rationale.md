@@ -36,7 +36,7 @@ However, our clients wanted a seamless, native mobile experience, tailored to th
 
 After digging into the Discourse API documentation, we felt that it was worthy investment to build a mobile-first Discourse experience which also faciliated customizability.
 
-We were already advocates of the elegant development process provided by React Native and Expo, so we forged ahead, implementing the entire mobile app with these technologies.
+We were already fluent with the elegant development process provided by React Native and Expo, so it was a natural fit for us to build the mobile app with these technologies.
 
 This allowed us to achieve a high ratio of code reuse across iOS and Android, making feature implementations and bug fixes a much simpler process in most cases.
 
@@ -50,7 +50,7 @@ This allowed us to quickly implement the mobile app with an intuitive API paradi
 
 #### How Lexicon can help you
 
-For starters, if you already run an existing Discourse site and want a native mobile experience for your users, you can very quickly point Lexicon at your site and browse it in real-time from your device.
+If you already run an existing Discourse site and want a native mobile experience for your users, you can very quickly point Lexicon at your site and browse it in real-time from your device.
 
 Check out the [Quick Start](quick-start) page to see a rapid example of spinning up a mobile app for Discourse's own [Meta site](https://meta.discourse.org).
 

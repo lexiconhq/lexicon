@@ -7,9 +7,9 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 
 ---
 
-Discourse lacks native mobile app functionalities such as push notifications and deep linking.
+As of Lexicon version 2.0.0, a custom Discourse plugin is available to provide a more seamless mobile integration between Discourse and your Lexicon-powered mobile app.
 
-To address this, Lexicon has developed a custom Discourse plugin that seamlessly integrates push notifications and deep linking capabilities.
+The plugin currently offers two key features:
 
-- By leveraging Expo's powerful features, our plugin establishes a secure connection between your Discourse site and Expo's push notification service, delivering real-time updates to users' mobile devices based on your site's activity.
-- Additionally, our plugin generates custom deep links in email notifications, allowing users seamlessly launch your Lexicon-powered mobile app directly from their mobile email client.
+- **Push notifications**: support for native push notifications on user's mobile devices, according to relevant activity on your Discourse site. Powered by Expo's [push notifications service](https://docs.expo.dev/push-notifications/overview/).
+- **Email deep linking**: custom deep links in emails from Discourse, allowing users to seamlessly launch your Lexicon-powered mobile app directly from their mobile email client.

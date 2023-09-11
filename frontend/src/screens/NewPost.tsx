@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import {
   Alert,
   Platform,
@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useFormContext } from 'react-hook-form';
 import { useDebouncedCallback } from 'use-debounce';
 
 import {
@@ -53,7 +53,6 @@ import {
 import { makeStyles, useTheme } from '../theme';
 import {
   CursorPosition,
-  FormTitle,
   Image,
   RootStackNavProp,
   RootStackParamList,
@@ -84,9 +83,10 @@ export default function NewPost() {
       if (isNoChannelFilter(selectedChannel)) {
         const parsed = parseInt(defaultComposerCategory);
         if (parsed) {
-          setSelectedChannel(parsed);
+          setValue('channelId', parsed);
         } else {
-          setSelectedChannel(
+          setValue(
+            'channelId',
             allowUncategorizedTopics
               ? uncategorizedCategoryId
               : defaultChannelId,
@@ -104,25 +104,50 @@ export default function NewPost() {
   const navigation = useNavigation<RootStackNavProp<'NewPost'>>();
   const { navigate, goBack } = navigation;
 
+  let { params } = useRoute<RootStackRouteProp<'NewPost'>>();
   let {
-    params: {
-      selectedChannelId = defaultChannelId,
-      selectedTagsIds = [],
-      oldContent = '',
-      oldTitle = '',
-      oldChannel = defaultChannelId,
-      oldTags = [],
-      editPostId,
-      editTopicId,
-      editedUser,
-      hyperlinkUrl = '',
-      hyperlinkTitle = '',
-      imageUri = '',
-    },
-  } = useRoute<RootStackRouteProp<'NewPost'>>();
+    oldContent,
+    oldTitle,
+    oldChannel,
+    oldTags,
+    editedUser,
+    hyperlinkUrl,
+    hyperlinkTitle,
+    imageUri,
+  } = useMemo(() => {
+    return {
+      oldContent: params?.oldContent || '',
+      oldTitle: params?.oldTitle || '',
+      oldChannel: params?.oldChannel || defaultChannelId,
+      oldTags: params?.oldTags || [],
+      editedUser: params?.editedUser,
+      hyperlinkUrl: params?.hyperlinkUrl || '',
+      hyperlinkTitle: params?.hyperlinkTitle || '',
+      imageUri: params?.imageUri || '',
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params]);
 
-  const [selectedChannel, setSelectedChannel] = useState(selectedChannelId);
-  const [selectedTags, setSelectedTags] = useState<Array<string>>([]);
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    getValues,
+    watch,
+    reset: resetForm,
+  } = useFormContext();
+
+  /**
+   * Using the watch function to update the values of the channel and tags fields when changes occur in the form.
+   * This prevents a bug where, after selecting a channel in the channel scene, the value of selectedChannel does not change because it does not trigger a re-render.
+   */
+
+  const selectedChannel: number = watch('channelId');
+  const selectedTags: Array<string> = watch('tags');
+  const editPostId: number = getValues('editPostId');
+  const editTopicId: number = getValues('editTopicId');
+
   const [imagesArray, setImagesArray] = useState<Array<Image>>([]);
   const [uri, setUri] = useState('');
   const [postValidity, setPostValidity] = useState(false);
@@ -152,17 +177,6 @@ export default function NewPost() {
     }
   }, 1500);
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    getValues,
-  } = useForm<FormTitle>({
-    mode: 'onChange',
-    reValidateMode: 'onChange',
-  });
-
   const kasv = useKASVWorkaround();
 
   const newPostRef = useRef<TextInputType>(null);
@@ -181,13 +195,6 @@ export default function NewPost() {
     setUri(imageUri);
   }, [imageUri]);
 
-  useEffect(() => {
-    if (!isNoChannelFilter(selectedChannelId)) {
-      setSelectedChannel(selectedChannelId);
-    }
-    setSelectedTags(selectedTagsIds);
-  }, [defaultChannelId, selectedChannelId, selectedTagsIds]);
-
   const { mentionMembers } = useMention(
     mentionKeyword,
     showUserList,
@@ -204,10 +211,7 @@ export default function NewPost() {
   }, [getValues, setValue, hyperlinkUrl, hyperlinkTitle]);
 
   const onPressSelectChannel = () => {
-    navigate('Channels', {
-      prevScreen: 'NewPost',
-      selectedChannelId: selectedChannel,
-    });
+    navigate('Channels', { prevScreen: 'NewPost' });
   };
 
   const getPostData = () => {
@@ -224,7 +228,6 @@ export default function NewPost() {
 
   const onPressSelectTags = () => {
     navigate('Tags', {
-      selectedTagsIds,
       canCreateTag: canCreateTag || false,
     });
   };
@@ -362,12 +365,15 @@ export default function NewPost() {
             { text: t('Cancel') },
             {
               text: t('Discard'),
-              onPress: () => navigation.dispatch(e.data.action),
+              onPress: () => {
+                resetForm();
+                navigation.dispatch(e.data.action);
+              },
             },
           ],
         );
       }),
-    [postValidity, modal, navigation, uploadsInProgress],
+    [postValidity, modal, navigation, uploadsInProgress, resetForm],
   );
 
   const setMentionValue = (text: string) => {
@@ -378,7 +384,16 @@ export default function NewPost() {
     ios ? (
       <ModalHeader
         title={editTopicId || editPostId ? t('Edit Post') : t('New Post')}
-        left={<HeaderItem label={t('Cancel')} left onPressItem={goBack} />}
+        left={
+          <HeaderItem
+            label={t('Cancel')}
+            left
+            onPressItem={() => {
+              resetForm();
+              goBack();
+            }}
+          />
+        }
         right={
           <HeaderItem
             label={t('Next')}

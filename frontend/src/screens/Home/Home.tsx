@@ -15,6 +15,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated';
+import { useFormContext } from 'react-hook-form';
 
 import {
   FooterLoadingIndicator,
@@ -105,7 +106,9 @@ export default function Home() {
   const { addListener, navigate } = useNavigation<StackNavProp<'TabNav'>>();
 
   const { params } = useRoute<TabRouteProp<'Home'>>();
-  const receivedChannelId = params === undefined ? 0 : params.selectedChannelId;
+  const { getValues } = useFormContext();
+  const { channelId: receivedChannelId } = getValues();
+
   const routeParams = params === undefined ? false : params.backToTop;
 
   const FIRST_PAGE = 0;
@@ -323,19 +326,13 @@ export default function Home() {
   }
 
   const onPressTitle = () => {
-    navigate('Channels', {
-      prevScreen: 'Home',
-      selectedChannelId: selectedChannelId,
-    });
+    navigate('Channels', { prevScreen: 'Home' });
   };
 
   const onPressAdd = () => {
     const currentUserId = storage.getItem('user')?.id;
     if (currentUserId) {
-      navigate('NewPost', {
-        selectedChannelId,
-        selectedTagsIds: [],
-      });
+      navigate('NewPost');
     } else {
       errorHandlerAlert(LoginError, navigate);
     }

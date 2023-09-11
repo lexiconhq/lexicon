@@ -154,7 +154,7 @@ export default function RootStackNavigator(props: RootStackNavigatorProps) {
           name="Channels"
           component={Channels}
           options={{ title: t('Channels'), ...navNoShadow, ...navModal }}
-          initialParams={{ prevScreen: 'Home', selectedChannelId: 0 }}
+          initialParams={{ prevScreen: 'Home' }}
         />
         <RootStack.Screen
           name="FlagPost"
@@ -180,7 +180,6 @@ export default function RootStackNavigator(props: RootStackNavigatorProps) {
         <RootStack.Screen
           name="NewPost"
           component={NewPost}
-          initialParams={{ selectedChannelId: 1, selectedTagsIds: [] }}
           options={{ title: t('New Post'), ...navModal }}
         />
         <RootStack.Screen
@@ -206,7 +205,6 @@ export default function RootStackNavigator(props: RootStackNavigatorProps) {
         <RootStack.Screen
           name="Tags"
           component={Tags}
-          initialParams={{ selectedTagsIds: [] }}
           options={{ title: t('Tags'), ...navModal }}
         />
         <RootStack.Screen

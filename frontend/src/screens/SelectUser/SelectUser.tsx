@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
   Dimensions,
@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { EventArg, useNavigation, useRoute } from '@react-navigation/native';
 
 import { CustomHeader, HeaderItem, ModalHeader } from '../../components';
 import { Button, Divider, Icon, Text } from '../../core-ui';
@@ -78,29 +78,47 @@ export default function SelectUser() {
     setCurrentUsers(Array.from(tempUsers));
   };
 
-  useEffect(
-    () =>
-      navigation.addListener('beforeRemove', (e) => {
-        if (
-          JSON.stringify(users) === JSON.stringify(currentUsers) &&
-          JSON.stringify(listOfUser) === JSON.stringify(selectedUsers)
-        ) {
-          return;
+  const beforeRemoveListener = useCallback(
+    (
+      e: EventArg<
+        'beforeRemove',
+        true,
+        {
+          action: Readonly<{
+            type: string;
+            source?: string | undefined;
+            target?: string | undefined;
+          }>;
         }
-        e.preventDefault();
-        Alert.alert(t('Discard?'), t('Are you sure you want to discard?'), [
-          { text: t('Cancel') },
-          {
-            text: t('Discard'),
-            onPress: () => navigation.dispatch(e.data.action),
-          },
-        ]);
-      }),
-    [navigation, users, currentUsers, listOfUser, selectedUsers],
+      >,
+    ) => {
+      if (
+        JSON.stringify(users) === JSON.stringify(currentUsers) &&
+        JSON.stringify(listOfUser) === JSON.stringify(selectedUsers)
+      ) {
+        return;
+      }
+      e.preventDefault();
+      Alert.alert(t('Discard?'), t('Are you sure you want to discard?'), [
+        { text: t('Cancel') },
+        {
+          text: t('Discard'),
+          onPress: () => navigation.dispatch(e.data.action),
+        },
+      ]);
+    },
+    [currentUsers, listOfUser, navigation, selectedUsers, users],
   );
 
+  useEffect(() => {
+    navigation.addListener('beforeRemove', beforeRemoveListener);
+    return () => {
+      navigation.removeListener('beforeRemove', beforeRemoveListener);
+    };
+  }, [navigation, beforeRemoveListener]);
+
   const doneSelectingUser = () => {
-    navigation.removeListener('beforeRemove', () => {});
+    navigation.removeListener('beforeRemove', beforeRemoveListener);
     navigate('NewMessage', {
       users: currentUsers,
       listOfUser: selectedUsers,

@@ -44,9 +44,11 @@ Lexicon is a customizable, pre-built mobile app that provides an elegant mobile 
 
 ## Features
 
-- Topics, Private Messaging, User Signups, Profile Management, and more.
-- Straightforward process to [**customize**](white-labeling) the app for your brand
+- Topics, Private Messaging, User Signups, Profile Management, and more
 - Rapidly build Android and iPhone apps for your existing Discourse site
+- [Push Notifications](./push-notifications/introduction.md) direct to your users' mobile devices
+- More seamless native Discourse experience [with Email Deep Linking](./email-deep-linking/intro.md)
+- Straightforward process to [**customize**](white-labeling) the app for your brand
 - Backed by a [GraphQL](https://graphql.org/) API
 - Free and open source!
 - [Commercial support](commercial-support) available

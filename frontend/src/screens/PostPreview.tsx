@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Platform, SafeAreaView } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { useFormContext } from 'react-hook-form';
 
 import mock from '../__mocks__/mockData';
 import {
@@ -56,6 +57,8 @@ export default function PostPreview() {
   const storage = useStorage();
   const channels = storage.getItem('channels');
 
+  const { reset: resetForm } = useFormContext();
+
   const [imageUrls, setImageUrls] = useState<Array<string>>();
 
   const { title, content } = postData;
@@ -65,14 +68,12 @@ export default function PostPreview() {
 
   const navToPostDetail = ({
     topicId,
-    selectedChannelId = ('channelId' in postData && postData.channelId) || 0,
     focusedPostNumber,
   }: StackRouteProp<'PostDetail'>['params']) => {
     const prevScreen = 'PostPreview';
 
     navigate('PostDetail', {
       topicId,
-      selectedChannelId,
       focusedPostNumber,
       prevScreen,
     });
@@ -87,13 +88,13 @@ export default function PostPreview() {
 
   const { newTopic, loading: newTopicLoading } = useNewTopic({
     onCompleted: ({ newTopic: result }) => {
+      resetForm();
       reset({
         index: 0,
         routes: [{ name: 'InstanceLoading' }],
       });
       navToPostDetail({
         topicId: result.topicId,
-        selectedChannelId: ('channelId' in postData && postData.channelId) || 0,
         focusedPostNumber,
       });
     },
@@ -113,6 +114,7 @@ export default function PostPreview() {
 
   const { editPost, loading: editPostLoading } = useEditPost({
     onCompleted: () => {
+      resetForm();
       !editTopicId && // if there's also editTopicId then don't do anything.
         navToPostDetail({
           topicId: ('topicId' in postData && postData.topicId) || 0,
@@ -126,6 +128,7 @@ export default function PostPreview() {
 
   const { editTopic, loading: editTopicLoading } = useEditTopic({
     onCompleted: () => {
+      resetForm();
       navToPostDetail({
         topicId: editTopicId || 0,
         focusedPostNumber,

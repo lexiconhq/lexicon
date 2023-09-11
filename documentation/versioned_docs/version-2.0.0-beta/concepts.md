@@ -44,6 +44,8 @@ Having said that, we chose to build Lexicon with it for two primary reasons.
 
 We find that Expo makes us much more effective as developers, and also provides excellent services to facilitate the entire process of building and publishing React Native apps.
 
+In particular, Discourse sites that leverage the [Lexicon Discourse Plugin](./discourse-plugin.md) get the benefit of [push notifications](./push-notifications) through Expo's [push notifications service](https://docs.expo.dev/push-notifications/overview/), which abstracts away Google and Apple's push services into a simple interface.
+
 ## Lexicon Architecture
 
 The Lexicon Stack is fairly simple, and only consists of 3 major pieces:
@@ -51,13 +53,16 @@ The Lexicon Stack is fairly simple, and only consists of 3 major pieces:
 - The Lexicon Mobile App
 - The Prose GraphQL API
 - A running, accessible Discourse instance
+  - Optionally, you can install our [Discourse Plugin](./discourse-plugin.md) to enable additional features.
 
 Below is a diagram illustrating the typical architecture for a Lexicon-powered mobile app.
 
-<img alt="IOS Lexicon Login Page" style={{borderRadius: '25px'}} src={useBaseUrl('/img/lexicon-architecture.png')}/>
+<img alt="IOS Lexicon Login Page" style={{borderRadius: '25px'}} src={useBaseUrl('/img/lexicon-architecture.svg')}/>
 
 As indicated above, the mobile app makes requests to a deployed Prose GraphQL server.
 
 The Prose server has been configured to point at an active Discourse instance of the developer's choice.
+
+If the [Lexicon Discourse Plugin](./discourse-plugin.md) is installed, additional endpoints will be exposed which Prose already knows how to communicate with.
 
 Traffic then flows back from Discourse, through Prose, and returns to the mobile app over a GraphQL interface.

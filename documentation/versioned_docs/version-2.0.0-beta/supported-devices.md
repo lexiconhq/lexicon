@@ -6,12 +6,16 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 
 ## iPhone and Android Phones
 
+:::info
+Older versions of iOS and Android may work, but are not officially supported.
+:::
+
 Once you've published to the App Store and Google Play Store, your published app will work out of the box for your users on both iPhone and Android devices with the following specifications:
 
-| Device          | Minimum OS          |
-| --------------- | ------------------- |
-| iPhone          | iOS 6 and above     |
-| Android Devices | Android 5 and above |
+| Device          | Minimum OS           |
+| --------------- | -------------------- |
+| iPhone          | iOS 16 and above     |
+| Android Devices | Android 13 and above |
 
 | Android                                                                          | iOS                                                                          |
 | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |

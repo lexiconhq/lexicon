@@ -2,7 +2,16 @@
 title: 'Optimal Experience'
 ---
 
-If you're planning to make use of the Lexicon Mobile App, there are a few settings you should tweak on your Discourse instance to provide the best in-app experience to your users.
+If you're planning to make use of the Lexicon Mobile App, there are a few adjustments you should make to your Discourse instance to provide the best in-app experience to your users.
+
+## Install the Lexicon Discourse Plugin
+
+The Lexicon Discourse plugin enhances the native mobile experience for your users in two key ways:
+
+- Adds support for push notifications
+- Adds support for email deep linking.
+
+You can read more about the plugin and how to set it up [here](./discourse-plugin.md).
 
 ## Enable Topic Excerpts
 

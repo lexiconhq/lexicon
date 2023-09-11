@@ -1,6 +1,7 @@
 import React from 'react';
 import { Platform, SafeAreaView, ScrollView } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { useFormContext } from 'react-hook-form';
 
 import { CustomHeader, HeaderItem, ModalHeader } from '../../components';
 import { isNoChannelFilter, NO_CHANNEL_FILTER } from '../../constants';
@@ -16,24 +17,22 @@ export default function Channels() {
   const { navigate, goBack } = useNavigation<RootStackNavProp<'Channels'>>();
 
   const {
-    params: { selectedChannelId, prevScreen },
+    params: { prevScreen },
   } = useRoute<RootStackRouteProp<'Channels'>>();
 
   const storage = useStorage();
   const channels = storage.getItem('channels');
+  const { setValue, getValues } = useFormContext();
+  const { channelId: selectedChannelId } = getValues();
 
   const ios = Platform.OS === 'ios';
 
   const onPress = (id: number) => {
+    setValue('channelId', id);
     if (prevScreen === 'Home') {
-      navigate('TabNav', {
-        screen: 'Home',
-        params: {
-          selectedChannelId: id,
-        },
-      });
+      navigate('TabNav', { screen: 'Home' });
     } else {
-      navigate(prevScreen, { selectedChannelId: id });
+      navigate(prevScreen);
     }
   };
 
