@@ -7,6 +7,10 @@ module.exports = {
   favicon: 'img/favicon.ico',
   organizationName: 'kodefox',
   projectName: 'lexicon',
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en', 'zh-Hans'],
+  },
   themeConfig: {
     navbar: {
       title: 'Lexicon',
@@ -28,12 +32,17 @@ module.exports = {
           position: 'left',
         },
         {
-          href: 'https://github.com/lexiconhq/lexicon',
-          label: 'GitHub',
+          type: 'docsVersionDropdown',
           position: 'right',
         },
         {
-          type: 'docsVersionDropdown',
+          type: 'localeDropdown',
+          position: 'right',
+        },
+        {
+          href: 'https://github.com/lexiconhq/lexicon',
+          label: 'GitHub',
+          position: 'right',
         },
       ],
     },
