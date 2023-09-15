@@ -75,7 +75,6 @@ export type Topic = {
   pinnedGlobally: boolean | null;
   posters: Array<TopicPoster>;
   authorUserId?: number | null;
-  frequentPosterUserId?: number | null;
 };
 
 type TagFilter = {

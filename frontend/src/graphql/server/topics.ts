@@ -54,7 +54,6 @@ export const TOPICS = gql`
             }
           }
           authorUserId
-          frequentPosterUserId
           pinned
         }
       }

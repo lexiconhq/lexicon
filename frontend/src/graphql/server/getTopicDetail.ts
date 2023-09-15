@@ -36,7 +36,6 @@ export const TOPIC_FRAGMENT = gql`
       }
     }
     authorUserId
-    frequentPosterUserId
     pinned
   }
 `;

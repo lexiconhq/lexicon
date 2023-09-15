@@ -1,7 +1,6 @@
 import { objectType } from 'nexus';
 
 import { getTopicAuthorUserId } from '../helpers/getTopicAuthor';
-import { getFrequentPosterUserId } from '../helpers/getFrequentPoster';
 
 export let Topic = objectType({
   name: 'Topic',
@@ -57,9 +56,6 @@ export let Topic = objectType({
     });
     t.nullable.int('authorUserId', {
       resolve: ({ posters }) => getTopicAuthorUserId(posters) ?? null,
-    });
-    t.nullable.int('frequentPosterUserId', {
-      resolve: ({ posters }) => getFrequentPosterUserId(posters) || null,
     });
     // Note: Comment out for maybe next phase
     // t.nullable.int('recentPosterUserId', {

@@ -89,13 +89,16 @@ export default function PostPreview() {
   const { newTopic, loading: newTopicLoading } = useNewTopic({
     onCompleted: ({ newTopic: result }) => {
       resetForm();
+
       reset({
-        index: 0,
-        routes: [{ name: 'InstanceLoading' }],
-      });
-      navToPostDetail({
-        topicId: result.topicId,
-        focusedPostNumber,
+        index: 1,
+        routes: [
+          { name: 'TabNav', state: { routes: [{ name: 'Home' }] } },
+          {
+            name: 'PostDetail',
+            params: { topicId: result.topicId, focusedPostNumber },
+          },
+        ],
       });
     },
   });
