@@ -1,11 +1,11 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let MessageParticipant = objectType({
   name: 'MessageParticipant',
   definition(t) {
     t.int('userId');
-    t.string('extras', { nullable: true });
-    t.string('description', { nullable: true });
-    t.int('primaryGroupid', { nullable: true });
+    t.nullable.string('extras');
+    t.nullable.string('description');
+    t.nullable.int('primaryGroupid');
   },
 });

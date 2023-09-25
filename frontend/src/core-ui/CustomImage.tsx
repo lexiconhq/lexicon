@@ -11,6 +11,7 @@ import {
 import { DEFAULT_IMAGE } from '../../assets/images';
 import { ShowImageModal } from '../components/ShowImageModal';
 import { makeStyles } from '../theme';
+import { isImageValidUrl } from '../helpers';
 
 import CachedImage from './CachedImage';
 
@@ -47,21 +48,17 @@ export function CustomImage(props: Props) {
     height: variantSize[size],
     ...(square && { width: variantSize[size] }),
   };
-  const imgSource = { uri: src };
+
+  const imgSource = isImageValidUrl(src) ? { uri: src } : DEFAULT_IMAGE;
+
   const hideImage = src === '' || error;
 
   const onPress = () => {
-    if (show) {
-      setShow(false);
-    }
-    setTimeout(() => setShow(true), 50);
+    setShow(true);
   };
 
   const onPressCancel = () => {
-    if (!show) {
-      setShow(true);
-    }
-    setTimeout(() => setShow(false), 50);
+    setShow(false);
   };
 
   const content = (
@@ -90,13 +87,12 @@ export function CustomImage(props: Props) {
       >
         {content}
       </TouchableOpacity>
-      {show && (
-        <ShowImageModal
-          show={show}
-          userImage={imgSource}
-          onPressCancel={onPressCancel}
-        />
-      )}
+
+      <ShowImageModal
+        show={show}
+        userImage={imgSource}
+        onPressCancel={onPressCancel}
+      />
     </>
   ) : (
     <View style={styles.noContent} />

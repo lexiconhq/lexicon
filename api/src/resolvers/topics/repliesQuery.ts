@@ -1,4 +1,4 @@
-import { FieldResolver, queryField, intArg } from '@nexus/schema';
+import { FieldResolver, queryField, intArg, list } from 'nexus';
 
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';
@@ -33,10 +33,9 @@ let repliesQueryResolver: FieldResolver<'Query', 'replies'> = async (
 };
 
 let repliesQuery = queryField('replies', {
-  type: 'Post',
-  list: true,
+  type: list('Post'),
   args: {
-    postId: intArg({ required: true }),
+    postId: intArg(),
   },
   resolve: repliesQueryResolver,
 });

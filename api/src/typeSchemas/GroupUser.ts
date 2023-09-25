@@ -1,4 +1,4 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let GroupUser = objectType({
   name: 'GroupUser',
@@ -6,6 +6,8 @@ export let GroupUser = objectType({
     t.int('groupId');
     t.int('userId');
     t.int('notificationLevel');
-    t.boolean('owner', { nullable: true }); // If Admin change it's null
+
+    // If this change is done by an admin, the value is null.
+    t.nullable.boolean('owner');
   },
 });

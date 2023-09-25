@@ -24,7 +24,6 @@ type Props = TouchableOpacityProps &
     imageStyle?: StyleProp<ImageStyle>;
     onPressAuthor?: (username: string) => void;
     onPressEmptySpaceInPost?: () => void;
-    postList?: boolean;
   };
 
 export function Author(props: Props) {
@@ -44,7 +43,6 @@ export function Author(props: Props) {
     children,
     onPressAuthor,
     onPressEmptySpaceInPost,
-    postList,
     ...otherProps
   } = props;
 
@@ -68,7 +66,7 @@ export function Author(props: Props) {
             </Text>
           )}
         </View>
-        {onPressEmptySpaceInPost && postList && (
+        {onPressEmptySpaceInPost && (
           <TouchableOpacity
             style={styles.emptySpacePost}
             delayPressIn={300}

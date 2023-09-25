@@ -1,10 +1,10 @@
 import { QueryHookOptions } from '@apollo/client';
 
 import {
-  GetTopicDetail as TopicDetailType,
-  GetTopicDetailVariables as TopicDetailVariables,
-} from '../../generated/server/GetTopicDetail';
-import { GET_TOPIC_DETAIL } from '../../graphql/server/getTopicDetail';
+  GetTopicDetailQuery as TopicDetailType,
+  GetTopicDetailQueryVariables as TopicDetailVariables,
+  GetTopicDetailDocument,
+} from '../../generated/server';
 import { ErrorAlertOptionType } from '../../types';
 import { useQuery } from '../../utils';
 
@@ -15,7 +15,7 @@ export function useTopicDetail(
   const { data, loading, error, fetchMore, refetch } = useQuery<
     TopicDetailType,
     TopicDetailVariables
-  >(GET_TOPIC_DETAIL, { ...options }, errorAlert);
+  >(GetTopicDetailDocument, { ...options }, errorAlert);
 
   return { data, loading, error, refetch, fetchMore };
 }

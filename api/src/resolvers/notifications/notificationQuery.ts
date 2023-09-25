@@ -1,5 +1,5 @@
 import camelcaseKeys from 'camelcase-keys';
-import { FieldResolver, queryField, intArg } from '@nexus/schema';
+import { FieldResolver, queryField, intArg } from 'nexus';
 
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';
@@ -32,7 +32,7 @@ let notificationQueryResolver: FieldResolver<'Query', 'notification'> = async (
 let notificationQuery = queryField('notification', {
   type: 'Notifications',
   args: {
-    page: intArg({ required: true }),
+    page: intArg(),
   },
   resolve: notificationQueryResolver,
 });

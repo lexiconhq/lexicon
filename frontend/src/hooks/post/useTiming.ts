@@ -1,9 +1,12 @@
 import { useEffect } from 'react';
 import { PureQueryOptions } from '@apollo/client';
 
-import { Timings, TimingsVariables } from '../../generated/server/Timings';
-import { MESSAGE } from '../../graphql/server/message';
-import { TIMINGS } from '../../graphql/server/timings';
+import {
+  TimingsMutation,
+  TimingsMutationVariables,
+  MessageDocument,
+  TimingsDocument,
+} from '../../generated/server';
 import { MessageContent } from '../../types';
 import { useStorage } from '../../helpers';
 import { useMutation } from '../../utils';
@@ -17,10 +20,13 @@ function useTiming(
   skip = false,
   refetchQueries?: Array<PureQueryOptions>,
 ) {
-  const [submitTiming] = useMutation<Timings, TimingsVariables>(TIMINGS, {
-    refetchQueries,
-    awaitRefetchQueries: !!refetchQueries,
-  });
+  const [submitTiming] = useMutation<TimingsMutation, TimingsMutationVariables>(
+    TimingsDocument,
+    {
+      refetchQueries,
+      awaitRefetchQueries: !!refetchQueries,
+    },
+  );
 
   useEffect(() => {
     if (skip || !posts) {
@@ -53,7 +59,7 @@ export function useMessageTiming(
   // should not try to report timing information.
   const skip = !username;
 
-  let refetchQueries = [{ query: MESSAGE, variables: { username } }];
+  let refetchQueries = [{ query: MessageDocument, variables: { username } }];
 
   useTiming(topicId, startIndex, posts, skip, refetchQueries);
 }

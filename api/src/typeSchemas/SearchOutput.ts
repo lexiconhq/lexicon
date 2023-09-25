@@ -1,11 +1,11 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let SearchOutput = objectType({
   name: 'SearchOutput',
   definition(t) {
     t.field('groupedSearchResult', { type: 'GroupedSearchResult' });
-    t.field('posts', { type: 'SearchPost', list: true });
-    t.field('topics', { type: 'SearchTopic', list: true });
+    t.list.field('posts', { type: 'SearchPost' });
+    t.list.field('topics', { type: 'SearchTopic' });
   },
 });
 

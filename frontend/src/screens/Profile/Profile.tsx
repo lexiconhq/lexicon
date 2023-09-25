@@ -5,11 +5,11 @@ import Constants from 'expo-constants';
 
 import { Markdown, ShowImageModal } from '../../components';
 import { Avatar, Button, Divider, Text } from '../../core-ui';
-import { client } from '../../graphql/client';
-import { getImage, removeToken, useStorage } from '../../helpers';
+import { getImage, useStorage } from '../../helpers';
 import { useLazyProfile, useLogout } from '../../hooks';
 import { makeStyles, useTheme } from '../../theme';
 import { StackNavProp, UserDetail } from '../../types';
+import { useAuth } from '../../utils/AuthProvider';
 
 import MenuItem from './components/MenuItem';
 
@@ -57,18 +57,26 @@ export default function Profile() {
     return unsubscribe;
   }, [navigation, getProfile]);
 
-  const { logout, loading: logoutLoading } = useLogout({
-    variables: { username },
-  });
+  const { logout, loading: logoutLoading } = useLogout();
 
   const userImage = getImage(data?.userProfile.user.avatar || '', 'xl');
+  const useAuthResults = useAuth();
 
   const onLogout = async () => {
-    await logout();
-    await client.clearStore();
-    removeToken();
-    storage.removeItem('user');
-    reset({ index: 0, routes: [{ name: 'InstanceLoading' }] });
+    try {
+      await useAuthResults.cleanSession();
+    } catch (error) {
+      /**
+       * This catch error requires further discussion regarding what we want to display when there's an error during the `cleanSession` process.
+       * */
+    }
+
+    logout({ username });
+
+    reset({
+      index: 0,
+      routes: [{ name: 'InstanceLoading' }],
+    });
   };
 
   useEffect(() => {
@@ -82,10 +90,7 @@ export default function Profile() {
   }, [data, setUser]);
 
   const onPressCancel = () => {
-    if (!show) {
-      setShow(true);
-    }
-    setTimeout(() => setShow(false), 50);
+    setShow(false);
   };
 
   return (
@@ -176,13 +181,6 @@ export default function Profile() {
                 loading={logoutLoading}
               />
             </View>
-            {show && (
-              <ShowImageModal
-                show={show}
-                userImage={{ uri: userImage }}
-                onPressCancel={onPressCancel}
-              />
-            )}
           </View>
         </ScrollView>
         <View style={styles.bounceContainer}>
@@ -190,6 +188,11 @@ export default function Profile() {
           <View style={styles.bottomBounce} />
         </View>
       </View>
+      <ShowImageModal
+        show={show}
+        userImage={{ uri: userImage }}
+        onPressCancel={onPressCancel}
+      />
     </>
   );
 }

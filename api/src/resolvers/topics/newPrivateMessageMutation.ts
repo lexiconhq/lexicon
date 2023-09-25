@@ -2,7 +2,7 @@ import { stringify } from 'querystring';
 
 import camelcaseKey from 'camelcase-keys';
 import snakecaseKey from 'snakecase-keys';
-import { FieldResolver, mutationField, arg } from '@nexus/schema';
+import { FieldResolver, mutationField, arg } from 'nexus';
 
 import { CONTENT_FORM_URLENCODED } from '../../constants';
 import { errorHandler } from '../../helpers';
@@ -39,7 +39,6 @@ export let newPrivateMessageMutation = mutationField('newPrivateMessage', {
   args: {
     newPrivateMessageInput: arg({
       type: 'NewPrivateMessageInput',
-      required: true,
     }),
   },
   resolve: newPrivateMessageResolver,

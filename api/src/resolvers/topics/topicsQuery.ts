@@ -5,16 +5,21 @@ import {
   arg,
   intArg,
   stringArg,
-} from '@nexus/schema';
+  nullable,
+} from 'nexus';
 
-import { errorHandler, parseTopicUrl } from '../../helpers';
-import { Context } from '../../types';
-import { ACCEPTED_LANGUAGE } from '../../constants';
+import {
+  errorHandler,
+  fetchLikeActivities,
+  parseTopicUrl,
+} from '../../helpers';
+import { Context, Topic, UserIcon } from '../../types';
+import { ACCEPTED_LANGUAGE, FIRST_POST_NUMBER } from '../../constants';
 
 let topicsQueryResolver: FieldResolver<'Query', 'topics'> = async (
   _,
-  { page, ...filterInput },
-  context: Context,
+  { page, username, ...filterInput },
+  { client, isAuth }: Context,
 ) => {
   const config = {
     headers: {
@@ -25,12 +30,44 @@ let topicsQueryResolver: FieldResolver<'Query', 'topics'> = async (
     },
   };
   try {
-    let { data: topicResult } = await context.client.get(
+    let { data: topicResult } = await client.get(
       `/${parseTopicUrl(filterInput)}.json`,
       config,
     );
 
-    return camelcaseKey(topicResult, { deep: true });
+    const topics = camelcaseKey(topicResult, { deep: true });
+    if (isAuth && username) {
+      // Determine `liked` value based on whether users like the first post of the topic
+      const activities = await fetchLikeActivities({ username, client });
+
+      // TODO: Do more research to find the best solution #783
+      const likedFirstPostInTopics = new Set();
+      activities.forEach(({ postNumber, topicId }) => {
+        if (postNumber === FIRST_POST_NUMBER) {
+          likedFirstPostInTopics.add(topicId);
+        }
+      });
+      topics.topicList.topics = topics.topicList.topics.map((topic: Topic) => {
+        const { id, liked } = topic;
+
+        let updatedLiked = liked ? likedFirstPostInTopics.has(id) : false;
+        return { ...topic, liked: updatedLiked };
+      });
+    }
+
+    let { users }: { users: Array<UserIcon> } = topics;
+    topics.topicList.topics = topics.topicList.topics.map((topic: Topic) => {
+      const { posters } = topic;
+      let postersWithUser = posters.map((poster) => {
+        return {
+          ...poster,
+          user: poster.user ?? users.find(({ id }) => id === poster.userId),
+        };
+      });
+      return { ...topic, posters: postersWithUser };
+    });
+
+    return topics;
   } catch (error) {
     throw errorHandler(error);
   }
@@ -39,11 +76,12 @@ let topicsQueryResolver: FieldResolver<'Query', 'topics'> = async (
 let topicsQuery = queryField('topics', {
   type: 'TopicsOutput',
   args: {
-    sort: arg({ type: 'TopicsSortEnum', required: true }),
-    categoryId: intArg(),
-    topPeriod: arg({ type: 'TopPeriodEnum' }),
-    tag: stringArg(),
-    page: intArg(),
+    sort: arg({ type: 'TopicsSortEnum' }),
+    categoryId: nullable(intArg()),
+    topPeriod: nullable(arg({ type: 'TopPeriodEnum' })),
+    tag: nullable(stringArg()),
+    page: nullable(intArg()),
+    username: nullable(stringArg()),
   },
   resolve: topicsQueryResolver,
 });

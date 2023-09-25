@@ -1,10 +1,10 @@
 # Type of PR
 
-- [ ] Bug fix (_non-breaking change which fixes an issue_)
-- [ ] New feature (_adding a feature following a feature-request issue_)
-- [ ] Improvement (_improving an existing feature - includes `style:` and `perf:`commits_)
-- [ ] Refactor (_rewriting existing code without any feature change_)
-- [ ] (!) This change is or requires a documentation update
+- [ ] 🐞 Bug fix (_non-breaking change which fixes an issue_)
+- [ ] 🧙‍♂️ New feature (_adding a feature following a feature-request issue_)
+- [ ] 🔨 Improvement (_improving an existing feature - includes `style:` and `perf:`commits_)
+- [ ] 🏗️ Refactor (_rewriting existing code without any feature change_)
+- [ ] ✍️ (!) This change is or requires a documentation update
 
 # Description
 

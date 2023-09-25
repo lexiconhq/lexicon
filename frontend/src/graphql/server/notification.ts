@@ -57,3 +57,19 @@ export const MARK_READ = gql`
     markRead(notificationId: $notificationId)
   }
 `;
+
+export const PUSH_NOTIF = gql`
+  mutation PushNotifications(
+    $PushNotificationsToken: String!
+    $applicationName: String!
+    $platform: String!
+    $experienceId: String!
+  ) {
+    pushNotifications(
+      PushNotificationsToken: $PushNotificationsToken
+      applicationName: $applicationName
+      platform: $platform
+      experienceId: $experienceId
+    )
+  }
+`;

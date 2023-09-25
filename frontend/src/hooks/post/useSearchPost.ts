@@ -1,10 +1,10 @@
 import { LazyQueryHookOptions } from '@apollo/client';
 
-import { SEARCH } from '../../graphql/server/search';
 import {
-  Search as SearchPostType,
-  SearchVariables as SearchPostVariables,
-} from '../../generated/server/Search';
+  SearchQuery as SearchPostType,
+  SearchQueryVariables as SearchPostVariables,
+  SearchDocument,
+} from '../../generated/server';
 import { useLazyQuery } from '../../utils';
 
 export function useSearchPost(
@@ -13,7 +13,7 @@ export function useSearchPost(
   const [getPosts, { error, refetch, fetchMore }] = useLazyQuery<
     SearchPostType,
     SearchPostVariables
-  >(SEARCH, {
+  >(SearchDocument, {
     ...options,
   });
 

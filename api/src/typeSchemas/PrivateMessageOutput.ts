@@ -1,10 +1,10 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let PrivateMessageOutput = objectType({
   name: 'PrivateMessageOutput',
   definition(t) {
-    t.int('primaryGroups', { nullable: true, list: true });
+    t.nullable.list.int('primaryGroups');
     t.field('topicList', { type: 'TopicList' });
-    t.field('users', { type: 'UserIcon', list: true, nullable: true });
+    t.nullable.list.field('users', { type: 'UserIcon' });
   },
 });

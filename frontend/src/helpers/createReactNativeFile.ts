@@ -6,13 +6,16 @@ export const createReactNativeFile = (
   filePath: string,
   customPrefix?: string,
 ) => {
-  if (filePath) {
-    return new ReactNativeFile({
-      uri: filePath,
-      type: getMimeFromImagePicker(filePath),
-      name: `${customPrefix}-${new Date().getTime()}`,
-    });
+  if (!filePath) {
+    return null;
   }
 
-  return null;
+  const prefix = customPrefix ? `${customPrefix}-` : '';
+  const name = `${prefix}${new Date().getTime()}`;
+
+  return new ReactNativeFile({
+    uri: filePath,
+    type: getMimeFromImagePicker(filePath),
+    name,
+  });
 };

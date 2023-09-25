@@ -21,7 +21,7 @@ import {
   TextArea,
 } from '../components';
 import { Divider, Icon, Text, TextInputType } from '../core-ui';
-import { UploadTypeEnum } from '../generated/server/types';
+import { UploadTypeEnum } from '../generated/server';
 import {
   bottomMenu,
   createReactNativeFile,
@@ -29,9 +29,9 @@ import {
   getHyperlink,
   getImage,
   insertHyperlink,
+  insertImageUploadStatus,
   mentionHelper,
-  reformatMarkdownAfterUpload,
-  reformatMarkdownBeforeUpload,
+  getReplacedImageUploadStatus,
   useStorage,
 } from '../helpers';
 import {
@@ -43,6 +43,7 @@ import {
 import { makeStyles, useTheme } from '../theme';
 import {
   CursorPosition,
+  FormTitle,
   Image,
   RootStackNavProp,
   RootStackParamList,
@@ -50,11 +51,6 @@ import {
   UserMessageProps,
 } from '../types';
 import { useModal } from '../utils';
-
-type Form = {
-  title: string;
-  raw: string;
-};
 
 export default function NewMessage() {
   const { modal, setModal } = useModal();
@@ -84,7 +80,7 @@ export default function NewMessage() {
   } = useRoute<RootStackRouteProp<'NewMessage'>>();
 
   const { control, handleSubmit, setValue, getValues, formState } =
-    useForm<Form>({ mode: 'onChange' });
+    useForm<FormTitle>({ mode: 'onChange' });
 
   const kasv = useKASVWorkaround();
 
@@ -103,7 +99,13 @@ export default function NewMessage() {
 
   const debounced = useDebouncedCallback((value, token) => {
     if (imagesArray[token - 1]) {
-      reformatMarkdownAfterUpload(value, imagesArray, token, setValue);
+      let newText = getReplacedImageUploadStatus(
+        value,
+        token,
+        imagesArray[token - 1].link,
+      );
+
+      setValue('raw', newText);
     }
   }, 1500);
 
@@ -148,12 +150,12 @@ export default function NewMessage() {
     setCurrentUploadToken(currentUploadToken + 1);
     const reactNativeFile = createReactNativeFile(uri);
     const { raw } = getValues();
-    reformatMarkdownBeforeUpload(
+    let result = insertImageUploadStatus(
       raw,
       cursorPosition.start,
-      imagesArray,
-      setValue,
+      imagesArray.length + 1,
     );
+    setValue('raw', result);
     upload({
       variables: {
         file: reactNativeFile,
@@ -184,13 +186,13 @@ export default function NewMessage() {
     navigate(screen, params);
   };
 
-  const { onInsertImage, onInsertLink } = bottomMenu(
+  const { onInsertImage, onInsertLink } = bottomMenu({
     isKeyboardShow,
     user,
-    onNavigate,
-    'NewMessage',
-    normalizedExtensions,
-  );
+    navigate: onNavigate,
+    prevScreen: 'NewMessage',
+    extensions: normalizedExtensions,
+  });
 
   useEffect(() => {
     setSelectedUsers(users);
@@ -259,6 +261,10 @@ export default function NewMessage() {
     navigate('SelectUser', { users, listOfUser });
   };
 
+  const setMentionValue = (text: string) => {
+    setValue('raw', text);
+  };
+
   const Header = () =>
     ios ? (
       <ModalHeader
@@ -295,7 +301,7 @@ export default function NewMessage() {
               mentionLoading={mentionLoading}
               rawText={getValues('raw')}
               textRef={newMessageRef}
-              setMentionValue={setValue}
+              setMentionValue={setMentionValue}
               setShowUserList={setShowUserList}
             />
             <BottomMenu
@@ -314,7 +320,7 @@ export default function NewMessage() {
               defaultValue=""
               rules={{ required: true }}
               control={control}
-              render={({ onChange, value }) => (
+              render={({ field: { onChange, value } }) => (
                 <TextInput
                   style={[
                     styles.textInput,
@@ -368,7 +374,7 @@ export default function NewMessage() {
             defaultValue=""
             rules={{ required: true }}
             control={control}
-            render={({ onChange, value }) => (
+            render={({ field: { onChange, value } }) => (
               <TextArea
                 isKeyboardShow={isKeyboardShow}
                 value={value}

@@ -1,4 +1,4 @@
-import { FieldResolver, mutationField, stringArg } from '@nexus/schema';
+import { FieldResolver, mutationField, stringArg } from 'nexus';
 
 import { CONTENT_JSON } from '../../constants';
 import { errorHandler } from '../../helpers';
@@ -25,8 +25,8 @@ export let changeEmailResolver: FieldResolver<
 export let changeEmailMutation = mutationField('changeEmail', {
   type: 'String',
   args: {
-    newEmail: stringArg({ required: true }),
-    username: stringArg({ required: true }),
+    newEmail: stringArg(),
+    username: stringArg(),
   },
   resolve: changeEmailResolver,
 });

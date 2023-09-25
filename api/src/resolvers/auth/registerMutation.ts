@@ -2,7 +2,7 @@ import { stringify } from 'querystring';
 
 import camelcaseKeys from 'camelcase-keys';
 import snakecaseKeys from 'snakecase-keys';
-import { FieldResolver, mutationField, arg } from '@nexus/schema';
+import { FieldResolver, mutationField, arg, nullable } from 'nexus';
 
 import { discourseClient } from '../../client';
 import { CONTENT_FORM_URLENCODED } from '../../constants';
@@ -42,7 +42,7 @@ export let registerMutationResolver: FieldResolver<
 export let registerMutation = mutationField('register', {
   type: 'RegisterOutput',
   args: {
-    registerInput: arg({ type: 'RegisterInput' }),
+    registerInput: nullable(arg({ type: 'RegisterInput' })),
   },
   resolve: registerMutationResolver,
 });

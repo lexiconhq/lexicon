@@ -1,4 +1,4 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let Group = objectType({
   name: 'Group',
@@ -12,22 +12,22 @@ export let Group = objectType({
     t.int('messageableLevel');
     t.int('visibilityLevel');
     t.boolean('primaryGroup');
-    t.string('title', { nullable: true });
-    t.boolean('grantTrustLevel', { nullable: true });
-    t.string('flairUrl', { nullable: true });
-    t.string('flairBgColor', { nullable: true });
-    t.string('bioCooked', { nullable: true });
-    t.string('flairColor', { nullable: true });
-    t.string('bioExcerpt', { nullable: true });
+    t.nullable.string('title');
+    t.nullable.boolean('grantTrustLevel');
+    t.nullable.string('flairUrl');
+    t.nullable.string('flairBgColor');
+    t.nullable.string('bioCooked');
+    t.nullable.string('flairColor');
+    t.nullable.string('bioExcerpt');
     t.boolean('publicAdmission');
     t.boolean('publicExit');
     t.boolean('allowMembershipRequests');
-    t.string('fullName', { nullable: true });
+    t.nullable.string('fullName');
     t.int('defaultNotificationLevel');
-    t.string('membershipRequestTemplate', { nullable: true });
+    t.nullable.string('membershipRequestTemplate');
     t.int('membersVisibilityLevel');
     t.boolean('canSeeMembers');
     t.boolean('publishReadState');
-    t.boolean('hasMessages', { nullable: true });
+    t.nullable.boolean('hasMessages');
   },
 });

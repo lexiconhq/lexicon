@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const TOKEN_KEY = '@auth:sessionToken';
 
 export let setToken = (userToken: string) => {
-  AsyncStorage.setItem(TOKEN_KEY, userToken);
+  return AsyncStorage.setItem(TOKEN_KEY, userToken);
 };
 
 export let getToken = async () => {

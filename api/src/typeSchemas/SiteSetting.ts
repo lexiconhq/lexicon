@@ -1,4 +1,4 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let SiteSetting = objectType({
   name: 'SiteSetting',
@@ -7,7 +7,7 @@ export let SiteSetting = objectType({
     t.boolean('canTagTopics');
     t.boolean('canSignUp');
     t.string('authorizedExtensions');
-    t.int('uncategorizedCategoryId', { nullable: true });
+    t.int('uncategorizedCategoryId');
     t.int('minSearchLength');
     t.boolean('taggingEnabled');
     t.int('maxTagLength');
@@ -16,13 +16,13 @@ export let SiteSetting = objectType({
     t.int('minUsernameLength');
     t.int('minPasswordLength');
     t.boolean('fullNameRequired');
-    t.field('topicFlagTypes', {
+    t.string('defaultComposerCategory');
+    t.boolean('allowUncategorizedTopics');
+    t.list.field('topicFlagTypes', {
       type: 'TopicFlagTypes',
-      list: true,
     });
-    t.field('postActionTypes', {
+    t.list.field('postActionTypes', {
       type: 'TopicFlagTypes',
-      list: true,
     });
   },
 });

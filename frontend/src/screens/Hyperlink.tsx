@@ -19,10 +19,15 @@ export default function Hyperlink() {
   const { navigate, goBack } = useNavigation<RootStackNavProp<'HyperLink'>>();
 
   const {
-    params: { prevScreen, title, id, post, postPointer },
+    params: { prevScreen, title, id, replyToPostId, postNumber },
   } = useRoute<RootStackRouteProp<'HyperLink'>>();
 
-  const { control, errors, formState, getValues } = useForm<HyperlinkForm>({
+  const {
+    control,
+    formState: { errors },
+    formState,
+    getValues,
+  } = useForm<HyperlinkForm>({
     mode: 'onChange',
   });
 
@@ -42,22 +47,19 @@ export default function Hyperlink() {
         navigate(prevScreen, {
           title,
           topicId: id,
-          post,
+          replyToPostId,
           hyperlinkUrl,
           hyperlinkTitle,
         });
       }
     } else if (prevScreen === 'MessageDetail') {
-      if (id && postPointer) {
-        navigate('Main', {
-          screen: prevScreen,
-          params: {
-            id,
-            postPointer,
-            emptied: false,
-            hyperlinkUrl,
-            hyperlinkTitle,
-          },
+      if (id && postNumber) {
+        navigate(prevScreen, {
+          id,
+          postNumber,
+          emptied: false,
+          hyperlinkUrl,
+          hyperlinkTitle,
         });
       }
     }
@@ -92,7 +94,7 @@ export default function Hyperlink() {
           defaultValue=""
           rules={{ required: true }}
           control={control}
-          render={({ value, onChange, onBlur }) => (
+          render={({ field: { value, onChange, onBlur } }) => (
             <TextInput
               label={t('URL')}
               placeholder={t('Insert URL')}
@@ -111,7 +113,7 @@ export default function Hyperlink() {
           name="title"
           defaultValue=""
           control={control}
-          render={({ value, onChange, onBlur }) => (
+          render={({ field: { value, onChange, onBlur } }) => (
             <TextInput
               inputRef={titleInputRef}
               label={t('Title (Optional)')}

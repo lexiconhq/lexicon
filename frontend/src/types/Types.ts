@@ -1,11 +1,13 @@
 import * as runtypes from 'runtypes';
 
-import { GetTopicDetail } from '../generated/server/GetTopicDetail';
-import { Notification as GeneratedNotification } from '../generated/server/Notification';
-import { Profile } from '../generated/server/Profile';
-import { Site } from '../generated/server/Site';
-import { UserActivity as GeneratedUserActivity } from '../generated/server/UserActivity';
-import { SearchTags } from '../generated/server/Search';
+import {
+  GetTopicDetailQuery,
+  NotificationQuery as GeneratedNotification,
+  ProfileQuery,
+  SiteQuery,
+  UserActivityQuery as GeneratedUserActivity,
+  SearchTagsQuery,
+} from '../generated/server';
 
 import { User } from './Post';
 
@@ -21,6 +23,38 @@ export type ErrorAlertOptionType = 'HIDE_ALERT' | 'SHOW_ALERT';
 export let ChannelList = runtypes.Array(ChannelRecord);
 
 export type Channel = runtypes.Static<typeof ChannelRecord>;
+
+export enum NotificationType {
+  Mention = 1,
+  ReplyPost = 2,
+  QuotePost = 3,
+  EditPost = 4,
+  LikePost = 5,
+  SendMessage = 6,
+  InviteMessage = 7,
+  // InviteeAccepted = 8,
+  ReplyMessage = 9,
+  MovePost = 10,
+  LinkPost = 11,
+  // ObtainBadge = 12,
+  InviteTopic = 13,
+  Custom = 14,
+  GroupMention = 15,
+  // ModeratorsInbox = 16,
+  WatchingTopic = 17,
+  TopicReminder = 18,
+  LikeMultiplePosts = 19,
+  PostApproved = 20,
+  CodeReviewCommitApproved = 21,
+  MembershipRequestAccepted = 22,
+  MembershipRequestConsolidated = 23,
+  BookmarkReminder = 24,
+  Reaction = 25,
+  VotesReleased = 26,
+  EventReminder = 27,
+  EventInvitation = 28,
+  ChatMention = 29,
+}
 
 export type Notification = {
   id: number;
@@ -47,11 +81,10 @@ export type EmailAddress = {
 
 export type MessageContent = {
   id: number;
-  userId: number;
+  username: string;
   time: string;
   message: string;
-  images?: Array<string>;
-  listOfMention?: Array<string>;
+  mentions?: Array<string>;
 };
 
 export type Message = {
@@ -96,18 +129,18 @@ export type Image = {
 };
 
 export type UserDetail = Extract<
-  Profile['userProfile']['user'],
+  ProfileQuery['userProfile']['user'],
   { __typename: 'UserDetail' }
 >;
 
-export type PostStream = GetTopicDetail['topicDetail']['postStream'];
-export type TopicDetail = NonNullable<GetTopicDetail['topicDetail']>;
+export type PostStream = GetTopicDetailQuery['topicDetail']['postStream'];
+export type TopicDetail = NonNullable<GetTopicDetailQuery['topicDetail']>;
 export type TopicDetailInner = TopicDetail['details'];
 
-export type SiteSettings = Site['site'];
+export type SiteSettings = SiteQuery['site'];
 export type RawNotificationsType = NonNullable<
   GeneratedNotification['notification']['notifications']
 >[number];
 export type UserActivity = GeneratedUserActivity['userActivity'][number];
 
-export type Tag = SearchTags['searchTag'][number];
+export type Tag = SearchTagsQuery['searchTag'][number];

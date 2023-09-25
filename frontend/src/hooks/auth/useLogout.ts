@@ -1,19 +1,30 @@
 import { MutationHookOptions } from '@apollo/client';
 
 import {
-  Logout as LogoutType,
-  LogoutVariables,
-} from '../../generated/server/Auth';
+  LogoutMutation as LogoutType,
+  LogoutMutationVariables,
+} from '../../generated/server';
 import { LOGOUT } from '../../graphql/server/auth';
 import { useMutation } from '../../utils';
+import { getExpoPushTokenHandler } from '../../helpers';
 
 export function useLogout(
-  options?: MutationHookOptions<LogoutType, LogoutVariables>,
+  options?: MutationHookOptions<LogoutType, LogoutMutationVariables>,
 ) {
-  const [logout, { loading }] = useMutation<LogoutType, LogoutVariables>(
-    LOGOUT,
-    { ...options },
-  );
+  const [mutate, { loading }] = useMutation<
+    LogoutType,
+    LogoutMutationVariables
+  >(LOGOUT, { ...options });
 
+  const logout = async ({ username }: { username: string }) => {
+    const { token } = await getExpoPushTokenHandler();
+
+    mutate({
+      variables: {
+        pushNotificationsToken: token,
+        username,
+      },
+    });
+  };
   return { logout, loading };
 }

@@ -1,6 +1,6 @@
 import { AxiosResponse } from 'axios';
 import camelcaseKey from 'camelcase-keys';
-import { FieldResolver, queryField, stringArg } from '@nexus/schema';
+import { FieldResolver, queryField, stringArg } from 'nexus';
 
 import { errorHandler } from '../../helpers';
 import { Context, NotificationOutput } from '../../types';
@@ -17,11 +17,8 @@ let userProfileQueryResolver: FieldResolver<'Query', 'userProfile'> = async (
     let thereIsUnreadNotif = false;
 
     if (camelcasedData.user.hasOwnProperty('email')) {
-      let {
-        data: notifData,
-      }: AxiosResponse<NotificationOutput> = await context.client.get(
-        '/notifications.json?filter=unread&limit=30',
-      );
+      let { data: notifData }: AxiosResponse<NotificationOutput> =
+        await context.client.get('/notifications.json?filter=unread&limit=30');
       thereIsUnreadNotif = !!notifData.notifications.length;
     }
 
@@ -34,7 +31,7 @@ let userProfileQueryResolver: FieldResolver<'Query', 'userProfile'> = async (
 let userProfileQuery = queryField('userProfile', {
   type: 'UserProfileOutput',
   args: {
-    username: stringArg({ required: true }),
+    username: stringArg(),
   },
   resolve: userProfileQueryResolver,
 });

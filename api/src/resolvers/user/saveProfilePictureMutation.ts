@@ -1,4 +1,4 @@
-import { FieldResolver, mutationField, intArg, stringArg } from '@nexus/schema';
+import { FieldResolver, mutationField, intArg, stringArg } from 'nexus';
 
 import { ACCEPTED_LANGUAGE, CONTENT_JSON } from '../../constants';
 import { errorHandler } from '../../helpers';
@@ -15,7 +15,6 @@ export let saveProfilePictureResolver: FieldResolver<
     },
   };
   let body = {
-    // eslint-disable-next-line @typescript-eslint/camelcase
     upload_id: uploadId,
     type: 'uploaded',
   };
@@ -34,8 +33,8 @@ export let saveProfilePictureResolver: FieldResolver<
 export let saveProfilePictureMutation = mutationField('saveProfilePicture', {
   type: 'String',
   args: {
-    uploadId: intArg({ required: true }),
-    username: stringArg({ required: true }),
+    uploadId: intArg(),
+    username: stringArg(),
   },
   resolve: saveProfilePictureResolver,
 });

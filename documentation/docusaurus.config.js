@@ -16,10 +16,10 @@ module.exports = {
       },
       items: [
         {
-          to: '/',
-          activeBasePath: 'docs',
+          type: 'doc',
           label: 'Documentation',
           position: 'left',
+          docId: 'intro',
         },
         {
           type: 'doc',
@@ -31,6 +31,9 @@ module.exports = {
           href: 'https://github.com/lexiconhq/lexicon',
           label: 'GitHub',
           position: 'right',
+        },
+        {
+          type: 'docsVersionDropdown',
         },
       ],
     },
@@ -58,8 +61,20 @@ module.exports = {
       {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
-          editUrl: 'https://github.com/lexiconhq/lexicon/blob/master/documentation/',
+          editUrl:
+            'https://github.com/lexiconhq/lexicon/blob/master/documentation/',
           routeBasePath: '/',
+          onlyIncludeVersions: ['1.0.0', '2.0.0-beta'],
+          versions: {
+            '2.0.0-beta': {
+              path: 'version-2.0.0-beta',
+              banner: 'none',
+            },
+            '1.0.0': {
+              path: 'version-1.0.0',
+              banner: 'none',
+            },
+          },
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),

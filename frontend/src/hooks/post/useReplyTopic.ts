@@ -1,19 +1,19 @@
 import { MutationHookOptions } from '@apollo/client';
 
 import {
-  ReplyTopic as ReplyTopicType,
-  ReplyTopicVariables,
-} from '../../generated/server/Topics';
-import { REPLY_TOPIC } from '../../graphql/server/topics';
+  ReplyTopicMutation as ReplyTopicType,
+  ReplyTopicMutationVariables,
+  ReplyTopicDocument,
+} from '../../generated/server';
 import { useMutation } from '../../utils';
 
 export function useReplyTopic(
-  options?: MutationHookOptions<ReplyTopicType, ReplyTopicVariables>,
+  options?: MutationHookOptions<ReplyTopicType, ReplyTopicMutationVariables>,
 ) {
-  const [reply, { loading }] = useMutation<ReplyTopicType, ReplyTopicVariables>(
-    REPLY_TOPIC,
-    { ...options },
-  );
+  const [reply, { loading }] = useMutation<
+    ReplyTopicType,
+    ReplyTopicMutationVariables
+  >(ReplyTopicDocument, { ...options });
 
   return { reply, loading };
 }

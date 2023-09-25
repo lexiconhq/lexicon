@@ -1,14 +1,14 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let ActionPostNotification = objectType({
   name: 'ActionPostNotification',
   definition(t) {
     t.string('topicTitle');
     t.int('originalPostId');
-    t.int('originalPostType', { nullable: true });
+    t.nullable.int('originalPostType');
     t.string('originalUsername');
-    t.int('revisionNumber', { nullable: true });
+    t.nullable.int('revisionNumber');
     t.string('displayUsername');
-    t.string('count', { nullable: true });
+    t.nullable.string('count');
   },
 });

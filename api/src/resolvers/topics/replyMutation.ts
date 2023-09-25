@@ -3,7 +3,7 @@ import { stringify } from 'querystring';
 import FormData from 'form-data';
 import camelcaseKey from 'camelcase-keys';
 import snakecaseKey from 'snakecase-keys';
-import { FieldResolver, mutationField, arg, intArg } from '@nexus/schema';
+import { FieldResolver, mutationField, arg, intArg, nullable } from 'nexus';
 
 import { CONTENT_FORM_URLENCODED } from '../../constants';
 import { errorHandler } from '../../helpers';
@@ -16,9 +16,7 @@ export let replyResolver: FieldResolver<'Mutation', 'reply'> = async (
 ) => {
   let replyInputSnake = snakecaseKey({ ...replyInput, archetype: 'regular' });
   const config = {
-    headers: {
-      'Content-Type': CONTENT_FORM_URLENCODED,
-    },
+    headers: { 'Content-Type': CONTENT_FORM_URLENCODED },
   };
 
   try {
@@ -27,18 +25,17 @@ export let replyResolver: FieldResolver<'Mutation', 'reply'> = async (
         throw new Error('Upload avatar must include user id.');
       }
       const form = new FormData();
-      let { createReadStream } = await file;
-      let fileStream = createReadStream();
-      form.append('files[]', fileStream);
+
+      const fileBuffer = Buffer.from(await file.arrayBuffer());
+
+      form.append('files[]', fileBuffer, file.name);
       form.append('type', type);
       if (userId) {
         form.append('user_id', userId);
       }
 
       const config = {
-        headers: {
-          ...form.getHeaders(),
-        },
+        headers: form.getHeaders(),
       };
       let url = `/uploads.json`;
       let { data } = await context.client.post(url, form, config);
@@ -67,10 +64,10 @@ export let replyResolver: FieldResolver<'Mutation', 'reply'> = async (
 export let replyMutation = mutationField('reply', {
   type: 'Post',
   args: {
-    replyInput: arg({ type: 'ReplyInput', required: true }),
-    file: arg({ type: 'Upload' }),
-    type: arg({ type: 'UploadTypeEnum' }),
-    userId: intArg(),
+    replyInput: arg({ type: 'ReplyInput' }),
+    file: nullable(arg({ type: 'File' })),
+    type: nullable(arg({ type: 'UploadTypeEnum' })),
+    userId: nullable(intArg()),
   },
   resolve: replyResolver,
 });

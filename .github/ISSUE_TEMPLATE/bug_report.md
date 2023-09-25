@@ -1,4 +1,13 @@
 ---
+name: Bug report
+about: Create a report to help us improve
+title: ''
+labels: ''
+assignees: ''
+
+---
+
+---
 name: Troubleshooting or Bug Report
 about: Create a report to help us improve
 title: ''

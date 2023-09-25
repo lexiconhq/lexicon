@@ -1,15 +1,18 @@
+import { GetMessageDetailQuery } from '../generated/server';
 import {
   Message,
   MessageContent,
-  PostStream,
   TopicDetailInner as TopicDetail,
 } from '../types';
 
 import { formatRelativeTime } from './formatRelativeTime';
 import { getImage } from './getUserImage';
 
+type MessagePostStream =
+  GetMessageDetailQuery['privateMessageDetail']['postStream'];
+
 type MessageDetailContent = {
-  postStream: PostStream;
+  postStream: MessagePostStream;
   details: TopicDetail | null;
 };
 
@@ -17,7 +20,8 @@ export function messageDetailHandler({
   postStream,
   details,
 }: MessageDetailContent) {
-  const contents = getSortedContent(postStream, details);
+  const { posts, stream } = postStream;
+  const contents = transformPostsToFrontendMessageContent(posts);
   const members =
     details?.allowedUsers?.map(({ id, username, avatarTemplate: avatar }) => ({
       id,
@@ -26,103 +30,60 @@ export function messageDetailHandler({
     })) || [];
 
   const data: Message = { contents, members };
-  const baseStream = postStream.stream || [];
 
   const { id: oldestPostId } = contents[0];
   const { id: newestPostId } = contents[contents.length - 1];
 
-  const hasOlderMessage = baseStream[0] !== oldestPostId;
-  const hasNewerMessage = baseStream[baseStream.length - 1] !== newestPostId;
+  let hasOlderMessage = false;
+  let hasNewerMessage = false;
+  let firstPostIndex: number | null = null;
+  let lastPostIndex: number | null = null;
 
-  const firstPostIndex = baseStream.findIndex(
-    (postId) => postId === oldestPostId,
-  );
-  const lastPostIndex = baseStream.findIndex(
-    (postId) => postId === newestPostId,
-  );
+  if (stream) {
+    hasOlderMessage = stream[0] !== oldestPostId;
+    hasNewerMessage = stream[stream.length - 1] !== newestPostId;
+
+    firstPostIndex = stream.findIndex((postId) => postId === oldestPostId);
+    lastPostIndex = stream.findIndex((postId) => postId === newestPostId);
+  }
 
   return {
     data,
     hasNewerMessage,
     hasOlderMessage,
-    baseStream,
+    stream: stream ?? [],
     firstPostIndex,
     lastPostIndex,
   };
 }
 
-function getSortedContent(postStream: PostStream, details: TopicDetail | null) {
-  let tempContent: Array<MessageContent> = [];
-  const { posts, stream } = postStream;
-
-  if (stream) {
-    stream.forEach((streamId) => {
-      const tempPost = posts.find(({ id }) => id === streamId);
-
-      if (tempPost) {
-        let {
-          id,
-          username,
-          createdAt: time,
-          actionCode,
-          actionCodeWho,
-          listOfCooked: images,
-          listOfMention,
-          raw,
-        } = tempPost;
-
-        tempContent.push({
-          id,
-          userId:
-            details?.participants.find(
-              (participant) => participant.username === username,
-            )?.id || 0,
-          time,
-          message: getMessageContent(
-            username,
-            raw ?? null,
-            actionCode ?? null,
-            actionCodeWho ?? null,
-            time,
-          ),
-          images: images || undefined,
-          listOfMention: listOfMention || undefined,
-        });
-      }
-    });
-  } else {
-    posts.forEach(
-      ({
-        id,
+function transformPostsToFrontendMessageContent(
+  posts: MessagePostStream['posts'],
+) {
+  const modifiedPosts: Array<MessageContent> = posts.map(
+    ({
+      id,
+      username,
+      createdAt: time,
+      actionCode,
+      actionCodeWho,
+      markdownContent,
+      mentions,
+    }) => ({
+      id,
+      username,
+      time,
+      message: getMessageContent(
         username,
-        createdAt: time,
-        actionCode,
-        actionCodeWho,
-        listOfCooked: images,
-        listOfMention,
-        raw,
-      }) =>
-        tempContent.push({
-          id,
-          userId:
-            details?.participants.find(
-              (participant) => participant.username === username,
-            )?.id || 0,
-          time,
-          message: getMessageContent(
-            username,
-            raw ?? null,
-            actionCode ?? null,
-            actionCodeWho ?? null,
-            time,
-          ),
-          images: images || undefined,
-          listOfMention: listOfMention || undefined,
-        }),
-    );
-  }
-
-  return tempContent;
+        markdownContent ?? null,
+        actionCode ?? null,
+        actionCodeWho ?? null,
+        time,
+      ),
+      mentions: mentions ?? undefined,
+    }),
+  );
+  return modifiedPosts;
 }
 
 function getMessageContent(
@@ -138,33 +99,60 @@ function getMessageContent(
 
   const timeStamp = formatRelativeTime(time);
 
+  // TODO: Adjust message content in #865
   switch (actionCode) {
     case 'user_left': {
-      return `${actionCodeWho} removed themselves ${timeStamp}`;
+      return t('{actionCodeWho} left.', { actionCodeWho });
     }
     case 'invited_user': {
-      return `${username} invited ${actionCodeWho} to join ${timeStamp}`;
+      return t('{username} invited {actionCodeWho} to join {timeStamp}', {
+        username,
+        actionCodeWho,
+        timeStamp,
+      });
     }
     case 'removed_user': {
-      return `${username} removed ${actionCodeWho} ${timeStamp}`;
+      return t('{username} removed {actionCodeWho} {timeStamp}', {
+        username,
+        actionCodeWho,
+        timeStamp,
+      });
     }
     case 'public_topic': {
-      return `${username} made this message public ${timeStamp}`;
+      return t('{username} made this message public {timeStamp}', {
+        username,
+        timeStamp,
+      });
     }
     case 'private_topic': {
-      return `${username} made this message personal ${timeStamp}`;
+      return t('{username} made this message personal {timeStamp}', {
+        username,
+        timeStamp,
+      });
     }
     case 'visible.enabled': {
-      return `${username} listed this message ${timeStamp}`;
+      return t('{username} listed this message {timeStamp}', {
+        username,
+        timeStamp,
+      });
     }
     case 'visible.disabled': {
-      return `${username} unlisted this message ${timeStamp}`;
+      return t('{username} unlisted this message {timeStamp}', {
+        username,
+        timeStamp,
+      });
     }
     case 'closed.enabled': {
-      return `${username} closed this message ${timeStamp}`;
+      return t('{username} locked this message {timeStamp}', {
+        username,
+        timeStamp,
+      });
     }
     case 'closed.disabled': {
-      return `${username} opened this message ${timeStamp}`;
+      return t('{username} unlocked this message {timeStamp}', {
+        username,
+        timeStamp,
+      });
     }
     default: {
       return '';

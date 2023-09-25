@@ -1,6 +1,6 @@
 import camelcaseKey from 'camelcase-keys';
 import snakecaseKey from 'snakecase-keys';
-import { FieldResolver, mutationField, arg } from '@nexus/schema';
+import { FieldResolver, mutationField, arg } from 'nexus';
 
 import { ACCEPTED_LANGUAGE, CONTENT_JSON } from '../../constants';
 import { errorHandler } from '../../helpers';
@@ -36,7 +36,7 @@ export let newTopicResolver: FieldResolver<'Mutation', 'newTopic'> = async (
 export let newTopicMutation = mutationField('newTopic', {
   type: 'Post',
   args: {
-    newTopicInput: arg({ type: 'NewTopicInput', required: true }),
+    newTopicInput: arg({ type: 'NewTopicInput' }),
   },
   resolve: newTopicResolver,
 });

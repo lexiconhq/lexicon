@@ -1,9 +1,10 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let PostStream = objectType({
   name: 'PostStream',
   definition(t) {
-    t.field('posts', { type: 'Post', list: true });
-    t.int('stream', { nullable: true, list: true });
+    t.list.field('posts', { type: 'Post' });
+    t.nullable.list.int('stream');
+    t.nullable.field('firstPost', { type: 'Post' });
   },
 });

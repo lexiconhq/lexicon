@@ -1,48 +1,19 @@
 /* eslint no-underscore-dangle: 0 */
 import { Alert } from 'react-native';
 
+import { FIRST_POST_NUMBER } from '../constants';
 import {
   Notification as NotificationDataType,
+  NotificationType,
   RawNotificationsType,
-  StackParamList,
+  RootStackParamList,
 } from '../types';
-
-enum NotificationType {
-  Mention = 1,
-  ReplyPost = 2,
-  QuotePost = 3,
-  EditPost = 4,
-  LikePost = 5,
-  SendMessage = 6,
-  InviteMessage = 7,
-  // InviteeAccepted = 8,
-  ReplyMessage = 9,
-  MovePost = 10,
-  LinkPost = 11,
-  // ObtainBadge = 12,
-  InviteTopic = 13,
-  Custom = 14,
-  GroupMention = 15,
-  // ModeratorsInbox = 16,
-  WatchingTopic = 17,
-  TopicReminder = 18,
-  LikeMultiplePosts = 19,
-  PostApproved = 20,
-  CodeReviewCommitApproved = 21,
-  MembershipRequestAccepted = 22,
-  MembershipRequestConsolidated = 23,
-  BookmarkReminder = 24,
-  Reaction = 25,
-  VotesReleased = 26,
-  EventReminder = 27,
-  EventInvitation = 28,
-}
 
 export function notificationHandler(
   data: Array<RawNotificationsType>,
-  navToPostDetail: (params: StackParamList['PostDetail']) => void,
-  navToMessageDetail: (params: StackParamList['MessageDetail']) => void,
-  navToUserInformation: (params: StackParamList['UserInformation']) => void,
+  navToPostDetail: (params: RootStackParamList['PostDetail']) => void,
+  navToMessageDetail: (params: RootStackParamList['MessageDetail']) => void,
+  navToUserInformation: (params: RootStackParamList['UserInformation']) => void,
 ): Array<NotificationDataType> {
   let tempNotification: Array<NotificationDataType> = [];
 
@@ -76,14 +47,14 @@ export function notificationHandler(
           case NotificationType.BookmarkReminder: {
             return navToPostDetail({
               topicId,
-              postNumber: item.postNumber || undefined,
+              postNumber: item.postNumber ?? undefined,
             });
           }
           case NotificationType.SendMessage:
           case NotificationType.InviteMessage: {
             return navToMessageDetail({
               id: topicId,
-              postPointer: item.postNumber || 1,
+              postNumber: item.postNumber ?? FIRST_POST_NUMBER,
               hyperlinkUrl: '',
               hyperlinkTitle: '',
             });
@@ -102,7 +73,7 @@ export function notificationHandler(
       ) {
         return navToPostDetail({
           topicId,
-          postNumber: item.postNumber || undefined,
+          postNumber: item.postNumber ?? undefined,
         });
       } else {
         Alert.alert(t('Warning'), t('This feature not available yet'), [
@@ -155,7 +126,8 @@ export function notificationHandler(
         switch (notificationType) {
           // TODO : Do more research about more notificationTypes
           case NotificationType.Mention:
-          case NotificationType.GroupMention: {
+          case NotificationType.GroupMention:
+          case NotificationType.ChatMention: {
             message = t('Mentioned you in ') + topicTitle;
             break;
           }

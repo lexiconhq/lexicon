@@ -1,19 +1,19 @@
 import { MutationHookOptions } from '@apollo/client';
 
 import {
-  EditTopic as EditTopicType,
-  EditTopicVariables,
-} from '../../generated/server/GetTopicDetail';
-import { EDIT_TOPIC } from '../../graphql/server/getTopicDetail';
+  EditTopicMutation as EditTopicType,
+  EditTopicMutationVariables,
+  EditTopicDocument,
+} from '../../generated/server';
 import { useMutation } from '../../utils';
 
 export function useEditTopic(
-  options?: MutationHookOptions<EditTopicType, EditTopicVariables>,
+  options?: MutationHookOptions<EditTopicType, EditTopicMutationVariables>,
 ) {
   const [editTopic, { loading }] = useMutation<
     EditTopicType,
-    EditTopicVariables
-  >(EDIT_TOPIC, {
+    EditTopicMutationVariables
+  >(EditTopicDocument, {
     ...options,
   });
 

@@ -2,6 +2,7 @@ import { Alert } from 'react-native';
 import { ApolloError } from '@apollo/client';
 
 import { StackNavProp } from '../types';
+import { ERROR_HANDLED_BY_LINK } from '../constants';
 
 import {
   ChangeUsernameError,
@@ -10,24 +11,42 @@ import {
   UsedTitleError,
 } from './errorMessage';
 
+/** `isNotFoundError` accepts any object that has a string-based `message`
+ * field. This includes `Error`, `ApolloError`, and `GraphQLError`.
+ *
+ * It then searches for the well-known text, `'could not be found'`, which
+ * is what our GraphQL server returns when a particular query was not found.
+ */
+export function isNotFoundError(error: { message: string }) {
+  return error.message.toLowerCase().includes('could not be found');
+}
+
 export function errorHandler(
   error: ApolloError,
-  isFiltered = false,
-  isTranslated = true,
+  shouldMaskError = false,
+  singularEntityName = '',
 ): string {
-  let errorMsg: string;
-
   if (error.networkError) {
-    errorMsg = 'Please connect to a network';
-  } else if (error.message === 'Not found or private.') {
-    errorMsg = 'Not found or private';
-  } else {
-    errorMsg = isFiltered
-      ? 'Something unexpected happened. Please try again'
-      : error.message;
+    return t('Please connect to a network');
   }
 
-  return isTranslated ? t('{errorMsg}', { errorMsg }) : errorMsg;
+  if (isNotFoundError(error)) {
+    let message = t(`Sorry, we couldn't find what you were looking for.`);
+
+    if (singularEntityName) {
+      message = t(`Sorry, we couldn't find that {entity} for you.`, {
+        entity: singularEntityName,
+      });
+    }
+
+    return message;
+  }
+
+  if (shouldMaskError) {
+    return t('Something unexpected happened. Please try again.');
+  }
+
+  return error.message;
 }
 
 export function errorHandlerAlert(
@@ -40,21 +59,23 @@ export function errorHandlerAlert(
   if (typeof error === 'string') {
     errorMsg = error;
   } else {
-    errorMsg = errorHandler(error, isFiltered, false);
+    // This means the error is handled in error link
+    if (error?.message === ERROR_HANDLED_BY_LINK) {
+      return;
+    }
+    errorMsg = errorHandler(error, isFiltered);
   }
-
-  let errorMsgi8n = t('{errorMsg}', { errorMsg });
-
+  let alertTitle;
   switch (errorMsg) {
     case LoginError:
-      Alert.alert(t('Please Log In'), errorMsgi8n, [
+      Alert.alert(t('Please Log In'), errorMsg, [
         { text: t('Close') },
         {
           text: t('Log In'),
           onPress: () => (navigate ? navigate('Login') : undefined),
         },
       ]);
-      break;
+      return;
     case UsedTitleError:
       Alert.alert(
         t('Title Already Exists'),
@@ -63,16 +84,15 @@ export function errorHandlerAlert(
         ),
         [{ text: t('Got it') }],
       );
-      break;
+      return;
     case EditPostError:
-      Alert.alert(t('Unable to Edit'), errorMsgi8n, [{ text: t('Got it') }]);
+      alertTitle = t('Unable to Edit');
       break;
     case ChangeUsernameError:
-      Alert.alert(t('Username Unavailable'), errorMsgi8n, [
-        { text: t('Got it') },
-      ]);
+      alertTitle = t('Username Unavailable');
       break;
     default:
-      Alert.alert(t('Error'), errorMsgi8n, [{ text: t('Got it') }]);
+      alertTitle = t('Error');
   }
+  Alert.alert(alertTitle, errorMsg, [{ text: t('Got it') }]);
 }

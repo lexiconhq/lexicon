@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TouchableOpacity, TouchableOpacityProps } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 import { formatRelativeTime } from '../../../helpers';
@@ -10,11 +10,11 @@ import { MessageAvatar } from './MessageAvatar';
 import { MessageContent } from './MessageContent';
 import { MessageNotification } from './MessageNotification';
 
-type Props = TouchableOpacityProps & {
+type Props = {
   id: number;
   message: string;
   messageParticipants: MessageParticipants;
-  postPointer: number;
+  postNumber: number;
   allowedUserCount?: number | null;
   date: string;
   seen?: boolean;
@@ -33,7 +33,7 @@ export function MessageCard(props: Props) {
     date,
     seen: seenProps,
     allowedUserCount,
-    postPointer,
+    postNumber,
   } = props;
 
   const { participantsToShow } = messageParticipants ?? {
@@ -52,7 +52,7 @@ export function MessageCard(props: Props) {
     }
     navigate('MessageDetail', {
       id,
-      postPointer,
+      postNumber,
       hyperlinkUrl: '',
       hyperlinkTitle: '',
     });

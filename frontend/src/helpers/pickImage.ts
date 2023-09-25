@@ -37,7 +37,7 @@ export async function pickImage(extensions?: Array<string>) {
         : { canceled: true, assets: null };
   }
 
-  if (result.canceled) {
+  if (result.canceled || !result.assets.length) {
     return {
       error: 'cancelled',
     };

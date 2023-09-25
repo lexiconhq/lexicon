@@ -1,50 +1,52 @@
 /* eslint-disable styles/style-maker-no-unused */
 import React from 'react';
-import { Alert, Platform, StyleProp, View, ViewStyle } from 'react-native';
+import { Platform, StyleProp, View, ViewStyle } from 'react-native';
 import BaseMarkdown, {
   ASTNode,
-  getUniqueID,
   MarkdownIt,
   MarkdownProps,
 } from 'react-native-markdown-display';
 import { useNavigation } from '@react-navigation/core';
 import mentionFlowDock from 'markdown-it-flowdock';
+import * as Linking from 'expo-linking';
+import { useReactiveVar } from '@apollo/client';
 
-import { NO_USERNAME_ALERT, NO_USERNAME_SUB_ALERT } from '../constants';
 import { CustomImage } from '../core-ui/CustomImage';
 import { Text } from '../core-ui/Text';
 import { makeStyles } from '../theme';
 import { StackNavProp } from '../types';
+import CachedImage from '../core-ui/CachedImage';
+import { isEmojiImage } from '../helpers/emojiHandler';
+import { extractPathname, getValidDetailParams } from '../helpers';
+import { discourseHostVar } from '../constants';
 
 type Props = Omit<MarkdownProps, 'rules' | 'style'> & {
   content: string;
   fontColor?: string;
   style?: StyleProp<ViewStyle>;
-  imageUrls?: Array<string>;
   mentionColor?: string;
-  listOfMention?: Array<string>;
+  mentions?: Array<string>;
   nonClickable?: boolean;
 };
 
 const ios = Platform.OS === 'ios';
 
 export function Markdown(props: Props) {
-  const { navigate } = useNavigation<StackNavProp<'UserInformation'>>();
+  const { navigate, push } = useNavigation<StackNavProp<'UserInformation'>>();
   let styles = useStyles();
+  let discourseHost = useReactiveVar(discourseHostVar);
 
   let {
     content,
     fontColor,
     mentionColor,
     style,
-    listOfMention,
+    mentions,
     nonClickable,
-    imageUrls = [],
     ...otherProps
   } = props;
 
   content = content || '';
-  let image = 0;
 
   styles = fontColor
     ? { ...styles, ...{ body: { ...styles.body, color: fontColor } } }
@@ -52,27 +54,24 @@ export function Markdown(props: Props) {
 
   const markdownItInstance = MarkdownIt({ typographer: true }).use(
     mentionFlowDock,
-    {
-      containerClassName: 'mention',
-    },
+    { containerClassName: 'mention' },
   );
 
   const onPressMention = (username: string) => {
-    if (listOfMention?.includes(username)) {
-      navigate('UserInformation', { username });
-    } else {
-      Alert.alert(NO_USERNAME_ALERT, NO_USERNAME_SUB_ALERT, [
-        { text: t('Got it') },
-      ]);
-    }
+    navigate('UserInformation', { username });
   };
 
-  const renderImage = (node: ASTNode) => {
-    let { src } = node.attributes;
-    const uploadRegex = /upload:\/\//g;
-    src = uploadRegex.test(src) ? imageUrls[image] || '' : src;
-    image += 1;
-    return <CustomImage src={src} key={getUniqueID()} style={styles.image} />;
+  const renderImage = ({ attributes: { src }, key, content }: ASTNode) => {
+    if (isEmojiImage(content)) {
+      return (
+        <CachedImage
+          source={{ uri: src }}
+          key={key}
+          style={styles.emojiImage}
+        />
+      );
+    }
+    return <CustomImage src={src} key={key} style={styles.image} />;
   };
 
   const renderMention = ({ key, content }: ASTNode) => (
@@ -92,6 +91,47 @@ export function Markdown(props: Props) {
     <Text key={key}>{t('#{content}', { content })}</Text>
   );
 
+  const renderLink = ({ key, attributes }: ASTNode) => {
+    if (typeof attributes.href !== 'string') {
+      return;
+    }
+
+    let url = attributes.href;
+    const isSameHost = url.startsWith(discourseHost);
+    const pathname = isSameHost ? extractPathname(url) : '';
+
+    if (isSameHost && pathname) {
+      url = `/${pathname.replace(/t\//, 'topics/')}`;
+    }
+
+    const onLinkPress = () => {
+      const detailParams = getValidDetailParams(pathname.split('/'));
+
+      if (!detailParams) {
+        Linking.openURL(url);
+        return;
+      }
+
+      const { topicId, postNumber } = detailParams;
+      push('PostDetail', { topicId, postNumber });
+    };
+
+    const handleLinkPress = () => {
+      if (!isSameHost || !pathname) {
+        Linking.openURL(url);
+        return;
+      }
+
+      onLinkPress();
+    };
+
+    return (
+      <Text key={key} onPress={handleLinkPress} style={styles.link}>
+        {url}
+      </Text>
+    );
+  };
+
   return (
     <View style={style}>
       <BaseMarkdown
@@ -100,6 +140,7 @@ export function Markdown(props: Props) {
           image: renderImage,
           mention: renderMention,
           hashtag: renderHashtag, //need to add hashtag to prevent warning
+          link: renderLink,
         }}
         style={styles}
         {...otherProps}
@@ -178,5 +219,10 @@ const useStyles = makeStyles(
     mention: {
       color: colors.primary,
     },
+    emojiImage: {
+      width: 20,
+      height: 20,
+    },
+    link: { textDecorationLine: 'underline' },
   }),
 );

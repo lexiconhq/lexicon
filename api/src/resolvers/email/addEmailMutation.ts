@@ -1,6 +1,6 @@
 import { stringify } from 'querystring';
 
-import { FieldResolver, mutationField, stringArg } from '@nexus/schema';
+import { FieldResolver, mutationField, stringArg } from 'nexus';
 
 import { CONTENT_FORM_URLENCODED } from '../../constants';
 import { errorHandler } from '../../helpers';
@@ -34,8 +34,8 @@ export let addEmailMutation: FieldResolver<'Mutation', 'addEmail'> = async (
 export let addEmail = mutationField('addEmail', {
   type: 'String',
   args: {
-    email: stringArg({ required: true }),
-    username: stringArg({ required: true }),
+    email: stringArg(),
+    username: stringArg(),
   },
   resolve: addEmailMutation,
 });

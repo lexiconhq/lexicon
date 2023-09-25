@@ -1,4 +1,4 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let UserBadge = objectType({
   name: 'UserBadge',
@@ -7,11 +7,11 @@ export let UserBadge = objectType({
     t.string('grantedAt');
     t.string('createdAt');
     t.int('count');
-    t.int('postId', { nullable: true });
-    t.int('postNumber', { nullable: true });
+    t.nullable.int('postId');
+    t.nullable.int('postNumber');
     t.int('badgeId');
     t.int('userId');
     t.int('grantedById');
-    t.int('topicId', { nullable: true });
+    t.nullable.int('topicId');
   },
 });

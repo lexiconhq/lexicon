@@ -1,5 +1,5 @@
 import camelcaseKeys from 'camelcase-keys';
-import { FieldResolver, queryField } from '@nexus/schema';
+import { FieldResolver, queryField } from 'nexus';
 
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';

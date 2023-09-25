@@ -9,13 +9,17 @@ import {
   CustomHeader,
   HeaderItem,
   KeyboardTextAreaScrollView,
+  LocalRepliedPost,
   MentionList,
   ModalHeader,
-  RepliedPost,
   TextArea,
 } from '../components';
 import { Divider, IconWithLabel, TextInputType } from '../core-ui';
-import { UploadTypeEnum } from '../generated/server/types';
+import {
+  UploadTypeEnum,
+  PostFragment,
+  PostFragmentDoc,
+} from '../generated/server';
 import {
   bottomMenu,
   createReactNativeFile,
@@ -23,10 +27,10 @@ import {
   formatExtensions,
   getHyperlink,
   insertHyperlink,
+  insertImageUploadStatus,
   mentionHelper,
   newPostIsValid,
-  reformatMarkdownAfterUpload,
-  reformatMarkdownBeforeUpload,
+  getReplacedImageUploadStatus,
   useStorage,
 } from '../helpers';
 import {
@@ -38,16 +42,15 @@ import {
 import { makeStyles, useTheme } from '../theme';
 import {
   CursorPosition,
+  Form,
   Image,
+  ReplyPost,
   RootStackNavProp,
   RootStackParamList,
   RootStackRouteProp,
 } from '../types';
 import { useModal } from '../utils';
-
-type Form = {
-  raw: string;
-};
+import { client } from '../graphql/client';
 
 export default function PostReply() {
   const { modal, setModal } = useModal();
@@ -57,29 +60,36 @@ export default function PostReply() {
   const navigation = useNavigation<RootStackNavProp<'PostReply'>>();
   const { navigate, goBack } = useNavigation<RootStackNavProp<'PostReply'>>();
 
+  const { params } = useRoute<RootStackRouteProp<'PostReply'>>();
+  /**
+   * we need to save initial params because after image upload
+   * the navigation done from the preview will empty all other params
+   */
+  const savedNavigationParams = useRef<RootStackParamList['PostReply']>(params);
   let {
-    params: {
-      title,
-      topicId,
-      post,
-      focusedPostNumber,
-      editPostId,
-      oldContent = '',
-      editedUser,
-      hyperlinkTitle = '',
-      hyperlinkUrl,
-      imageUri = '',
-    },
-  } = useRoute<RootStackRouteProp<'PostReply'>>();
+    title,
+    topicId,
+    replyToPostId,
+    focusedPostNumber,
+    editPostId,
+    oldContent = '',
+    editedUser,
+    hyperlinkTitle = '',
+    hyperlinkUrl,
+    imageUri = '',
+  } = { ...savedNavigationParams.current, ...params };
+  const replyingTo = client.readFragment<PostFragment>({
+    id: `Post:${replyToPostId}`,
+    fragment: PostFragmentDoc,
+  });
 
   const ios = Platform.OS === 'ios';
-
   const repliedPost = useMemo(() => {
-    if (post) {
-      return <RepliedPost hideAuthor replyTo={post} />;
+    if (replyToPostId) {
+      return <LocalRepliedPost hideAuthor replyToPostId={replyToPostId} />;
     }
     return undefined;
-  }, [post]);
+  }, [replyToPostId]);
 
   const storage = useStorage();
   const user = storage.getItem('user');
@@ -97,12 +107,13 @@ export default function PostReply() {
   const [mentionLoading, setMentionLoading] = useState(false);
   const [mentionKeyword, setMentionKeyword] = useState('');
 
-  const { control, handleSubmit, setValue, getValues, formState } =
-    useForm<Form>({ mode: 'onChange' });
+  const { control, handleSubmit, setValue, getValues } = useForm<Form>({
+    mode: 'onChange',
+  });
 
   const [imagesArray, setImagesArray] = useState<Array<Image>>([]);
   const [uri, setUri] = useState('');
-  const [isValid, setValid] = useState(false);
+  const [postValidity, setPostValidity] = useState(false);
   const [showUserList, setShowUserList] = useState(false);
   const [currentUploadToken, setCurrentUploadToken] = useState(1);
 
@@ -112,7 +123,13 @@ export default function PostReply() {
 
   const debounced = useDebouncedCallback((value, token) => {
     if (imagesArray[token - 1]) {
-      reformatMarkdownAfterUpload(value, imagesArray, token, setValue);
+      let newText = getReplacedImageUploadStatus(
+        value,
+        token,
+        imagesArray[token - 1].link,
+      );
+
+      setValue('raw', newText);
     }
   }, 1500);
 
@@ -147,12 +164,12 @@ export default function PostReply() {
     setCurrentUploadToken(currentUploadToken + 1);
     const reactNativeFile = createReactNativeFile(uri);
     const { raw } = getValues();
-    reformatMarkdownBeforeUpload(
+    let result = insertImageUploadStatus(
       raw,
       cursorPosition.start,
-      imagesArray,
-      setValue,
+      imagesArray.length + 1,
     );
+    setValue('raw', result);
     upload({
       variables: {
         file: reactNativeFile,
@@ -203,24 +220,21 @@ export default function PostReply() {
     navigate(screen, params);
   };
 
-  const { onInsertImage, onInsertLink } = bottomMenu(
+  const { onInsertImage, onInsertLink } = bottomMenu({
     isKeyboardShow,
     user,
-    onNavigate,
-    'PostReply',
-    normalizedExtensions,
+    navigate: onNavigate,
+    prevScreen: 'PostReply',
+    extensions: normalizedExtensions,
     title,
     topicId,
-    post,
-  );
+    replyToPostId,
+  });
 
   useEffect(
     () =>
       navigation.addListener('beforeRemove', (e) => {
-        if (
-          (!isValid || !formState.isValid || !modal) &&
-          uploadsInProgress < 1
-        ) {
+        if ((!postValidity || !modal) && uploadsInProgress < 1) {
           return;
         }
         e.preventDefault();
@@ -236,17 +250,18 @@ export default function PostReply() {
           ],
         );
       }),
-    [formState.isValid, isValid, modal, navigation, uploadsInProgress],
+    [postValidity, modal, navigation, uploadsInProgress],
   );
 
-  const getData = () => {
+  const getData = (): ReplyPost => {
     const { raw } = getValues();
     return {
       title,
       content: raw,
       topicId,
-      post,
+      postNumber: replyingTo?.postNumber,
       createdAt: new Date().toISOString(),
+      replyToPostId,
     };
   };
 
@@ -263,20 +278,27 @@ export default function PostReply() {
 
   useEffect(() => {
     const { raw: content } = getValues();
-    let isValid;
+
+    let currentPostValidity; // temp variable to get the value of existingPostIsValid or newPostIsValid helper
+
     if (editPostId) {
-      isValid = existingPostIsValid(
+      currentPostValidity = existingPostIsValid(
         uploadsInProgress,
         title,
         title,
         content,
         oldContent,
       );
+      setPostValidity(currentPostValidity.isValid);
     } else {
-      isValid = newPostIsValid(title, content, uploadsInProgress);
+      currentPostValidity = newPostIsValid(title, content, uploadsInProgress);
+      setPostValidity(currentPostValidity);
     }
-    setValid(isValid);
   }, [editPostId, getValues, oldContent, title, uploadsInProgress]);
+
+  const setMentionValue = (text: string) => {
+    setValue('raw', text);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -284,7 +306,7 @@ export default function PostReply() {
         title={editPostId ? t('Edit Post') : t('Reply')}
         rightTitle={t('Next')}
         onPressRight={onPreview}
-        disabled={!isValid}
+        disabled={!postValidity}
         noShadow
       />
       {ios && (
@@ -295,7 +317,7 @@ export default function PostReply() {
             <HeaderItem
               label={t('Next')}
               onPressItem={onPreview}
-              disabled={!isValid}
+              disabled={!postValidity}
             />
           }
         />
@@ -310,7 +332,7 @@ export default function PostReply() {
               mentionLoading={mentionLoading}
               rawText={getValues('raw')}
               textRef={postReplyRef}
-              setMentionValue={setValue}
+              setMentionValue={setMentionValue}
               setShowUserList={setShowUserList}
             />
             <BottomMenu
@@ -335,7 +357,7 @@ export default function PostReply() {
           defaultValue={oldContent}
           rules={{ required: true }}
           control={control}
-          render={({ onChange, value }) => (
+          render={({ field: { onChange, value } }) => (
             <TextArea
               value={value}
               large
@@ -352,19 +374,26 @@ export default function PostReply() {
                 );
                 onChange(text);
                 debounced(text, currentUploadToken);
-                let isValid;
+
+                let currentPostValidity; // temp variable to get the value of existingPostIsValid or newPostIsValid helper
+
                 if (editPostId) {
-                  isValid = existingPostIsValid(
+                  currentPostValidity = existingPostIsValid(
                     uploadsInProgress,
                     title,
                     title,
                     text,
                     oldContent,
                   );
+                  setPostValidity(currentPostValidity.isValid);
                 } else {
-                  isValid = newPostIsValid(title, text, uploadsInProgress);
+                  currentPostValidity = newPostIsValid(
+                    title,
+                    text,
+                    uploadsInProgress,
+                  );
+                  setPostValidity(currentPostValidity);
                 }
-                setValid(isValid);
               }}
               onFocus={(event) => {
                 setKeyboardShow(true);

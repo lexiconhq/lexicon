@@ -1,8 +1,6 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
-type Poster = {
-  description: string;
-};
+import { getTopicAuthorUserId } from '../helpers/getTopicAuthor';
 
 export let Topic = objectType({
   name: 'Topic',
@@ -15,60 +13,52 @@ export let Topic = objectType({
     t.int('replyCount');
     t.int('highestPostNumber');
     t.string('createdAt');
-    t.string('lastPostedAt', { nullable: true });
+    t.nullable.string('lastPostedAt');
     t.boolean('bumped');
     t.string('bumpedAt');
     t.string('archetype');
-    t.string('imageUrl', { nullable: true });
+    t.nullable.string('imageUrl');
     t.boolean('unseen');
     t.boolean('pinned');
-    t.string('excerpt', { nullable: true }); // Must be activated
+
+    // Nullable because this is a feature that must be turned in
+    // in Discourse in order to be set.
+    t.nullable.string('excerpt');
+
     t.boolean('visible');
     t.boolean('closed');
     t.boolean('archived');
-    t.boolean('bookmarked', { nullable: true });
-    t.boolean('liked', { nullable: true });
-    t.string('tags', { nullable: true, list: true });
+    t.nullable.boolean('bookmarked');
+    t.nullable.boolean('liked');
+    t.nullable.list.string('tags');
     t.int('views');
     t.int('likeCount');
-    t.int('allowedUserCount', { nullable: true }); // On PM
-    t.int('lastReadPostNumber', { nullable: true }); // Only available when logged in
-    t.int('newPosts', { nullable: true }); // Only available when logged in
-    t.int('notificationLevel', { nullable: true }); // Only available when logged in
-    t.int('unread', { nullable: true }); // Only available when logged in
-    t.boolean('hasSummary', { nullable: true }); // Nullable in suggested topic
-    t.string('lastPosterUsername', { nullable: true }); // recomended topic doesn't have dis
-    t.int('categoryId', { nullable: true });
-    t.boolean('pinnedGlobally', { nullable: true }); // Nullable in suggested topic
-    t.field('posters', { type: 'TopicPoster', list: true });
-    t.field('participants', {
+
+    // For PMs
+    t.nullable.int('allowedUserCount');
+
+    // The following properties are only available when logged in.
+    t.nullable.int('lastReadPostNumber');
+    t.nullable.int('newPosts');
+    t.nullable.int('notificationLevel');
+    t.nullable.int('unread');
+    t.nullable.int('categoryId');
+
+    // The following fields are nullable when the topic is being
+    // presented as a suggested topic.
+    t.nullable.string('lastPosterUsername');
+    t.nullable.boolean('pinnedGlobally');
+    t.nullable.boolean('hasSummary');
+
+    t.list.field('posters', { type: 'TopicPoster' });
+    t.nullable.list.field('participants', {
       type: 'MessageParticipant',
-      list: true,
-      nullable: true,
     });
-    t.int('authorUserId', {
-      nullable: true,
-      resolve: ({ posters }) => {
-        const author = posters.find((p: Poster) =>
-          p.description.toLowerCase().includes('original poster'),
-        );
-
-        return author?.userId || author?.user?.id || null;
-      },
-    });
-    t.int('frequentPosterUserId', {
-      nullable: true,
-      resolve: ({ posters }) => {
-        const frequentPoster = posters.find((p: Poster) =>
-          p.description.toLowerCase().includes('frequent poster'),
-        );
-
-        return frequentPoster?.userId || frequentPoster?.user?.id || null;
-      },
+    t.nullable.int('authorUserId', {
+      resolve: ({ posters }) => getTopicAuthorUserId(posters) ?? null,
     });
     // Note: Comment out for maybe next phase
-    // t.int('recentPosterUserId', {
-    //   nullable: true,
+    // t.nullable.int('recentPosterUserId', {
     //   resolve: ({ posters }) => {
     //     const recentPoster = posters.find((p: Poster) =>
     //       p.description.toLowerCase().includes('most recent poster'),

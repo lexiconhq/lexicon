@@ -1,12 +1,12 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let BadgeNotification = objectType({
   name: 'BadgeNotification',
   definition(t) {
     t.int('badgeId');
     t.string('badgeName');
-    t.string('badgeSlug', { nullable: true });
-    t.boolean('badgeTitle', { nullable: true });
+    t.nullable.string('badgeSlug');
+    t.nullable.boolean('badgeTitle');
     t.string('username');
   },
 });

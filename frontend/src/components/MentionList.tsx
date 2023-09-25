@@ -1,5 +1,4 @@
 import React, { RefObject } from 'react';
-import { UseFormMethods } from 'react-hook-form';
 import {
   FlatList,
   StyleProp,
@@ -22,10 +21,10 @@ type Props = ViewProps & {
   rawText: string;
   textRef: RefObject<TextInputType>;
   setRawText?: (value: string) => void;
-  setMentionValue?: UseFormMethods['setValue'];
   setShowUserList: (value: boolean) => void;
   viewStyle?: StyleProp<ViewStyle>;
   fontStyle?: StyleProp<TextStyle>;
+  setMentionValue?: (text: string) => void;
 };
 
 export function MentionList(props: Props) {
@@ -48,8 +47,9 @@ export function MentionList(props: Props) {
   const onPressUser = (username: string) => {
     const replacedText = rawText.replace(/@[A-Za-z0-9._-]*$/, `@${username}`);
     textRef.current?.focus();
+
     if (setMentionValue) {
-      setMentionValue('raw', replacedText);
+      setMentionValue(replacedText);
     } else if (setRawText) {
       setRawText(replacedText);
     }

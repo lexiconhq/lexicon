@@ -11,7 +11,12 @@ web-build/
 src/generated/**/*.ts
 src/graphql/schema.json
 .env
+playstore_secret.json
+dist/
 
 # macOS
 .DS_Store
 /coverage
+
+#firebase
+google-services.json

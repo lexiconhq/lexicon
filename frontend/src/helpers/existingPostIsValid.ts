@@ -1,5 +1,16 @@
 import { newPostIsValid } from './newPostIsValid';
 
+enum EditType {
+  Topic = 'Topic',
+  Post = 'Post',
+  Both = 'Both',
+}
+
+type SubmissionDetails = {
+  isValid: boolean;
+  editType: EditType;
+};
+
 export function existingPostIsValid(
   uploadsInProgress: number,
   title: string,
@@ -10,15 +21,27 @@ export function existingPostIsValid(
   oldChannel?: number,
   tags?: Array<string>,
   oldTags?: Array<string>,
-): boolean {
+): SubmissionDetails {
   const titleIsValid = title !== oldTitle;
   const contentIsValid = content !== oldContent;
   const channelIsValid = channel !== oldChannel;
   const tagsIsValid = JSON.stringify(tags) !== JSON.stringify(oldTags);
 
-  const postIsValid =
-    (titleIsValid || contentIsValid || channelIsValid || tagsIsValid) &&
+  const topicModified = titleIsValid || channelIsValid || tagsIsValid;
+
+  let submissionDetails = { isValid: false, editType: EditType.Both };
+
+  submissionDetails.isValid =
+    (topicModified || contentIsValid) &&
     newPostIsValid(title, content, uploadsInProgress);
 
-  return postIsValid;
+  if (topicModified && contentIsValid) {
+    submissionDetails.editType = EditType.Both;
+  } else if (contentIsValid) {
+    submissionDetails.editType = EditType.Post;
+  } else {
+    submissionDetails.editType = EditType.Topic;
+  }
+
+  return submissionDetails;
 }

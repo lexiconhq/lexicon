@@ -1,4 +1,4 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let BookmarkOutput = objectType({
   name: 'BookmarkOutput',

@@ -1,11 +1,11 @@
-import { inputObjectType } from '@nexus/schema';
+import { inputObjectType } from 'nexus';
 
 export let EditTopicInput = inputObjectType({
   name: 'EditTopicInput',
   definition(t) {
-    t.int('categoryId');
-    t.string('featureLink'); //still not sure about the type of this var
-    t.string('tags', { list: true });
-    t.string('title');
+    t.nullable.int('categoryId');
+    t.nullable.string('featureLink'); // TODO: still not sure about the type of this var
+    t.nullable.list.string('tags');
+    t.nullable.string('title');
   },
 });

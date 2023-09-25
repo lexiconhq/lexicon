@@ -1,16 +1,19 @@
 import { LazyQueryHookOptions } from '@apollo/client';
 
-import { LookupUrls, LookupUrlsVariables } from '../../generated/server/Topics';
-import { LOOKUP_URLS } from '../../graphql/server/topics';
+import {
+  LookupUrlsQuery,
+  LookupUrlsQueryVariables,
+  LookupUrlsDocument,
+} from '../../generated/server';
 import { useLazyQuery } from '../../utils';
 
 export function useLookupUrls(
-  options?: LazyQueryHookOptions<LookupUrls, LookupUrlsVariables>,
+  options?: LazyQueryHookOptions<LookupUrlsQuery, LookupUrlsQueryVariables>,
 ) {
-  const [getImageUrls] = useLazyQuery<LookupUrls, LookupUrlsVariables>(
-    LOOKUP_URLS,
-    { ...options },
-  );
+  const [getImageUrls, { loading }] = useLazyQuery<
+    LookupUrlsQuery,
+    LookupUrlsQueryVariables
+  >(LookupUrlsDocument, { ...options });
 
-  return { getImageUrls };
+  return { getImageUrls, loading };
 }

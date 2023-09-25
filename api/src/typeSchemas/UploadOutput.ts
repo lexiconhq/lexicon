@@ -1,4 +1,4 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let UploadOutput = objectType({
   name: 'UploadOutput',
@@ -13,9 +13,9 @@ export let UploadOutput = objectType({
     t.int('thumbnailHeight');
     t.string('extension');
     t.string('shortUrl');
-    t.string('shortPath', { nullable: true });
+    t.nullable.string('shortPath');
     t.string('humanFilesize');
-    t.int('retainHours', { nullable: true });
-    t.int('token', { nullable: true });
+    t.nullable.int('retainHours');
+    t.nullable.int('token');
   },
 });

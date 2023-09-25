@@ -1,0 +1,58 @@
+diff --git a/node_modules/react-native-skeleton-placeholder/lib/skeleton-placeholder.js b/node_modules/react-native-skeleton-placeholder/lib/skeleton-placeholder.js
+index 353abb6..6370a37 100644
+--- a/node_modules/react-native-skeleton-placeholder/lib/skeleton-placeholder.js
++++ b/node_modules/react-native-skeleton-placeholder/lib/skeleton-placeholder.js
+@@ -36,7 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
+ const masked_view_1 = __importDefault(require("@react-native-masked-view/masked-view"));
+ const React = __importStar(require("react"));
+ const react_native_1 = require("react-native");
+-const react_native_linear_gradient_1 = __importDefault(require("react-native-linear-gradient"));
++const LinearGradient = require('expo-linear-gradient').LinearGradient;
+ const WINDOW_WIDTH = react_native_1.Dimensions.get('window').width;
+ const logEnabled = false;
+ const SkeletonPlaceholder = ({ children, enabled = true, backgroundColor = '#E1E9EE', highlightColor = '#F2F8FC', speed = 800, direction = 'right', borderRadius, shimmerWidth, }) => {
+@@ -56,18 +56,23 @@ const SkeletonPlaceholder = ({ children, enabled = true, backgroundColor = '#E1E
+         return () => loop.stop();
+     }, [isAnimationReady, speed]);
+     const animatedGradientStyle = React.useMemo(() => {
+-        const animationWidth = WINDOW_WIDTH + (shimmerWidth !== null && shimmerWidth !== void 0 ? shimmerWidth : 0);
+-        return Object.assign(Object.assign({}, react_native_1.StyleSheet.absoluteFillObject), { flexDirection: 'row', transform: [
+-                {
+-                    translateX: animatedValueRef.current.interpolate({
+-                        inputRange: [0, 1],
+-                        outputRange: direction === 'right'
+-                            ? [-animationWidth, animationWidth]
+-                            : [animationWidth, -animationWidth],
+-                    }),
+-                },
+-            ] });
+-    }, [direction, WINDOW_WIDTH, shimmerWidth]);
++        const animationWidth = (layout?.width || 0) + (shimmerWidth !== null && shimmerWidth !== undefined ? shimmerWidth : 0);
++        return {
++          ...react_native_1.StyleSheet.absoluteFillObject,
++          flexDirection: 'row',
++          transform: [
++            {
++              translateX: animatedValueRef.current.interpolate({
++                inputRange: [0, 1],
++                outputRange: direction === 'right'
++                  ? [-animationWidth, animationWidth]
++                  : [animationWidth, -animationWidth],
++              }),
++            },
++          ],
++          width: animationWidth,
++        };
++    }, [direction, layout?.width, shimmerWidth]);
+     const placeholders = React.useMemo(() => {
+         if (!enabled)
+             return null;
+@@ -86,7 +91,7 @@ const SkeletonPlaceholder = ({ children, enabled = true, backgroundColor = '#E1E
+       <react_native_1.View style={[react_native_1.StyleSheet.absoluteFill, { backgroundColor }]}/>
+ 
+       {isAnimationReady && highlightColor !== undefined && transparentColor !== undefined && (<react_native_1.Animated.View style={animatedGradientStyle}>
+-          <react_native_linear_gradient_1.default {...getGradientProps(shimmerWidth)} colors={[transparentColor, highlightColor, transparentColor]}/>
++          <LinearGradient {...getGradientProps(shimmerWidth)} colors={[transparentColor, highlightColor, transparentColor]}/>
+         </react_native_1.Animated.View>)}
+     </masked_view_1.default>);
+ };

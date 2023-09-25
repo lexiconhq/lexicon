@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import {
   Alert,
   Platform,
@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useFormContext } from 'react-hook-form';
 import { useDebouncedCallback } from 'use-debounce';
 
 import {
@@ -29,7 +29,7 @@ import {
   TextInput,
   TextInputType,
 } from '../core-ui';
-import { UploadTypeEnum } from '../generated/server/types';
+import { UploadTypeEnum } from '../generated/server';
 import {
   bottomMenu,
   createReactNativeFile,
@@ -37,11 +37,12 @@ import {
   formatExtensions,
   getHyperlink,
   insertHyperlink,
+  insertImageUploadStatus,
   mentionHelper,
   newPostIsValid,
-  reformatMarkdownAfterUpload,
-  reformatMarkdownBeforeUpload,
+  getReplacedImageUploadStatus,
   useStorage,
+  parseInt,
 } from '../helpers';
 import {
   useKASVWorkaround,
@@ -58,12 +59,7 @@ import {
   RootStackRouteProp,
 } from '../types';
 import { useModal } from '../utils';
-import { isNoChannelFilter } from '../constants';
-
-type Form = {
-  title: string;
-  raw: string;
-};
+import { NO_CHANNEL_FILTER, isNoChannelFilter } from '../constants';
 
 export default function NewPost() {
   const { modal, setModal } = useModal();
@@ -74,44 +70,88 @@ export default function NewPost() {
   const user = storage.getItem('user');
   const channels = storage.getItem('channels');
 
-  const {
-    canCreateTag,
-    canTagTopics,
-    authorizedExtensions,
-    uncategorizedCategoryId,
-  } = useSiteSettings();
+  const defaultChannelId = channels?.[0].id || NO_CHANNEL_FILTER.id;
+
+  const { canCreateTag, canTagTopics, authorizedExtensions } = useSiteSettings({
+    onCompleted: ({
+      site: {
+        defaultComposerCategory,
+        allowUncategorizedTopics,
+        uncategorizedCategoryId,
+      },
+    }) => {
+      if (isNoChannelFilter(selectedChannel)) {
+        const parsed = parseInt(defaultComposerCategory);
+        if (parsed) {
+          setValue('channelId', parsed);
+        } else {
+          setValue(
+            'channelId',
+            allowUncategorizedTopics
+              ? uncategorizedCategoryId
+              : defaultChannelId,
+          );
+        }
+      }
+    },
+  });
+
   const extensions = authorizedExtensions?.split('|');
   const normalizedExtensions = formatExtensions(extensions);
 
   const ios = Platform.OS === 'ios';
 
-  const DEFAULT_CHANNEL_ID = channels?.[0].id || 1;
-
   const navigation = useNavigation<RootStackNavProp<'NewPost'>>();
   const { navigate, goBack } = navigation;
 
+  let { params } = useRoute<RootStackRouteProp<'NewPost'>>();
   let {
-    params: {
-      selectedChannelId = DEFAULT_CHANNEL_ID,
-      selectedTagsIds = [],
-      oldContent = '',
-      oldTitle = '',
-      oldChannel = DEFAULT_CHANNEL_ID,
-      oldTags = [],
-      editPostId,
-      editTopicId,
-      editedUser,
-      hyperlinkUrl = '',
-      hyperlinkTitle = '',
-      imageUri = '',
-    },
-  } = useRoute<RootStackRouteProp<'NewPost'>>();
+    oldContent,
+    oldTitle,
+    oldChannel,
+    oldTags,
+    editedUser,
+    hyperlinkUrl,
+    hyperlinkTitle,
+    imageUri,
+  } = useMemo(() => {
+    return {
+      oldContent: params?.oldContent || '',
+      oldTitle: params?.oldTitle || '',
+      oldChannel: params?.oldChannel || defaultChannelId,
+      oldTags: params?.oldTags || [],
+      editedUser: params?.editedUser,
+      hyperlinkUrl: params?.hyperlinkUrl || '',
+      hyperlinkTitle: params?.hyperlinkTitle || '',
+      imageUri: params?.imageUri || '',
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params]);
 
-  const [selectedChannel, setSelectedChannel] = useState(1);
-  const [selectedTags, setSelectedTags] = useState<Array<string>>([]);
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    getValues,
+    watch,
+    reset: resetForm,
+  } = useFormContext();
+
+  /**
+   * Using the watch function to update the values of the channel and tags fields when changes occur in the form.
+   * This prevents a bug where, after selecting a channel in the channel scene, the value of selectedChannel does not change because it does not trigger a re-render.
+   */
+
+  const selectedChannel: number = watch('channelId');
+  const selectedTags: Array<string> = watch('tags');
+  const editPostId: number = getValues('editPostId');
+  const editTopicId: number = getValues('editTopicId');
+
   const [imagesArray, setImagesArray] = useState<Array<Image>>([]);
   const [uri, setUri] = useState('');
-  const [isValid, setValid] = useState(false);
+  const [postValidity, setPostValidity] = useState(false);
+  const [editPostType, setEditPostType] = useState('');
   const [isKeyboardShow, setKeyboardShow] = useState(false);
   const [showLeftMenu, setShowLeftMenu] = useState(true);
   const [cursorPosition, setCursorPosition] = useState<CursorPosition>({
@@ -127,12 +167,15 @@ export default function NewPost() {
 
   const debounced = useDebouncedCallback((value, token) => {
     if (imagesArray[token - 1]) {
-      reformatMarkdownAfterUpload(value, imagesArray, token, setValue);
+      let newText = getReplacedImageUploadStatus(
+        value,
+        token,
+        imagesArray[token - 1].link,
+      );
+
+      setValue('raw', newText);
     }
   }, 1500);
-
-  const { control, handleSubmit, errors, setValue, getValues, formState } =
-    useForm<Form>({ mode: 'onChange', reValidateMode: 'onChange' });
 
   const kasv = useKASVWorkaround();
 
@@ -152,15 +195,6 @@ export default function NewPost() {
     setUri(imageUri);
   }, [imageUri]);
 
-  useEffect(() => {
-    setSelectedChannel(
-      isNoChannelFilter(selectedChannelId)
-        ? uncategorizedCategoryId || 1
-        : selectedChannelId,
-    );
-    setSelectedTags(selectedTagsIds);
-  }, [uncategorizedCategoryId, selectedChannelId, selectedTagsIds]);
-
   const { mentionMembers } = useMention(
     mentionKeyword,
     showUserList,
@@ -177,10 +211,7 @@ export default function NewPost() {
   }, [getValues, setValue, hyperlinkUrl, hyperlinkTitle]);
 
   const onPressSelectChannel = () => {
-    navigate('Channels', {
-      prevScreen: 'NewPost',
-      selectedChannelId: selectedChannelId,
-    });
+    navigate('Channels', { prevScreen: 'NewPost' });
   };
 
   const getPostData = () => {
@@ -191,12 +222,12 @@ export default function NewPost() {
       channelId: selectedChannel,
       tagIds: selectedTags,
       createdAt: new Date().toISOString(),
+      topicId: editTopicId,
     };
   };
 
   const onPressSelectTags = () => {
     navigate('Tags', {
-      selectedTagsIds,
       canCreateTag: canCreateTag || false,
     });
   };
@@ -205,8 +236,14 @@ export default function NewPost() {
     navigate('PostPreview', {
       reply: false,
       postData: getPostData(),
-      editPostId,
-      editTopicId,
+      editPostId:
+        editPostType === 'Post' || editPostType === 'Both'
+          ? editPostId
+          : undefined,
+      editTopicId:
+        editPostType === 'Topic' || editPostType === 'Both'
+          ? editTopicId
+          : undefined,
       editedUser,
       focusedPostNumber: editTopicId ? 1 : undefined,
     });
@@ -233,12 +270,12 @@ export default function NewPost() {
     setCurrentUploadToken(currentUploadToken + 1);
     const reactNativeFile = createReactNativeFile(uri);
     const { raw } = getValues();
-    reformatMarkdownBeforeUpload(
+    let result = insertImageUploadStatus(
       raw,
       cursorPosition.start,
-      imagesArray,
-      setValue,
+      imagesArray.length + 1,
     );
+    setValue('raw', result);
     upload({
       variables: {
         file: reactNativeFile,
@@ -269,19 +306,21 @@ export default function NewPost() {
     navigate(screen, params);
   };
 
-  const { onInsertImage, onInsertLink } = bottomMenu(
+  const { onInsertImage, onInsertLink } = bottomMenu({
     isKeyboardShow,
     user,
-    onNavigate,
-    'NewPost',
-    normalizedExtensions,
-  );
+    navigate: onNavigate,
+    prevScreen: 'NewPost',
+    extensions: normalizedExtensions,
+  });
 
   useEffect(() => {
     const { title, raw: content } = getValues();
-    let isValid;
-    if (editTopicId) {
-      isValid = existingPostIsValid(
+
+    let currentPostValidity; // temp variable to get the value of existingPostIsValid or newPostIsValid helper
+
+    if (editTopicId || editPostId) {
+      currentPostValidity = existingPostIsValid(
         uploadsInProgress,
         title,
         oldTitle,
@@ -292,12 +331,16 @@ export default function NewPost() {
         selectedTags,
         oldTags,
       );
+
+      setPostValidity(currentPostValidity.isValid);
+      setEditPostType(currentPostValidity.editType);
     } else {
-      isValid = newPostIsValid(title, content, uploadsInProgress);
+      currentPostValidity = newPostIsValid(title, content, uploadsInProgress);
+      setPostValidity(currentPostValidity);
     }
-    setValid(isValid);
   }, [
     editTopicId,
+    editPostId,
     getValues,
     oldChannel,
     oldContent,
@@ -311,10 +354,7 @@ export default function NewPost() {
   useEffect(
     () =>
       navigation.addListener('beforeRemove', (e) => {
-        if (
-          (!isValid || !formState.isValid || !modal) &&
-          uploadsInProgress < 1
-        ) {
+        if ((!postValidity || !modal) && uploadsInProgress < 1) {
           return;
         }
         e.preventDefault();
@@ -325,32 +365,48 @@ export default function NewPost() {
             { text: t('Cancel') },
             {
               text: t('Discard'),
-              onPress: () => navigation.dispatch(e.data.action),
+              onPress: () => {
+                resetForm();
+                navigation.dispatch(e.data.action);
+              },
             },
           ],
         );
       }),
-    [formState.isValid, isValid, modal, navigation, uploadsInProgress],
+    [postValidity, modal, navigation, uploadsInProgress, resetForm],
   );
+
+  const setMentionValue = (text: string) => {
+    setValue('raw', text);
+  };
 
   const Header = () =>
     ios ? (
       <ModalHeader
-        title={editTopicId ? t('Edit Post') : t('New Post')}
-        left={<HeaderItem label={t('Cancel')} left onPressItem={goBack} />}
+        title={editTopicId || editPostId ? t('Edit Post') : t('New Post')}
+        left={
+          <HeaderItem
+            label={t('Cancel')}
+            left
+            onPressItem={() => {
+              resetForm();
+              goBack();
+            }}
+          />
+        }
         right={
           <HeaderItem
             label={t('Next')}
             onPressItem={doneCreatePost}
-            disabled={!isValid}
+            disabled={!postValidity}
           />
         }
       />
     ) : (
       <CustomHeader
-        title={editTopicId ? t('Edit Post') : t('New Post')}
+        title={editTopicId || editPostId ? t('Edit Post') : t('New Post')}
         rightTitle={t('Next')}
-        disabled={!isValid}
+        disabled={!postValidity}
         onPressRight={doneCreatePost}
       />
     );
@@ -369,7 +425,7 @@ export default function NewPost() {
                 mentionLoading={mentionLoading}
                 rawText={getValues('raw')}
                 textRef={newPostRef}
-                setMentionValue={setValue}
+                setMentionValue={setMentionValue}
                 setShowUserList={setShowUserList}
               />
               <BottomMenu
@@ -387,16 +443,18 @@ export default function NewPost() {
                 defaultValue={oldTitle}
                 rules={{ required: true }}
                 control={control}
-                render={({ onChange, value }) => (
+                render={({ field: { onChange, value } }) => (
                   <TextInput
                     value={value}
                     label={t('Title')}
                     placeholder={t("What's on your mind?")}
                     onChangeText={(text) => {
                       const { raw: content } = getValues();
-                      let isValid;
-                      if (editTopicId) {
-                        isValid = existingPostIsValid(
+
+                      let currentPostValidity; // temp variable to get the value of existingPostIsValid or newPostIsValid helper
+
+                      if (editTopicId || editPostId) {
+                        currentPostValidity = existingPostIsValid(
                           uploadsInProgress,
                           text,
                           oldTitle,
@@ -407,14 +465,16 @@ export default function NewPost() {
                           selectedTags,
                           oldTags,
                         );
+                        setPostValidity(currentPostValidity.isValid);
+                        setEditPostType(currentPostValidity.editType);
                       } else {
-                        isValid = newPostIsValid(
+                        currentPostValidity = newPostIsValid(
                           text,
                           content,
                           uploadsInProgress,
                         );
+                        setPostValidity(currentPostValidity);
                       }
-                      setValid(isValid);
                       onChange(text);
                     }}
                     onFocus={() => setShowLeftMenu(false)}
@@ -509,7 +569,7 @@ export default function NewPost() {
               defaultValue={oldContent}
               rules={{ required: true }}
               control={control}
-              render={({ onChange, value }) => (
+              render={({ field: { onChange, value } }) => (
                 <TextArea
                   value={value}
                   isKeyboardShow={isKeyboardShow}
@@ -525,10 +585,13 @@ export default function NewPost() {
                     );
                     onChange(text);
                     debounced(text, currentUploadToken);
+
                     const { title } = getValues();
-                    let isValid;
-                    if (editTopicId) {
-                      isValid = existingPostIsValid(
+
+                    let currentPostValidity; // temp variable to get the value of existingPostIsValid or newPostIsValid helper
+
+                    if (editTopicId || editPostId) {
+                      currentPostValidity = existingPostIsValid(
                         uploadsInProgress,
                         title,
                         oldTitle,
@@ -539,10 +602,16 @@ export default function NewPost() {
                         selectedTags,
                         oldTags,
                       );
+                      setPostValidity(currentPostValidity.isValid);
+                      setEditPostType(currentPostValidity.editType);
                     } else {
-                      isValid = newPostIsValid(title, text, uploadsInProgress);
+                      currentPostValidity = newPostIsValid(
+                        title,
+                        text,
+                        uploadsInProgress,
+                      );
+                      setPostValidity(currentPostValidity);
                     }
-                    setValid(isValid);
                   }}
                   onFocus={(event) => {
                     kasv.scrollToFocusedInput(event);

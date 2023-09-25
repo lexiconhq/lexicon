@@ -1,6 +1,6 @@
 import camelcaseKeys from 'camelcase-keys';
 import FormData from 'form-data';
-import { FieldResolver, mutationField, arg, intArg } from '@nexus/schema';
+import { FieldResolver, mutationField, arg, intArg, nullable } from 'nexus';
 
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';
@@ -14,9 +14,10 @@ export let uploadResolver: FieldResolver<'Mutation', 'upload'> = async (
     throw new Error('Upload avatar must include user id.');
   }
   const form = new FormData();
-  let { createReadStream } = await file;
-  let fileStream = createReadStream();
-  form.append('files[]', fileStream);
+
+  const fileBuffer = Buffer.from(await file.arrayBuffer());
+
+  form.append('files[]', fileBuffer, file.name);
   form.append('type', type);
   if (userId) {
     form.append('user_id', userId);
@@ -41,10 +42,10 @@ export let uploadResolver: FieldResolver<'Mutation', 'upload'> = async (
 export let uploadMutation = mutationField('upload', {
   type: 'UploadOutput',
   args: {
-    file: arg({ type: 'Upload', required: true }),
-    type: arg({ type: 'UploadTypeEnum', required: true }),
-    userId: intArg(),
-    token: intArg(),
+    file: arg({ type: 'File' }),
+    type: arg({ type: 'UploadTypeEnum' }),
+    userId: nullable(intArg()),
+    token: nullable(intArg()),
   },
   resolve: uploadResolver,
 });

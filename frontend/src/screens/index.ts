@@ -8,8 +8,8 @@ import EmailAddress from './EmailAddress/EmailAddress';
 import FlagPost from './FlagPost';
 import Home from './Home/Home';
 import Hyperlink from './Hyperlink';
-import ImagePreview from './MessageDetail/ImagePreview';
 import InstanceLoading from './InstanceLoading';
+import ImagePreview from './MessageDetail/ImagePreview';
 import Login from './Login';
 import MessageDetail from './MessageDetail/MessageDetail';
 import Messages from './Messages/Messages';
@@ -23,12 +23,14 @@ import PostPreview from './PostPreview';
 import PostReply from './PostReply';
 import Preferences from './Preferences/Preferences';
 import Profile from './Profile/Profile';
+import PushNotifications from './Preferences/PushNotifications';
 import Register from './Register';
 import Search from './Search';
 import SelectUser from './SelectUser/SelectUser';
 import Tags from './Tags/Tags';
 import TwoFactorAuth from './TwoFactorAuth';
 import UserInformation from './UserInformation';
+import Troubleshoot from './Troubleshoot';
 
 export {
   Activity,
@@ -41,8 +43,8 @@ export {
   FlagPost,
   Home,
   Hyperlink,
-  ImagePreview,
   InstanceLoading,
+  ImagePreview,
   Login,
   MessageDetail,
   Messages,
@@ -56,10 +58,12 @@ export {
   PostReply,
   Preferences,
   Profile,
+  PushNotifications,
   Register,
   Search,
   SelectUser,
   Tags,
   TwoFactorAuth,
   UserInformation,
+  Troubleshoot,
 };

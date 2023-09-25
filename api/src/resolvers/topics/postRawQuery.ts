@@ -1,7 +1,10 @@
-import camelcaseKey from 'camelcase-keys';
-import { FieldResolver, queryField, intArg } from '@nexus/schema';
+import { FieldResolver, queryField, intArg } from 'nexus';
 
-import { errorHandler, getMention, getPostImageUrl } from '../../helpers';
+import {
+  errorHandler,
+  generateMarkdownContent,
+  getMention,
+} from '../../helpers';
 import { Context } from '../../types';
 import { ACCEPTED_LANGUAGE } from '../../constants';
 
@@ -11,13 +14,8 @@ export const postRawQueryResolver: FieldResolver<'Query', 'postRaw'> = async (
   context: Context,
 ) => {
   const config = {
-    headers: {
-      'Accept-Language': ACCEPTED_LANGUAGE,
-    },
-    params: {
-      // eslint-disable-next-line @typescript-eslint/camelcase
-      include_raw: true,
-    },
+    headers: { 'Accept-Language': ACCEPTED_LANGUAGE },
+    params: { include_raw: true },
   };
 
   try {
@@ -29,12 +27,9 @@ export const postRawQueryResolver: FieldResolver<'Query', 'postRaw'> = async (
       data: { cooked },
     } = await context.client.get(urlCooked);
 
-    let listOfCooked = getPostImageUrl(cooked) ?? [];
-    let listOfMention = getMention(cooked) ?? [];
-
-    let postResult = { raw, listOfCooked, listOfMention };
-
-    return camelcaseKey(postResult, { deep: true });
+    const markdownContent = generateMarkdownContent(raw, cooked);
+    const mentions = getMention(cooked) ?? [];
+    return { raw, markdownContent, mentions };
   } catch (error) {
     throw errorHandler(error);
   }
@@ -42,6 +37,6 @@ export const postRawQueryResolver: FieldResolver<'Query', 'postRaw'> = async (
 
 export const postRawQuery = queryField('postRaw', {
   type: 'PostRaw',
-  args: { postId: intArg({ required: true }) },
+  args: { postId: intArg() },
   resolve: postRawQueryResolver,
 });

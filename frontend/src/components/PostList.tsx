@@ -1,90 +1,54 @@
-import React, { forwardRef } from 'react';
-import {
-  RefreshControl,
-  VirtualizedList,
-  VirtualizedListProps,
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, { MutableRefObject } from 'react';
+import { FlatListProps, RefreshControl, ListRenderItem } from 'react-native';
+import Animated from 'react-native-reanimated';
 
+import { UserActionFragment } from '../generated/server';
 import { makeStyles, useTheme } from '../theme';
-import { Post, StackNavProp } from '../types';
-import { useUserEvent } from '../utils';
+import { Post, PostWithoutId } from '../types';
 
-import { PostItem } from './PostItem';
-
-type Props = Omit<VirtualizedListProps<Post>, 'data' | 'renderItem'> & {
-  data?: Array<Post>;
-  hasFooter?: boolean;
-  numberOfLines?: number;
-  showImageRow?: boolean;
-  prevScreen?: string;
-  onPressReply?: (postId: number) => void;
-  likedTopic?: Array<number>;
-  showLabel?: boolean;
-  currentUser?: string;
-  onRefresh?: () => void;
+// TODO: Avoid prop drilling #775
+type Props<T> = Omit<FlatListProps<T>, 'data' | 'renderItem'> & {
   refreshing: boolean;
+  renderItem: ListRenderItem<T>;
+  data?: Array<T>;
+  onRefresh?: () => void;
+  postListRef?: MutableRefObject<PostListRef<T> | null>;
 };
 
-type Ref = VirtualizedList<Post>;
-
-export { Ref as PostListRef };
-
-export const PostList = forwardRef<Ref, Props>((props, ref) => {
-  const { navigate } = useNavigation<StackNavProp<'UserInformation'>>();
+type PostListRef<T> = Animated.FlatList<T>;
+type ItemType = PostWithoutId | Post | UserActionFragment;
+function PostList<T extends ItemType>(props: Props<T>) {
   const styles = useStyles();
   const { colors } = useTheme();
 
-  const { onStartScroll, onStopScroll } = useUserEvent();
-
   const {
     data,
-    showLabel,
-    currentUser,
-    hasFooter = true,
-    numberOfLines = 0,
-    showImageRow = false,
+    postListRef,
     style,
-    prevScreen,
-    onPressReply,
     refreshing,
-    onRefresh,
-    likedTopic,
     progressViewOffset = 0,
+    onRefresh,
     ...otherProps
   } = props;
 
-  const onPressAuthor = (username: string) => {
-    navigate('UserInformation', { username });
+  const keyExtractor = (item: ItemType) => {
+    if ('actionType' in item) {
+      return `post-${item.postId}-topic-${item.topicId}-actionType-${item.actionType}}`;
+    }
+    if ('id' in item) {
+      return `post-${item.id}`;
+    }
+    return `topic-${item.topicId}`;
   };
 
-  const getItem = (data: Array<Post>, index: number) => data[index];
-
-  const getItemCount = (data: Array<Post>) => data.length;
-
-  const keyExtractor = ({ id, topicId }: Post) =>
-    `post-${id === 0 ? topicId : id}`;
-
-  const renderItem = ({ item }: { item: Post }) => (
-    <PostItem
-      data={item}
-      postList={true}
-      showLabel={showLabel}
-      currentUser={currentUser}
-      hasFooter={hasFooter}
-      showImageRow={showImageRow}
-      style={styles.item}
-      numberOfLines={numberOfLines}
-      prevScreen={prevScreen}
-      onPressReply={onPressReply}
-      onPressAuthor={onPressAuthor}
-      likedTopic={likedTopic}
-    />
-  );
-
   return (
-    <VirtualizedList
-      ref={ref}
+    /**
+     * Migrated to animated.flatlist to fix onEndReached not triggered when we still use
+     * VirtualizedList with injected Animated.ScrollView on renderScrollComponent props.
+     * https://github.com/kodefox/lexicon/pull/923#issuecomment-1408529189
+     */
+    <Animated.FlatList
+      ref={postListRef}
       data={data}
       refreshControl={
         <RefreshControl
@@ -94,12 +58,7 @@ export const PostList = forwardRef<Ref, Props>((props, ref) => {
           progressViewOffset={progressViewOffset}
         />
       }
-      onScrollBeginDrag={onStartScroll}
-      onScrollEndDrag={onStopScroll}
       keyExtractor={keyExtractor}
-      getItem={getItem}
-      getItemCount={getItemCount}
-      renderItem={renderItem}
       initialNumToRender={5}
       maxToRenderPerBatch={7}
       windowSize={10}
@@ -107,13 +66,10 @@ export const PostList = forwardRef<Ref, Props>((props, ref) => {
       {...otherProps}
     />
   );
-});
-
-const useStyles = makeStyles(({ spacing }) => ({
+}
+export { PostList, PostListRef };
+const useStyles = makeStyles(() => ({
   container: {
     flexGrow: 1,
-  },
-  item: {
-    marginBottom: spacing.m,
   },
 }));

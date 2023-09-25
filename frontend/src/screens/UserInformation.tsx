@@ -8,19 +8,13 @@ import {
   Markdown,
   PostList,
   ShowImageModal,
+  UserInformationPostItem,
 } from '../components';
-import { DEFAULT_CHANNEL } from '../constants';
 import { Avatar, Button, Text } from '../core-ui';
-import { TopicsSortEnum } from '../generated/server/types';
-import {
-  anchorToMarkdown,
-  errorHandler,
-  getImage,
-  useStorage,
-} from '../helpers';
-import { useActivity, useProfile, useTopicList } from '../hooks';
+import { errorHandler, getImage, useStorage } from '../helpers';
+import { useActivity, useProfile } from '../hooks';
 import { makeStyles } from '../theme';
-import { Post, StackNavProp, StackRouteProp } from '../types';
+import { StackNavProp, StackRouteProp } from '../types';
 
 export default function UserInformation() {
   const styles = useStyles();
@@ -32,7 +26,6 @@ export default function UserInformation() {
   } = useRoute<StackRouteProp<'UserInformation'>>();
 
   const storage = useStorage();
-  const channels = storage.getItem('channels');
   const currentUser = storage.getItem('user')?.username;
 
   const [show, setShow] = useState<boolean>();
@@ -54,56 +47,16 @@ export default function UserInformation() {
   const bio = profileData?.userProfile.user.bioRaw;
   const splittedBio = bio ? bio.split(/\r\n|\r|\n/) : [''];
 
-  const {
-    data: topicsData,
-    loading: topicsLoading,
-    error: topicsError,
-  } = useTopicList({
-    variables: { sort: TopicsSortEnum.Latest },
-    fetchPolicy: 'network-only',
-  });
-
   const { data, loading, error, networkStatus, refetch, fetchMore } =
     useActivity({ variables: { username: username, offset: 0 } }, 'HIDE_ALERT');
 
   const activities = data?.userActivity ?? [];
-  let postActivities: Array<Post> = activities.map((activity) => {
-    const channel = channels?.find(
-      (channel) => channel.id === activity.categoryId,
-    );
-    let topic;
-    const listedTopics = topicsData?.topics.topicList;
-    if (listedTopics?.topics) {
-      topic = listedTopics.topics.find(
-        (topic) => topic.id === activity.topicId,
-      );
-    }
-    const { content, imageUrl, mentionedUsers } = anchorToMarkdown(
-      activity.excerpt,
-    );
-
-    return {
-      ...activity,
-      id: activity.postId ?? 0,
-      content,
-      images: imageUrl ? [imageUrl] : undefined,
-      avatar: getImage(activity.avatarTemplate),
-      viewCount: 0,
-      replyCount: 0,
-      likeCount: 0,
-      isLiked: activity.actionType === 1,
-      channel: channel || DEFAULT_CHANNEL,
-      tags: topic?.tags || [],
-      freqPosters: [],
-      mentionedUsers,
-    };
-  });
 
   const onEndReached = (distanceFromEnd: number) => {
     if (distanceFromEnd === 0) {
       return;
     }
-    fetchMore({ variables: { offset: postActivities.length } });
+    fetchMore({ variables: { offset: activities.length } });
   };
 
   const onRefresh = () => {
@@ -113,10 +66,7 @@ export default function UserInformation() {
   };
 
   const onPressCancel = () => {
-    if (!show) {
-      setShow(true);
-    }
-    setTimeout(() => setShow(false), 50);
+    setShow(false);
   };
 
   const onPressNewMessage = () => {
@@ -126,11 +76,9 @@ export default function UserInformation() {
     });
   };
 
-  if (error || topicsError || profileError) {
+  if (error || profileError) {
     let errorMessage = error
       ? errorHandler(error, true)
-      : topicsError
-      ? errorHandler(topicsError, true)
       : profileError
       ? errorHandler(profileError, true)
       : undefined;
@@ -138,12 +86,8 @@ export default function UserInformation() {
   }
 
   if (
-    ((loading ||
-      topicsLoading ||
-      profileLoading ||
-      (data && data.userActivity.length !== 0)) &&
-      postActivities.length < 1) ||
-    topicsData?.topics.topicList?.topics?.length === undefined
+    (loading || profileLoading || (data && data.userActivity.length !== 0)) &&
+    activities.length < 1
   ) {
     return <LoadingOrError loading />;
   }
@@ -184,7 +128,7 @@ export default function UserInformation() {
             )}
             {
               // TODO: This LoC is meant for the next phase
-              /* <View style={styles.buttonDivider} /> 
+              /* <View style={styles.buttonDivider} />
         <Button
           content={t('Badges')}
           style={styles.whiteButton}
@@ -202,22 +146,28 @@ export default function UserInformation() {
   };
 
   let content;
-  if (postActivities.length !== 0) {
+  if (activities.length !== 0) {
     content = (
       <PostList
         ListHeaderComponent={<Header />}
-        data={postActivities}
-        showLabel={true}
-        currentUser={username}
+        data={activities}
         onRefresh={onRefresh}
         refreshing={networkStatus === 4 || refreshing}
         scrollEventThrottle={16}
         alwaysBounceVertical={true}
-        hasFooter={false}
         style={styles.fill}
-        showImageRow
         onEndReachedThreshold={0.1}
         onEndReached={({ distanceFromEnd }) => onEndReached(distanceFromEnd)}
+        renderItem={({ item }) => {
+          return (
+            <UserInformationPostItem
+              topicId={item.topicId}
+              postId={item.postId}
+              actionType={item.actionType}
+              currentUser={username}
+            />
+          );
+        }}
       />
     );
   } else {
@@ -234,13 +184,11 @@ export default function UserInformation() {
   return (
     <View style={styles.container}>
       {content}
-      {show && (
-        <ShowImageModal
-          show={show}
-          userImage={{ uri: userImage }}
-          onPressCancel={onPressCancel}
-        />
-      )}
+      <ShowImageModal
+        show={show || false}
+        userImage={{ uri: userImage }}
+        onPressCancel={onPressCancel}
+      />
     </View>
   );
 }

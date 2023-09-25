@@ -1,6 +1,6 @@
 import camelcaseKey from 'camelcase-keys';
 import snakecaseKey from 'snakecase-keys';
-import { FieldResolver, mutationField, arg, intArg } from '@nexus/schema';
+import { FieldResolver, mutationField, arg, intArg } from 'nexus';
 
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';
@@ -33,8 +33,8 @@ export let editTopicMutation: FieldResolver<'Mutation', 'editTopic'> = async (
 export let editTopic = mutationField('editTopic', {
   type: 'BasicTopic',
   args: {
-    topicInput: arg({ type: 'EditTopicInput', required: true }),
-    topicId: intArg({ required: true }),
+    topicInput: arg({ type: 'EditTopicInput' }),
+    topicId: intArg(),
   },
   resolve: editTopicMutation,
 });

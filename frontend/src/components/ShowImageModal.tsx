@@ -1,6 +1,4 @@
 import React from 'react';
-import { Modal, View } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
 
 import CachedImage from '../core-ui/CachedImage';
 import { makeStyles } from '../theme';
@@ -17,31 +15,17 @@ export function ShowImageModal(props: Props) {
   const { show, userImage, onPressCancel } = props;
 
   return (
-    <Modal
+    <CachedImage
+      isBackground
+      source={userImage}
+      style={styles.imageDetail}
       visible={show}
-      presentationStyle="overFullScreen"
-      transparent
-      statusBarTranslucent
-      onRequestClose={onPressCancel}
-    >
-      <View style={styles.modalContainer}>
-        <StatusBar style={'light'} />
-        <CachedImage
-          isBackground
-          source={userImage}
-          style={styles.imageDetail}
-          visible={show}
-          setVisible={onPressCancel}
-        />
-      </View>
-    </Modal>
+      setVisible={onPressCancel}
+    />
   );
 }
 
 const useStyles = makeStyles(() => ({
-  modalContainer: {
-    flexGrow: 1,
-  },
   imageDetail: {
     flexGrow: 1,
   },

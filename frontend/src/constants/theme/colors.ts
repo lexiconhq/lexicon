@@ -24,6 +24,10 @@ export const BASE_COLORS = {
   white20: '#5A5E63',
   royalBlue: '#2B6AFF',
   bittersweet: '#FD6565',
+  darkerGray: '#E2E2E2',
+  lightGray: '#F2F2F2',
+  mustardYellow: '#CC9619',
+  lightYellow: '#FAF4E7',
 };
 
 export const FUNCTIONAL_COLORS = {
@@ -36,6 +40,7 @@ export const FUNCTIONAL_COLORS = {
   lightActionSheetBackground: BASE_COLORS.lilyWhite,
   lightBorder: BASE_COLORS.whiteSmoke,
   lightTransparentBackground: BASE_COLORS.transparentLilyWhite,
+  lightYellowBackground: BASE_COLORS.lightYellow,
 
   darkTextNormal: BASE_COLORS.white100,
   darkTextLighter: BASE_COLORS.white60,
@@ -58,4 +63,9 @@ export const FUNCTIONAL_COLORS = {
   grey: BASE_COLORS.grey,
   pureWhite: BASE_COLORS.pureWhite,
   pureBlack: BASE_COLORS.pureBlack,
+
+  skeletonLoadingBackGround: BASE_COLORS.darkerGray,
+  skeletonLoadingHighlight: BASE_COLORS.lightGray,
+
+  yellowText: BASE_COLORS.mustardYellow,
 };

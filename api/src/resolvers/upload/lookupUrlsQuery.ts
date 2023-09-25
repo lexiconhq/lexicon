@@ -1,5 +1,5 @@
 import camelcaseKeys from 'camelcase-keys';
-import { FieldResolver, queryField, stringArg } from '@nexus/schema';
+import { FieldResolver, list, queryField, stringArg } from 'nexus';
 
 import { ACCEPTED_LANGUAGE, CONTENT_JSON } from '../../constants';
 import { errorHandler } from '../../helpers';
@@ -11,7 +11,6 @@ let lookupUrlsQueryResolver: FieldResolver<'Query', 'lookupUrls'> = async (
   context: Context,
 ) => {
   let body = {
-    // eslint-disable-next-line @typescript-eslint/camelcase
     short_urls: shortUrls,
   };
   const config = {
@@ -35,10 +34,9 @@ let lookupUrlsQueryResolver: FieldResolver<'Query', 'lookupUrls'> = async (
 };
 
 let lookupUrlsQuery = queryField('lookupUrls', {
-  type: 'LookupUrl',
-  list: true,
+  type: list('LookupUrl'),
   args: {
-    shortUrls: stringArg({ required: true, list: true }),
+    shortUrls: list(stringArg()),
   },
   resolve: lookupUrlsQueryResolver,
 });

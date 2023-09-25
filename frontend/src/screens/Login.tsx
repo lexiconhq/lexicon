@@ -7,10 +7,12 @@ import { Controller, useForm } from 'react-hook-form';
 import { DarkLogo, LightLogo } from '../../assets/images';
 import { CustomHeader } from '../components';
 import { Button, Text, TextInput, TextInputType } from '../core-ui';
-import { errorHandler, getImage, setToken, useStorage } from '../helpers';
-import { useLogin, useSiteSettings } from '../hooks';
+import { errorHandler, getImage, useStorage } from '../helpers';
+import { useLogin, usePushNotificationsToken, useSiteSettings } from '../hooks';
 import { makeStyles, useColorScheme } from '../theme';
 import { StackNavProp } from '../types';
+import { useRedirect } from '../utils';
+import { useAuth } from '../utils/AuthProvider';
 
 type Form = {
   email: string;
@@ -23,17 +25,19 @@ export default function Login() {
   const { colorScheme } = useColorScheme();
   const { canSignUp = false } = useSiteSettings();
   const storage = useStorage();
+  const { setTokenState } = useAuth();
   const styles = useStyles();
+  const { redirectPath, setRedirectPath, handleRedirect } = useRedirect();
 
   const [hidePassword, setHidePassword] = useState(true);
 
   const { reset, navigate } = useNavigation<StackNavProp<'Login'>>();
-
+  const { syncToken } = usePushNotificationsToken();
   const { login, loading, error } = useLogin({
-    onCompleted: ({ login: authUser }) => {
+    onCompleted: async ({ login: authUser }) => {
       // eslint-disable-next-line no-underscore-dangle
       if (authUser.__typename === 'LoginOutput') {
-        setToken(authUser.token);
+        setTokenState(authUser.token);
         let { user } = authUser;
         storage.setItem('user', {
           id: user.id,
@@ -41,8 +45,14 @@ export default function Login() {
           name: user.name ?? '',
           avatar: getImage(user.avatar),
         });
+        syncToken();
 
-        reset({ index: 0, routes: [{ name: 'TabNav' }] });
+        if (redirectPath) {
+          handleRedirect();
+          setRedirectPath('');
+        } else {
+          reset({ index: 0, routes: [{ name: 'TabNav' }] });
+        }
         // eslint-disable-next-line no-underscore-dangle
       } else if (authUser.__typename === 'SecondFactorRequired') {
         navigate('TwoFactorAuth', tempUser);
@@ -53,7 +63,12 @@ export default function Login() {
 
   const passwordInputRef = useRef<TextInputType>(null);
 
-  const { control, handleSubmit, errors, formState } = useForm<Form>({
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    formState,
+  } = useForm<Form>({
     mode: 'onChange',
   });
 
@@ -62,8 +77,9 @@ export default function Login() {
     navigate('Register');
   };
 
-  const onSubmit = handleSubmit(({ email, password }) => {
+  const onSubmit = handleSubmit(async ({ email, password }) => {
     Keyboard.dismiss();
+
     tempUser = { email, password };
     login({
       variables: {
@@ -101,7 +117,7 @@ export default function Login() {
           defaultValue=""
           rules={{ required: true }}
           control={control}
-          render={({ onChange, value, onBlur }) => (
+          render={({ field: { onChange, value, onBlur } }) => (
             <TextInput
               label={t('Username or Email Address')}
               placeholder={t('Enter your username or email address')}
@@ -121,7 +137,7 @@ export default function Login() {
           defaultValue=""
           rules={{ required: true }}
           control={control}
-          render={({ onChange, value, onBlur }) => (
+          render={({ field: { onChange, value, onBlur } }) => (
             <TextInput
               inputRef={passwordInputRef}
               label={t('Password')}

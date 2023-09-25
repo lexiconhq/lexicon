@@ -1,5 +1,7 @@
 import { getImage } from '../getUserImage';
 
+jest.mock('expo-linking');
+
 it('should replace the size', () => {
   const url = `www.example.com/user_avatar/wiki.kfox.io/miichael/{size}/15_2.png`;
 

@@ -1,23 +1,36 @@
-import { Post, RootStackParamList, User } from '../types';
+import { RootStackParamList, User } from '../types';
 
 import { errorHandlerAlert } from './errorHandler';
 import { imagePickerHandler } from './imagePickerHandler';
 
-export function bottomMenu(
-  isKeyboardShow: boolean,
-  user: User | null,
+type BottomMenuParams = {
+  isKeyboardShow: boolean;
+  user: User | null;
   navigate: (
     screen: 'PostImagePreview' | 'HyperLink',
     params:
       | RootStackParamList['PostImagePreview']
       | RootStackParamList['HyperLink'],
-  ) => void,
-  prevScreen: 'NewPost' | 'PostReply' | 'NewMessage',
-  extensions?: Array<string>,
-  title?: string,
-  topicId?: number,
-  post?: Post,
-) {
+  ) => void;
+  prevScreen: 'NewPost' | 'PostReply' | 'NewMessage';
+  extensions?: Array<string>;
+  title?: string;
+  topicId?: number;
+  postId?: number;
+  replyToPostId?: number;
+};
+
+export function bottomMenu(params: BottomMenuParams) {
+  let {
+    isKeyboardShow,
+    user,
+    navigate,
+    prevScreen,
+    extensions,
+    title,
+    topicId,
+    replyToPostId,
+  } = params;
   const onInsertImage = async () => {
     if (!isKeyboardShow) {
       return;
@@ -31,6 +44,7 @@ export function bottomMenu(
       navigate('PostImagePreview', {
         imageUri,
         prevScreen,
+        title,
       });
     } catch (unknownError) {
       // TODO: Eventually fix this so the type can resolve to ApolloError as well
@@ -43,7 +57,12 @@ export function bottomMenu(
     if (!isKeyboardShow) {
       return;
     }
-    navigate('HyperLink', { title, id: topicId, post, prevScreen });
+    navigate('HyperLink', {
+      title,
+      id: topicId,
+      replyToPostId,
+      prevScreen,
+    });
   };
 
   return { onInsertImage, onInsertLink };

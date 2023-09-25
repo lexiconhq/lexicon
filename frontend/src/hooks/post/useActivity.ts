@@ -1,24 +1,25 @@
 import { LazyQueryHookOptions, QueryHookOptions } from '@apollo/client';
 
 import {
-  UserActivity as UserActivityType,
-  UserActivityVariables,
-} from '../../generated/server/UserActivity';
-import { USER_ACTIVITY } from '../../graphql/server/userActivity';
+  UserActivityQuery as UserActivityType,
+  UserActivityQueryVariables,
+  UserActivityDocument,
+} from '../../generated/server';
 import { ErrorAlertOptionType } from '../../types';
 import { useLazyQuery, useQuery } from '../../utils';
 
 export function useActivity(
-  options?: QueryHookOptions<UserActivityType, UserActivityVariables>,
+  options?: QueryHookOptions<UserActivityType, UserActivityQueryVariables>,
   errorAlert: ErrorAlertOptionType = 'SHOW_ALERT',
 ) {
   const { data, loading, error, networkStatus, refetch, fetchMore } = useQuery<
     UserActivityType,
-    UserActivityVariables
+    UserActivityQueryVariables
   >(
-    USER_ACTIVITY,
+    UserActivityDocument,
     {
       ...options,
+      fetchPolicy: 'network-only',
     },
     errorAlert,
   );
@@ -27,14 +28,14 @@ export function useActivity(
 }
 
 export function useLazyActivity(
-  options?: LazyQueryHookOptions<UserActivityType, UserActivityVariables>,
+  options?: LazyQueryHookOptions<UserActivityType, UserActivityQueryVariables>,
   errorAlert: ErrorAlertOptionType = 'SHOW_ALERT',
 ) {
   const [getActivity, { data, error }] = useLazyQuery<
     UserActivityType,
-    UserActivityVariables
+    UserActivityQueryVariables
   >(
-    USER_ACTIVITY,
+    UserActivityDocument,
     {
       ...options,
     },

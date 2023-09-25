@@ -1,20 +1,25 @@
-import { useQuery } from '@apollo/client';
+import { QueryHookOptions } from '@apollo/client';
 
-import { DEFAULT_CHANNEL } from '../../constants';
-import { Site } from '../../generated/server/Site';
-import { SITE } from '../../graphql/server/site';
+import { SiteQuery, SiteDocument } from '../../generated/server';
+import { useQuery } from '../../utils';
 
-export function useSiteSettings() {
-  let { data, loading, error, refetch } = useQuery<Site>(SITE, {
-    notifyOnNetworkStatusChange: true,
-  });
+export function useSiteSettings(options?: QueryHookOptions<SiteQuery>) {
+  let { data, loading, error, refetch } = useQuery<SiteQuery>(
+    SiteDocument,
+    {
+      notifyOnNetworkStatusChange: true,
+      nextFetchPolicy: 'cache-and-network',
+      ...options,
+    },
+    'HIDE_ALERT',
+  );
 
   const {
     canTagTopics,
     canCreateTag,
     canSignUp,
     authorizedExtensions,
-    uncategorizedCategoryId = DEFAULT_CHANNEL.id,
+    uncategorizedCategoryId,
     minSearchLength,
     taggingEnabled,
     maxTagLength,
@@ -25,6 +30,8 @@ export function useSiteSettings() {
     fullNameRequired,
     topicFlagTypes,
     postActionTypes,
+    defaultComposerCategory,
+    allowUncategorizedTopics,
   } = data?.site || {};
 
   return {
@@ -43,6 +50,8 @@ export function useSiteSettings() {
     fullNameRequired,
     topicFlagTypes,
     postActionTypes,
+    allowUncategorizedTopics,
+    defaultComposerCategory,
     loading,
     error,
     refetch,

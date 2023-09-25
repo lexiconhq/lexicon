@@ -18,11 +18,15 @@ type Form = {
 export default function AddEmail() {
   const styles = useStyles();
 
-  const { control, handleSubmit, errors, getValues, formState } = useForm<Form>(
-    {
-      mode: 'onChange',
-    },
-  );
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    getValues,
+    formState,
+  } = useForm<Form>({
+    mode: 'onChange',
+  });
 
   const [success, setSuccess] = useState(false);
 
@@ -118,7 +122,7 @@ export default function AddEmail() {
             },
           }}
           control={control}
-          render={({ onChange, value }) => (
+          render={({ field: { onChange, value } }) => (
             <TextInput
               label={t('Email Address')}
               placeholder={t('Insert your email address')}

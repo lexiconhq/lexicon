@@ -1,4 +1,4 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let UserFeaturedTopic = objectType({
   name: 'UserFeaturedTopic',
@@ -6,11 +6,11 @@ export let UserFeaturedTopic = objectType({
     t.int('id');
     t.int('userId');
     t.int('lastPostUserId');
-    t.int('featuredUser1Id', { nullable: true });
-    t.int('featuredUser2Id', { nullable: true });
-    t.int('featuredUser3Id', { nullable: true });
-    t.int('featuredUser4Id', { nullable: true });
-    t.int('deletedById', { nullable: true });
+    t.nullable.int('featuredUser1Id');
+    t.nullable.int('featuredUser2Id');
+    t.nullable.int('featuredUser3Id');
+    t.nullable.int('featuredUser4Id');
+    t.nullable.int('deletedById');
     t.string('title');
     t.string('fancyTitle');
     t.string('slug');
@@ -19,12 +19,12 @@ export let UserFeaturedTopic = objectType({
     t.int('highestPostNumber');
     t.string('createdAt');
     t.string('lastPostedAt');
-    t.string('updatedAt', { nullable: true });
+    t.nullable.string('updatedAt');
     t.string('bumpedAt');
     t.string('archetype');
-    t.string('pinnedAt', { nullable: true });
-    t.string('pinnedUntil', { nullable: true });
-    t.string('excerpt', { nullable: true }); // Must be activated
+    t.nullable.string('pinnedAt');
+    t.nullable.string('pinnedUntil');
+    t.nullable.string('excerpt'); // Must be activated
     t.boolean('visible');
     t.boolean('closed');
     t.boolean('archived');
@@ -40,7 +40,7 @@ export let UserFeaturedTopic = objectType({
     t.float('score');
     t.float('reviewableScore');
     t.float('percentRank');
-    t.int('categoryId', { nullable: true });
+    t.nullable.int('categoryId');
     t.boolean('pinnedGlobally');
   },
 });

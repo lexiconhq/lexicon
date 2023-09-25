@@ -16,6 +16,8 @@ export const SITE = gql`
       minUsernameLength
       minPasswordLength
       fullNameRequired
+      allowUncategorizedTopics
+      defaultComposerCategory
       topicFlagTypes {
         description
         id

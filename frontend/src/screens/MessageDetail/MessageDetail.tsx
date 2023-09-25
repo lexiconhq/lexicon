@@ -22,6 +22,7 @@ import {
 } from '../../components';
 import { Divider, Icon, TextInputType } from '../../core-ui';
 import {
+  errorHandler,
   errorHandlerAlert,
   formatExtensions,
   getHyperlink,
@@ -30,6 +31,7 @@ import {
   insertHyperlink,
   mentionHelper,
   messageDetailHandler,
+  messageInvalidAccessAlert,
   useStorage,
 } from '../../helpers';
 import {
@@ -37,7 +39,8 @@ import {
   useMessageTiming,
   useReplyPost,
   useSiteSettings,
-  useTopicDetail,
+  useMessageDetail,
+  useLoadMorePost,
 } from '../../hooks';
 import { makeStyles, useTheme } from '../../theme';
 import {
@@ -48,6 +51,8 @@ import {
   StackRouteProp,
   User,
 } from '../../types';
+import { FIRST_POST_NUMBER, MAX_POST_COUNT_PER_REQUEST } from '../../constants';
+import { useInitialLoad } from '../../hooks/useInitialLoad';
 
 import { MessageItem, ReplyInputField } from './components';
 
@@ -67,9 +72,18 @@ enum Operation {
   'CHAT',
 }
 
+/**
+ * Index starts with 0, while count starts with 1,
+ * so the max initial last index would be max count - 1,
+ * assuming the server returns the maximum number of posts
+ */
+const MAX_INITIAL_LAST_INDEX = MAX_POST_COUNT_PER_REQUEST - 1;
+const SYSTEM_USERNAME = 'system';
+
 export default function MessageDetail() {
   const styles = useStyles();
   const { colors } = useTheme();
+  const useInitialLoadResult = useInitialLoad();
 
   const storage = useStorage();
   const user = storage.getItem('user');
@@ -81,22 +95,14 @@ export default function MessageDetail() {
   const ios = Platform.OS === 'ios';
   const screen = Dimensions.get('screen');
 
-  const { navigate } = useNavigation<StackNavProp<'MessageDetail'>>();
+  const { navigate, reset } = useNavigation<StackNavProp<'MessageDetail'>>();
 
   const {
-    params: {
-      id,
-      postPointer,
-      emptied,
-      hyperlinkUrl = '',
-      hyperlinkTitle = '',
-    },
+    params: { id, postNumber, emptied, hyperlinkUrl = '', hyperlinkTitle = '' },
   } = useRoute<StackRouteProp<'MessageDetail'>>();
 
   const [hasOlderMessages, setHasOlderMessages] = useState(true);
   const [hasNewerMessages, setHasNewerMessages] = useState(true);
-  const [loadingOlderMessages, setLoadingOlderMessages] = useState(false);
-  const [loadingNewerMessages, setLoadingNewerMessages] = useState(false);
   const [refetching, setRefetching] = useState(false);
   const [isInitialRequest, setIsInitialRequest] = useState(true);
   const [textInputFocused, setInputFocused] = useState(false);
@@ -104,13 +110,15 @@ export default function MessageDetail() {
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
 
-  const [startIndex, setStartIndex] = useState(0);
-  const [endIndex, setEndIndex] = useState(0);
+  const [firstLoadedPostIndex, setFirstLoadedPostIndex] = useState(0);
+  const [lastLoadedPostIndex, setLastLoadedPostIndex] = useState(0);
   const [initialHeight, setInitialHeight] = useState<number>();
 
   const [data, setData] = useState<Message>();
+  // Members are all users who can read or send messages
   const [members, setMembers] = useState<Array<User>>([]);
-  const [userWhoComment, setUserWhoComment] = useState<Array<User>>([]);
+  // Participants are users who have sent messages at least once
+  const [participants, setParticipants] = useState<Array<User>>([]);
   const [stream, setStream] = useState<Array<number>>([]);
   const virtualListRef = useRef<VirtualizedList<MessageContent>>(null);
 
@@ -137,42 +145,64 @@ export default function MessageDetail() {
     loading: messageDetailLoading,
     refetch,
     fetchMore,
-  } = useTopicDetail({
-    variables: {
-      topicId: id,
-      postPointer,
-    },
-    onCompleted: ({ topicDetail: result }) => {
-      if (result) {
-        setIsInitialRequest(true);
-        setTitle(result.title || '');
+    error,
+  } = useMessageDetail(
+    {
+      variables: { topicId: id, postNumber },
+      onCompleted: ({ privateMessageDetail: result }) => {
+        if (result) {
+          setTitle(result.title || '');
 
-        const tempParticipants: Array<User> = [];
-        result.details?.allowedUsers?.forEach((allowedUser) =>
-          tempParticipants.push({
-            id: allowedUser.id,
-            username: allowedUser.username,
-            avatar: getImage(allowedUser.avatarTemplate),
-          }),
-        );
-        setMembers(tempParticipants);
-        let userWhoComment: Array<User> = [];
-        result.details?.participants.forEach((user) => {
-          userWhoComment.push({
-            id: user.id,
-            username: user.username,
-            avatar: getImage(user.avatar),
-          });
-        });
-        setUserWhoComment(userWhoComment);
-      }
+          if (!result.details) {
+            return;
+          }
+          const messageMembers = result.details.allowedUsers?.map(
+            ({ avatarTemplate, __typename, ...otherProps }) => ({
+              ...otherProps,
+              avatar: getImage(avatarTemplate),
+            }),
+          );
+          messageMembers && setMembers(messageMembers);
+          let participants: Array<User> = result.details.participants.map(
+            ({ avatar, __typename, ...otherProps }) => ({
+              ...otherProps,
+              avatar: getImage(avatar),
+            }),
+          );
+          setParticipants(participants);
+        }
+      },
+      onError: (error) => {
+        /**
+         * if we get error about private post which cannot be access.
+         * we need check first it is because user haven't login or because post it self only open to specific group
+         * if user not login we will redirect to login scene.
+         * But if user already login still get same error will redirect to home scene and show private post alert
+         */
+
+        if (error.message.includes('Invalid Access')) {
+          if (
+            !useInitialLoadResult.loading &&
+            !useInitialLoadResult.isLoggedIn
+          ) {
+            reset({
+              index: 1,
+              routes: [
+                { name: 'TabNav', state: { routes: [{ name: 'Home' }] } },
+                {
+                  name: 'Login',
+                },
+              ],
+            });
+          } else {
+            navigate('TabNav', { state: { routes: [{ name: 'Home' }] } });
+            messageInvalidAccessAlert();
+          }
+        }
+      },
     },
-    onError: (error) => {
-      loadingOlderMessages && setLoadingOlderMessages(false);
-      errorHandlerAlert(error);
-    },
-    fetchPolicy: 'cache-and-network',
-  });
+    'HIDE_ALERT',
+  );
 
   useEffect(() => {
     if (emptied) {
@@ -186,7 +216,7 @@ export default function MessageDetail() {
     }
 
     const {
-      topicDetail: { postStream, details },
+      privateMessageDetail: { details, postStream },
     } = baseData;
 
     if (!details) {
@@ -197,7 +227,7 @@ export default function MessageDetail() {
       data: tempData,
       hasNewerMessage: newMessage,
       hasOlderMessage: oldMessage,
-      baseStream,
+      stream: baseStream,
       firstPostIndex,
       lastPostIndex,
     } = messageDetailHandler({ postStream, details });
@@ -206,8 +236,13 @@ export default function MessageDetail() {
     setStream(baseStream);
     setHasNewerMessages(newMessage);
     setHasOlderMessages(oldMessage);
-    setStartIndex(firstPostIndex);
-    setEndIndex(lastPostIndex);
+    if (firstPostIndex) {
+      setFirstLoadedPostIndex(firstPostIndex);
+    }
+
+    if (lastPostIndex) {
+      setLastLoadedPostIndex(lastPostIndex);
+    }
   }, [baseData]);
 
   useEffect(() => {
@@ -231,7 +266,7 @@ export default function MessageDetail() {
   const { reply, loading: replyLoading } = useReplyPost({
     onCompleted: () => {
       setMessage('');
-      refetch({ postPointer: stream.length || 1 }).then(() => {
+      refetch({ postNumber: stream.length }).then(() => {
         if (textInputFocused && data?.contents.length) {
           if (ios) {
             virtualListRef.current?.scrollToIndex({
@@ -252,63 +287,30 @@ export default function MessageDetail() {
     },
   });
 
-  useMessageTiming(id, startIndex, data?.contents);
+  useMessageTiming(id, firstLoadedPostIndex, data?.contents);
 
-  const loadStartMore = async () => {
-    if (
-      loadingOlderMessages ||
-      !hasOlderMessages ||
-      !stream ||
-      messageDetailLoading
-    ) {
+  const { loadMorePosts, isLoadingOlderPost } = useLoadMorePost(id);
+  const loadMoreMessages = async (loadNewerMessages: boolean) => {
+    if (messageDetailLoading) {
       return;
     }
-    setLoadingOlderMessages(true);
-    let nextEndIndex = startIndex;
-    let newDataCount = Math.min(10, stream.length - nextEndIndex);
-    let nextStartIndex = Math.max(0, nextEndIndex - newDataCount);
-
-    let nextPosts = stream.slice(nextStartIndex, nextEndIndex);
-    if (!nextPosts.length) {
-      return;
-    }
-    await fetchMore({
-      variables: {
-        topicId: id,
-        posts: nextPosts,
-      },
-    }).then(() => {
-      setStartIndex(nextStartIndex);
-      setLoadingOlderMessages(false);
+    let newPostIndex = await loadMorePosts({
+      fetchMore,
+      firstLoadedPostIndex,
+      lastLoadedPostIndex,
+      stream,
+      loadNewerPosts: loadNewerMessages,
+      hasMorePost: loadNewerMessages ? hasNewerMessages : hasOlderMessages,
     });
-  };
-
-  const loadEndMore = async () => {
-    if (
-      loadingNewerMessages ||
-      !hasNewerMessages ||
-      !stream ||
-      messageDetailLoading
-    ) {
+    if (!newPostIndex) {
       return;
     }
-    setLoadingNewerMessages(true);
-    let nextStartIndex = endIndex + 1;
-    let newDataCount = Math.min(10, stream.length - nextStartIndex);
-    let nextEndIndex = nextStartIndex + newDataCount;
-
-    let nextPosts = stream.slice(nextStartIndex, nextEndIndex);
-    if (!nextPosts.length) {
+    const { nextLastLoadedPostIndex, nextFirstLoadedPostIndex } = newPostIndex;
+    if (loadNewerMessages) {
+      setLastLoadedPostIndex(nextLastLoadedPostIndex);
       return;
     }
-    await fetchMore({
-      variables: {
-        topicId: id,
-        posts: nextPosts,
-      },
-    });
-    setEndIndex(nextEndIndex - 1);
-    setLoadingNewerMessages(false);
+    setFirstLoadedPostIndex(nextFirstLoadedPostIndex);
   };
 
   const onPressSend = (message: string) => {
@@ -336,7 +338,6 @@ export default function MessageDetail() {
       navigate('ImagePreview', {
         topicId: id,
         imageUri,
-        postPointer: stream.length,
         message,
       });
     } catch (unknownError) {
@@ -368,10 +369,9 @@ export default function MessageDetail() {
       if (currIndex === 0) {
         return;
       }
-      const currUserId = data.contents[currIndex].userId;
-      const prevUserId = data.contents[currIndex - 1].userId;
-
-      return currUserId === prevUserId;
+      const currUser = data.contents[currIndex].username;
+      const prevUser = data.contents[currIndex - 1].username;
+      return currUser === prevUser;
     }
     return false;
   };
@@ -395,7 +395,7 @@ export default function MessageDetail() {
   const onPressLink = () => {
     navigate('HyperLink', {
       id,
-      postPointer,
+      postNumber,
       prevScreen: 'MessageDetail',
     });
   };
@@ -407,10 +407,15 @@ export default function MessageDetail() {
   const renderItem = ({ item, index }: MessageDetailRenderItem) => {
     let user;
 
-    if (item.userId === 0) {
+    /**
+     *  System is only included in members.
+     *  Other message senders are included in participants, but may not
+     *  be included as members if they are removed.
+     */
+    if (item.username === SYSTEM_USERNAME) {
       user = members.find((member) => member.id === -1);
     } else {
-      user = userWhoComment.find((member) => member.id === item.userId);
+      user = participants.find((member) => member.username === item.username);
     }
 
     const newTimestamp = compareTime(index);
@@ -468,7 +473,12 @@ export default function MessageDetail() {
           inputRef={messageRef}
           loading={replyLoading}
           onPressSend={onPressSend}
-          style={styles.inputContainer}
+          style={[
+            styles.inputContainer,
+            message.trim() !== '' && {
+              paddingVertical: 6,
+            },
+          ]}
           message={message}
           setMessage={setMessage}
           onSelectedChange={(cursor) => {
@@ -536,8 +546,9 @@ export default function MessageDetail() {
 
   const onContentSizeChange = () => {
     if (isInitialRequest) {
-      let pointerToIndex = postPointer - 1 - startIndex;
-      let index = Math.min(19, pointerToIndex);
+      let postIndex = postNumber - FIRST_POST_NUMBER;
+      let postIndexInLoadedList = postIndex - firstLoadedPostIndex;
+      let index = Math.min(MAX_INITIAL_LAST_INDEX, postIndexInLoadedList);
       try {
         virtualListRef.current?.scrollToIndex({
           animated: true,
@@ -554,29 +565,41 @@ export default function MessageDetail() {
     return <LoadingOrError loading />;
   }
 
+  const Header = ios ? (
+    <CustomHeader title={t('Message')} />
+  ) : (
+    <Divider style={styles.divider} />
+  );
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.container}>
+        {Header}
+        <LoadingOrError message={errorHandler(error, true, t('message'))} />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      {ios ? (
-        <CustomHeader title={t('Message')} />
-      ) : (
-        <Divider style={styles.divider} />
-      )}
+      {Header}
       <AvatarRow
         title={title}
         posters={members}
         style={styles.participants}
         extended
       />
+
       <VirtualizedList
         ref={virtualListRef}
         refreshControl={
           <RefreshControl
-            refreshing={refetching || loadingOlderMessages}
-            onRefresh={loadStartMore}
+            refreshing={refetching || isLoadingOlderPost}
+            onRefresh={() => loadMoreMessages(false)}
             tintColor={colors.primary}
           />
         }
-        data={data?.contents}
+        data={data?.contents ?? []}
         getItem={getItem}
         getItemCount={getItemCount}
         renderItem={renderItem}
@@ -586,7 +609,7 @@ export default function MessageDetail() {
           top: contentHeight ? ((5 * screen.height) / 100) * -1 : 0,
         }}
         onEndReachedThreshold={0.1}
-        onEndReached={loadEndMore}
+        onEndReached={() => loadMoreMessages(true)}
         onContentSizeChange={onContentSizeChange}
         contentContainerStyle={styles.messages}
         ListFooterComponent={
@@ -638,7 +661,7 @@ const useStyles = makeStyles(({ colors, shadow, spacing }) => {
     inputContainer: {
       flex: 1,
       paddingLeft: spacing.xl,
-      paddingVertical: spacing.s,
+      paddingVertical: spacing.m,
       paddingRight: spacing.s,
       backgroundColor: colors.background,
     },

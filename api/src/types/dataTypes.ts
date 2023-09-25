@@ -1,16 +1,44 @@
-export type UserIcon = {
+import { z } from 'zod';
+
+export type LikedTopic = {
   id: number;
-  username: string;
-  name?: string | null;
-  avatarTemplate: string;
+  topicId: number;
+  postId: number;
+  likeCount: number;
+  liked: boolean;
 };
 
-type TopicPoster = {
-  extras?: string | null;
-  description: string;
-  userId?: number | null;
-  user: UserIcon;
-};
+export const MostRecentPoster = z.literal('MostRecentPoster');
+export const OriginalPoster = z.literal('OriginalPoster');
+export const FrequentPoster = z.literal('FrequentPoster');
+export const UnknownPosterType = z.literal('UnknownPosterType');
+export const PosterType = z.union([
+  FrequentPoster,
+  MostRecentPoster,
+  OriginalPoster,
+  UnknownPosterType,
+]);
+export type PosterType = z.infer<typeof PosterType>;
+
+export const UserIcon = z.object({
+  id: z.number(),
+  username: z.string(),
+  name: z.optional(z.nullable(z.string())),
+  avatarTemplate: z.string(),
+});
+
+export type UserIcon = z.infer<typeof UserIcon>;
+
+// TODO: #1174: get to the bottom of why we have both `userId` and
+// `user`, and why both can be nullable. Seems we made a mistake somewhere.
+export const TopicPoster = z.object({
+  extras: z.optional(z.nullable(z.string())),
+  description: z.string(),
+  userId: z.optional(z.nullable(z.number())),
+  user: z.optional(z.nullable(UserIcon)),
+});
+
+export type TopicPoster = z.infer<typeof TopicPoster>;
 
 export type Topic = {
   id: number;
@@ -47,7 +75,6 @@ export type Topic = {
   pinnedGlobally: boolean | null;
   posters: Array<TopicPoster>;
   authorUserId?: number | null;
-  frequentPosterUserId?: number | null;
 };
 
 type TagFilter = {
@@ -115,3 +142,13 @@ export type UserAction = {
   topicId: number;
   userId: number;
 };
+
+type ActionSummary = {
+  id: number;
+  hidden?: boolean;
+  acted?: boolean;
+  canUndo?: boolean;
+  canAct?: boolean;
+  count?: number;
+};
+export type ActionsSummary = Array<ActionSummary>;

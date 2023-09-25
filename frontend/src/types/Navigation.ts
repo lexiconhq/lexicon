@@ -1,38 +1,34 @@
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import {
   CompositeNavigationProp,
+  NavigationState,
   NavigatorScreenParams,
+  PartialState,
   RouteProp as RoutePropBase,
 } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 
-import { NewPost, Post, ReplyPost } from './Post';
+import { NetworkStatus, WithRequestFailed } from '../components';
+
+import { NewPost, ReplyPost } from './Post';
 import { SelectedUserProps, UserDetail, UserMessageProps } from './Types';
 
 export type RootStackNavProp<T extends keyof RootStackParamList> =
   StackNavigationProp<RootStackParamList, T>;
 
-export type StackNavProp<T extends keyof StackParamList> =
-  CompositeNavigationProp<
-    StackNavigationProp<StackParamList, T>,
-    StackNavigationProp<RootStackParamList>
-  >;
+export type StackNavProp<T extends keyof RootStackParamList> =
+  RootStackNavProp<T>;
 
 export type TabNavProp<T extends keyof TabParamList> = CompositeNavigationProp<
   BottomTabNavigationProp<TabParamList, T>,
-  CompositeNavigationProp<
-    StackNavigationProp<StackParamList>,
-    StackNavigationProp<RootStackParamList>
-  >
+  StackNavigationProp<RootStackParamList>
 >;
 
 export type RootStackRouteProp<T extends keyof RootStackParamList> =
   RoutePropBase<RootStackParamList, T>;
 
-export type StackRouteProp<T extends keyof StackParamList> = RoutePropBase<
-  StackParamList,
-  T
->;
+export type StackRouteProp<T extends keyof RootStackParamList> =
+  RootStackRouteProp<T>;
 
 export type TabRouteProp<T extends keyof TabParamList> = RoutePropBase<
   TabParamList,
@@ -41,7 +37,6 @@ export type TabRouteProp<T extends keyof TabParamList> = RoutePropBase<
 
 type ChannelsParams = {
   prevScreen: 'Home' | 'NewPost';
-  selectedChannelId: number;
 };
 
 type EditProfileParams = {
@@ -54,26 +49,27 @@ type FlagPostParams = {
   flaggedAuthor?: string;
 };
 
-export type HomeProps = { selectedChannelId?: number; backToTop?: boolean };
+export type HomeProps = { backToTop?: boolean };
 
 type ImagePreviewParams = {
   topicId: number;
   imageUri: string;
-  postPointer: number;
   message: string;
 };
 
 type PostImagePreviewParams = {
   imageUri: string;
+  title?: string;
   prevScreen: 'NewPost' | 'PostReply' | 'NewMessage';
 };
 
-type MessageDetailParams = {
+export type MessageDetailParams = {
   id: number;
-  postPointer: number;
+  postNumber: number;
   emptied?: boolean;
   hyperlinkUrl: string;
   hyperlinkTitle: string;
+  source?: 'deeplink';
 };
 
 type NewMessageParams = {
@@ -90,16 +86,12 @@ type EditedUser = {
 };
 
 type NewPostParams = {
-  selectedChannelId?: number;
-  selectedTagsIds?: Array<string>;
   hyperlinkUrl?: string;
   hyperlinkTitle?: string;
   oldTitle?: string;
   oldContent?: string;
   oldChannel?: number;
   oldTags?: Array<string>;
-  editPostId?: number;
-  editTopicId?: number;
   editedUser?: EditedUser;
   imageUri?: string;
 };
@@ -122,16 +114,18 @@ type NewMessagePreviewParams = {
 
 type PostDetailParams = {
   topicId: number;
-  selectedChannelId?: number;
-  postNumber?: number;
+  content?: string;
   focusedPostNumber?: number;
+  hidden?: boolean;
+  postNumber?: number;
   prevScreen?: string;
+  source?: 'deeplink';
 };
 
-type PostReplyParams = {
+export type PostReplyParams = {
   title: string;
   topicId: number;
-  post?: Post;
+  replyToPostId?: number;
   focusedPostNumber?: number;
   hyperlinkUrl?: string;
   hyperlinkTitle?: string;
@@ -148,7 +142,6 @@ type SelectUserParams = {
 
 type TagsParams = {
   canCreateTag: boolean;
-  selectedTagsIds: Array<string>;
 };
 
 type TwoFactorAuthParams = {
@@ -156,35 +149,37 @@ type TwoFactorAuthParams = {
   password: string;
 };
 
+type TroubleshootParams = {
+  type: WithRequestFailed<Exclude<NetworkStatus, 'Online'>>;
+};
+
 type HyperlinkParams = {
   id?: number;
   title?: string;
-  post?: Post;
-  postPointer?: number;
+  postNumber?: number;
   prevScreen: 'NewPost' | 'PostReply' | 'NewMessage' | 'MessageDetail';
-};
+} & Pick<PostReplyParams, 'replyToPostId'>;
 
 type UserInformationParams = {
   username: string;
 };
 
 export type RootStackParamList = {
-  Main: NavigatorScreenParams<StackParamList>;
   Channels: ChannelsParams;
   DarkMode: undefined;
+  PushNotificationsPreferences: undefined;
   FlagPost: FlagPostParams;
   HyperLink: HyperlinkParams;
+  InstanceLoading: undefined;
   NewMessage: NewMessageParams;
   NewMessagePreview: NewMessagePreviewParams;
-  NewPost: NewPostParams;
+  NewPost: NewPostParams | undefined;
   PostPreview: PostPreviewParams;
   PostReply: PostReplyParams;
   PostImagePreview: PostImagePreviewParams;
   SelectUser: SelectUserParams;
   Tags: TagsParams;
-};
-
-export type StackParamList = {
+  Troubleshoot: TroubleshootParams;
   TabNav: NavigatorScreenParams<TabParamList>;
   Activity: undefined;
   AddEmail: undefined;
@@ -192,7 +187,6 @@ export type StackParamList = {
   EditProfile: EditProfileParams;
   EmailAddress: undefined;
   ImagePreview: ImagePreviewParams;
-  InstanceLoading: undefined;
   Login: undefined;
   Messages: undefined;
   MessageDetail: MessageDetailParams;
@@ -212,5 +206,8 @@ export type TabParamList = {
 };
 
 export type RootStackRouteName = keyof RootStackParamList;
-export type StackRouteName = keyof StackParamList;
 export type TabRouteName = keyof TabParamList;
+
+export type Routes = PartialState<
+  NavigationState<RootStackParamList>
+>['routes'];

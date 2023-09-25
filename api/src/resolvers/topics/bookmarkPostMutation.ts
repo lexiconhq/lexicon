@@ -7,7 +7,8 @@ import {
   arg,
   intArg,
   stringArg,
-} from '@nexus/schema';
+  nullable,
+} from 'nexus';
 
 import { ACCEPTED_LANGUAGE, CONTENT_FORM_URLENCODED } from '../../constants';
 import { errorHandler } from '../../helpers';
@@ -39,10 +40,10 @@ export let bookmarkPostResolver: FieldResolver<
 export let bookmarkPostMutation = mutationField('bookmarkPost', {
   type: 'BookmarkOutput',
   args: {
-    postId: intArg({ required: true }),
-    reminderType: arg({ type: 'BookmarkReminderEnum' }),
-    reminderAt: stringArg(),
-    name: stringArg(),
+    postId: intArg(),
+    reminderType: nullable(arg({ type: 'BookmarkReminderEnum' })),
+    reminderAt: nullable(stringArg()),
+    name: nullable(stringArg()),
   },
   resolve: bookmarkPostResolver,
 });

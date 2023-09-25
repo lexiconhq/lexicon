@@ -1,11 +1,11 @@
-import { inputObjectType } from '@nexus/schema';
+import { inputObjectType } from 'nexus';
 
 export let RegisterInput = inputObjectType({
   name: 'RegisterInput',
   definition(t) {
-    t.string('email', { required: true });
-    t.string('username', { required: true });
-    t.string('password', { required: true });
-    t.string('name');
+    t.string('email');
+    t.string('username');
+    t.string('password');
+    t.nullable.string('name');
   },
 });

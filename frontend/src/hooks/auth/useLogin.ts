@@ -1,21 +1,21 @@
 import { MutationHookOptions } from '@apollo/client';
 
 import {
-  Login as LoginType,
-  LoginVariables,
-} from '../../generated/server/Auth';
+  LoginMutation as LoginType,
+  LoginMutationVariables,
+} from '../../generated/server';
 import { LOGIN } from '../../graphql/server/auth';
 import { useMutation } from '../../utils';
 
 export function useLogin(
-  options?: MutationHookOptions<LoginType, LoginVariables>,
+  options?: MutationHookOptions<LoginType, LoginMutationVariables>,
 ) {
-  const [login, { loading, error }] = useMutation<LoginType, LoginVariables>(
-    LOGIN,
-    {
-      ...options,
-    },
-  );
+  const [login, { loading, error }] = useMutation<
+    LoginType,
+    LoginMutationVariables
+  >(LOGIN, {
+    ...options,
+  });
 
   return { login, loading, error };
 }

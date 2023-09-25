@@ -4,7 +4,7 @@ import { Platform, View } from 'react-native';
 import { Avatar, ChatBubble, Divider, Text } from '../../../core-ui';
 import {
   formatDateTime,
-  handleSpecialMarkdown,
+  handleUnsupportedMarkdown,
   useStorage,
 } from '../../../helpers';
 import { makeStyles, useTheme } from '../../../theme';
@@ -30,7 +30,7 @@ export function MessageItem(props: Props) {
   const myUsername = storage.getItem('user')?.username || '';
   const isMe = sender?.username === myUsername;
   const noUsername = sender?.username === undefined;
-  const mentionedUsers = content.listOfMention;
+  const mentionedUsers = content.mentions;
 
   return (
     <View style={styles.container}>
@@ -56,9 +56,8 @@ export function MessageItem(props: Props) {
                 onPress={onPressAvatar}
               />
               <ChatBubble
-                message={handleSpecialMarkdown(content.message)}
-                imageUrls={content.images}
-                listOfMention={mentionedUsers}
+                message={handleUnsupportedMarkdown(content.message)}
+                mentions={mentionedUsers}
               />
             </View>
           </Fragment>
@@ -74,11 +73,10 @@ export function MessageItem(props: Props) {
           >
             <ChatBubble
               message={t('{message}', {
-                message: handleSpecialMarkdown(content.message),
+                message: handleUnsupportedMarkdown(content.message),
               })}
-              imageUrls={content.images}
               bgColor={isMe || noUsername ? 'primary' : undefined}
-              listOfMention={mentionedUsers}
+              mentions={mentionedUsers}
             />
           </View>
         )}

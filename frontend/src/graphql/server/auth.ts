@@ -42,7 +42,7 @@ export const REGISTER = gql`
 `;
 
 export const LOGOUT = gql`
-  mutation Logout($username: String!) {
-    logout(username: $username)
+  mutation Logout($username: String!, $pushNotificationsToken: String) {
+    logout(username: $username, pushNotificationsToken: $pushNotificationsToken)
   }
 `;

@@ -19,13 +19,15 @@ import {
 } from '../../components';
 import { Text } from '../../core-ui';
 import { errorHandler, notificationHandler } from '../../helpers';
-import { useMarkRead, useNotification, useSingleBadge } from '../../hooks';
+import { useMarkRead, useNotification } from '../../hooks';
 import { makeStyles, useTheme } from '../../theme';
 import {
   Notification as NotificationDataType,
   StackNavProp,
-  StackParamList,
+  RootStackParamList,
 } from '../../types';
+import { client } from '../../graphql/client';
+import { NotificationDocument } from '../../generated/server';
 
 import NotificationItem from './components/NotificationItem';
 
@@ -37,18 +39,20 @@ export default function Notifications() {
 
   const { navigate } = useNavigation<StackNavProp<'Notifications'>>();
 
-  const navToPostDetail = (postDetailParams: StackParamList['PostDetail']) => {
+  const navToPostDetail = (
+    postDetailParams: RootStackParamList['PostDetail'],
+  ) => {
     navigate('PostDetail', postDetailParams);
   };
 
   const navToMessageDetail = (
-    messageDetailParams: StackParamList['MessageDetail'],
+    messageDetailParams: RootStackParamList['MessageDetail'],
   ) => {
     navigate('MessageDetail', messageDetailParams);
   };
 
   const navToUserInformation = (
-    userInformationParams: StackParamList['UserInformation'],
+    userInformationParams: RootStackParamList['UserInformation'],
   ) => {
     navigate('UserInformation', userInformationParams);
   };
@@ -64,6 +68,7 @@ export default function Notifications() {
     onError: (error) => {
       setErrorMsg(errorHandler(error, true));
     },
+    fetchPolicy: 'cache-and-network',
     nextFetchPolicy: loadMorePolicy ? 'cache-first' : 'no-cache',
   });
 
@@ -71,13 +76,16 @@ export default function Notifications() {
     onError: () => {},
   });
 
-  const { singleBadge } = useSingleBadge({
-    onCompleted: () => {
-      refetch({ page: 1 });
-    },
-  });
+  /**
+   * NOTE: Earlier, this file contained the functionality to fetch the detail response for a given Discourse badge.
+   * It was removed because we weren't using it.
+   * This was a feature that was specifically not supported in Lexicon v1, and we haven't yet scheduled it in our current development phase.
+   *
+   * If we later want to implement functionality with badges, the code that was removed is accessible at this commit: https://github.com/kodefox/lexicon/pull/984
+   */
 
   const onRefresh = () => {
+    setPage(1);
     refetch();
   };
 
@@ -91,7 +99,7 @@ export default function Notifications() {
         async (btnIndex) => {
           if (btnIndex === 0) {
             await markAsRead();
-            refetch({ page: 1 });
+            onRefresh();
           }
         },
       );
@@ -129,17 +137,55 @@ export default function Notifications() {
     return <LoadingOrError message={t('No Notifications available')} />;
   }
 
+  const handleMarkAsRead = async (notificationId: number) => {
+    try {
+      await markAsRead({ variables: { notificationId } });
+
+      /**
+       * change value notification seen to true
+       */
+
+      const newDataNotification = data?.notification?.notifications?.map(
+        (data) => {
+          if (data.id === notificationId && !data.seen) {
+            return { ...data, seen: true };
+          }
+          return data;
+        },
+      );
+
+      /**
+       * Update the Apollo Client cache for notifications list if change seen data
+       *  */
+
+      client.writeQuery({
+        query: NotificationDocument,
+        variables: { page },
+        data: {
+          notification: {
+            notifications: newDataNotification,
+            totalRowsNotifications: data?.notification.totalRowsNotifications,
+            seenNotificationId: data?.notification.seenNotificationId,
+            loadMoreNotifications: data?.notification.loadMoreNotifications,
+          },
+        },
+      });
+    } catch (error) {
+      onRefresh();
+    }
+  };
+
   const loadMore = () => {
     setLoadMorePolicy(true);
     if (!isLoadMore || loading) {
       return;
     }
     const nextPage = page + 1;
+    setPage(nextPage);
     fetchMore({
       variables: { page: nextPage },
     }).then(() => {
       setLoadMorePolicy(false);
-      setPage(nextPage);
     });
   };
 
@@ -168,15 +214,8 @@ export default function Notifications() {
         isMessage={hasIcon}
         seen={seen}
         onPress={() => {
-          if (item.badgeId) {
-            onPress(item.badgeId);
-            singleBadge({ variables: { id: item.badgeId } });
-          } else {
-            onPress(topicId);
-            markAsRead({ variables: { notificationId: id } }).then(() =>
-              refetch({ page: 1 }),
-            );
-          }
+          onPress(item.badgeId ? item.badgeId : topicId);
+          handleMarkAsRead(id);
         }}
       />
     );
@@ -205,6 +244,7 @@ export default function Notifications() {
           renderItem={renderItem}
           keyExtractor={keyExtractor}
           getItemLayout={getItemLayout}
+          onEndReachedThreshold={0.1}
           onEndReached={loadMore}
           ListFooterComponent={
             <FooterLoadingIndicator isHidden={!isLoadMore} />
@@ -220,7 +260,8 @@ export default function Notifications() {
                 <TouchableOpacity
                   style={styles.modalButtonContainer}
                   onPress={() => {
-                    markAsRead().then(() => refetch({ page: 1 }));
+                    markAsRead();
+                    onRefresh();
                     setShowMore(false);
                   }}
                 >

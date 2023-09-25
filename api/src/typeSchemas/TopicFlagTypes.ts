@@ -1,15 +1,15 @@
-import { objectType } from '@nexus/schema';
+import { objectType } from 'nexus';
 
 export let TopicFlagTypes = objectType({
   name: 'TopicFlagTypes',
   definition(t) {
     t.string('description');
     t.int('id');
-    t.boolean('isCustomFlag', { nullable: true });
-    t.boolean('isFlag', { nullable: true });
-    t.string('longForm', { nullable: true });
+    t.nullable.boolean('isCustomFlag');
+    t.nullable.boolean('isFlag');
+    t.nullable.string('longForm');
     t.string('name');
     t.string('nameKey');
-    t.string('shortDescription', { nullable: true });
+    t.nullable.string('shortDescription');
   },
 });

@@ -1,33 +1,13 @@
 import { getTopicPostPath } from '../helpers';
 
-it('Have input post and pointer', () => {
-  const inputPost = [2, 3, 4];
-  const postPointer = 2;
-  const expectedOutput = '/posts';
-  let topicUrl = getTopicPostPath(inputPost, postPointer);
-  expect(topicUrl).toEqual(expectedOutput);
+it('should return posts when the input is array of numbers', () => {
+  expect(getTopicPostPath([2, 3, 4])).toEqual('/posts');
 });
 
-it('Have input post without pointer', () => {
-  const inputPost = [2, 3, 4];
-  const postPointer = undefined;
-  const expectedOutput = '/posts';
-  let topicUrl = getTopicPostPath(inputPost, postPointer);
-  expect(topicUrl).toEqual(expectedOutput);
+it('should return post pointer when the input is number', () => {
+  expect(getTopicPostPath(2)).toEqual('/2');
 });
 
-it('Have input post pointer', () => {
-  const inputPost = undefined;
-  const postPointer = 2;
-  const expectedOutput = '/2';
-  let topicUrl = getTopicPostPath(inputPost, postPointer);
-  expect(topicUrl).toEqual(expectedOutput);
-});
-
-it('Does not have input', () => {
-  const inputPost = undefined;
-  const postPointer = undefined;
-  const expectedOutput = '';
-  let topicUrl = getTopicPostPath(inputPost, postPointer);
-  expect(topicUrl).toEqual(expectedOutput);
+it('should return empty string when the input is undefined', () => {
+  expect(getTopicPostPath(undefined)).toEqual('');
 });

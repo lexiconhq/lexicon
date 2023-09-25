@@ -1,4 +1,4 @@
-FROM keymetrics/pm2:12-alpine
+FROM keymetrics/pm2:16-alpine
 
 WORKDIR /app
 
@@ -12,6 +12,8 @@ RUN yarn
 
 COPY tsconfig.json ./
 COPY ./src ./src
+
+RUN yarn generate
 
 RUN yarn build
 
