@@ -130,7 +130,7 @@ export default function PostDetail() {
          * But if user already login still get same error will redirect to home scene and show private post alert
          */
 
-        if (error.message.includes('private')) {
+        if (error.message.includes('Invalid Access')) {
           if (
             !useInitialLoadResult.loading &&
             !useInitialLoadResult.isLoggedIn

@@ -24,3 +24,8 @@ export const ERROR_SETUP_PUSH_NOTIFICATIONS = {
 };
 export const ERROR_REFETCH =
   'Something went wrong when logging out. If this persists, please contact support.';
+
+export const ERROR_MESSAGE_INVALID_ACCESS = {
+  title: 'Permission Denied',
+  content: `It looks like you don't have permission to check out this message.`,
+};

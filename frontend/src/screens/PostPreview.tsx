@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Platform, SafeAreaView } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import {
+  useNavigation,
+  useRoute,
+  CommonActions,
+} from '@react-navigation/native';
 import { useFormContext } from 'react-hook-form';
 
 import mock from '../__mocks__/mockData';
@@ -41,7 +45,8 @@ export default function PostPreview() {
   const { colors } = useTheme();
 
   const navigation = useNavigation<RootStackNavProp<'PostPreview'>>();
-  const { navigate, reset, goBack } = navigation;
+
+  const { reset, goBack, dispatch } = navigation;
 
   const {
     params: {
@@ -72,10 +77,35 @@ export default function PostPreview() {
   }: StackRouteProp<'PostDetail'>['params']) => {
     const prevScreen = 'PostPreview';
 
-    navigate('PostDetail', {
-      topicId,
-      focusedPostNumber,
-      prevScreen,
+    /**
+     * This action is used to remove the 'post preview,' 'post reply,' 'newPost,' and 'post detail' screens from the routes list.
+     * Then, we add a new route for 'Post Detail' and reset all routes into the new routes, depending on whether we want to go back to the home or notifications screen after 'Post Detail'
+     * For Detail implementation see https://reactnavigation.org/docs/navigation-prop/#dispatch
+     */
+
+    dispatch((state) => {
+      let newRoutesFilter = state.routes.filter(
+        ({ name }) =>
+          name !== 'NewPost' &&
+          name !== 'PostPreview' &&
+          name !== 'PostReply' &&
+          name !== 'PostDetail',
+      );
+
+      const routesMap = [
+        ...newRoutesFilter,
+        {
+          name: 'PostDetail',
+          params: { topicId, focusedPostNumber, prevScreen },
+          key: 'post-detail',
+        },
+      ];
+
+      return CommonActions.reset({
+        ...state,
+        routes: routesMap,
+        index: routesMap.length - 1,
+      });
     });
   };
 

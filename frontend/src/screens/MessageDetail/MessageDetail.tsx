@@ -31,6 +31,7 @@ import {
   insertHyperlink,
   mentionHelper,
   messageDetailHandler,
+  messageInvalidAccessAlert,
   useStorage,
 } from '../../helpers';
 import {
@@ -51,6 +52,7 @@ import {
   User,
 } from '../../types';
 import { FIRST_POST_NUMBER, MAX_POST_COUNT_PER_REQUEST } from '../../constants';
+import { useInitialLoad } from '../../hooks/useInitialLoad';
 
 import { MessageItem, ReplyInputField } from './components';
 
@@ -81,6 +83,7 @@ const SYSTEM_USERNAME = 'system';
 export default function MessageDetail() {
   const styles = useStyles();
   const { colors } = useTheme();
+  const useInitialLoadResult = useInitialLoad();
 
   const storage = useStorage();
   const user = storage.getItem('user');
@@ -92,7 +95,7 @@ export default function MessageDetail() {
   const ios = Platform.OS === 'ios';
   const screen = Dimensions.get('screen');
 
-  const { navigate } = useNavigation<StackNavProp<'MessageDetail'>>();
+  const { navigate, reset } = useNavigation<StackNavProp<'MessageDetail'>>();
 
   const {
     params: { id, postNumber, emptied, hyperlinkUrl = '', hyperlinkTitle = '' },
@@ -167,6 +170,34 @@ export default function MessageDetail() {
             }),
           );
           setParticipants(participants);
+        }
+      },
+      onError: (error) => {
+        /**
+         * if we get error about private post which cannot be access.
+         * we need check first it is because user haven't login or because post it self only open to specific group
+         * if user not login we will redirect to login scene.
+         * But if user already login still get same error will redirect to home scene and show private post alert
+         */
+
+        if (error.message.includes('Invalid Access')) {
+          if (
+            !useInitialLoadResult.loading &&
+            !useInitialLoadResult.isLoggedIn
+          ) {
+            reset({
+              index: 1,
+              routes: [
+                { name: 'TabNav', state: { routes: [{ name: 'Home' }] } },
+                {
+                  name: 'Login',
+                },
+              ],
+            });
+          } else {
+            navigate('TabNav', { state: { routes: [{ name: 'Home' }] } });
+            messageInvalidAccessAlert();
+          }
         }
       },
     },

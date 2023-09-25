@@ -1,11 +1,6 @@
 import { FieldResolver, queryField, booleanArg, nullable } from 'nexus';
-import axios from 'axios';
 
-import {
-  FIRST_POST_NUMBER,
-  LIKE_ACTION_ID,
-  privateTopic,
-} from '../../constants';
+import { FIRST_POST_NUMBER, LIKE_ACTION_ID } from '../../constants';
 import {
   validateTopicDetailOptionalArgs,
   errorHandler,
@@ -58,14 +53,6 @@ let topicDetailQueryResolver: FieldResolver<'Query', 'topicDetail'> = async (
     data.postStream.firstPost = firstPostOfTopic;
     return data;
   } catch (error: unknown) {
-    /**
-     * This condition is implemented to throw a specific error in the topic when a user receives a 403 error,
-     * indicating that the user does not have access to open the topic due to its private status.
-     */
-
-    if (axios.isAxiosError(error) && error.response?.status === 403) {
-      throw new Error(privateTopic);
-    }
     throw errorHandler(error);
   }
 };

@@ -8,3 +8,8 @@ export class SessionExpiredError extends Error {
     super('Session Expired');
   }
 }
+export class InvalidAccessError extends Error {
+  constructor() {
+    super('Invalid Access');
+  }
+}

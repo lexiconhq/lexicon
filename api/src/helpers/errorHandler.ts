@@ -2,7 +2,11 @@ import { AxiosError } from 'axios';
 
 import { ChangeUsernameError, EditPostError, errorTypes } from '../constants';
 
-import { AuthorizationError, SessionExpiredError } from './customErrors';
+import {
+  AuthorizationError,
+  SessionExpiredError,
+  InvalidAccessError,
+} from './customErrors';
 
 export function errorHandler(unknownError: unknown) {
   const e = unknownError as AxiosError;
@@ -20,7 +24,10 @@ export function errorHandler(unknownError: unknown) {
       throw new Error('This username is already taken');
     }
     const { invalidAccess, unauthenticatedAccess } = errorTypes;
-    if (errorType === unauthenticatedAccess || errorType === invalidAccess) {
+    if (errorType === invalidAccess) {
+      throw new InvalidAccessError();
+    }
+    if (errorType === unauthenticatedAccess) {
       // If the token was provided and we encountered one of these errors, it means the token was invalid
       if (cookie?.includes('_t=')) {
         throw new SessionExpiredError();
