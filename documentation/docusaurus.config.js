@@ -74,6 +74,7 @@ module.exports = {
             'https://github.com/lexiconhq/lexicon/blob/master/documentation/',
           routeBasePath: '/',
           onlyIncludeVersions: ['1.0.0', '2.0.0-beta'],
+          lastVersion: '2.0.0-beta',
           versions: {
             '2.0.0-beta': {
               path: 'version-2.0.0-beta',
