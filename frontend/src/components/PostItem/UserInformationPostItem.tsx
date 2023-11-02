@@ -6,7 +6,6 @@ import {
   UserActionFragment,
   UserActionFragmentDoc,
 } from '../../generated/server';
-import { LoadingOrError } from '../LoadingOrError';
 
 import { PostItem, PostItemProps } from './PostItem';
 
@@ -41,7 +40,7 @@ function BaseUserInformationPostItem(props: Props) {
      * This shouldn't ever happen since UserActions
      * have always already loaded the UserInformation screens by this point.
      */
-    return <LoadingOrError message="Post not found" />;
+    throw new Error('Post not found');
   }
 
   let {

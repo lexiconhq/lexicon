@@ -44,13 +44,15 @@ export const TOPICS = gql`
           likeCount
           categoryId
           posters {
-            userId
-            description
-            user {
-              id
-              username
-              name
-              avatar: avatarTemplate
+            ... on TopicPoster {
+              userId
+              description
+              user {
+                id
+                username
+                name
+                avatar: avatarTemplate
+              }
             }
           }
           authorUserId

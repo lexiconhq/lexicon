@@ -34,8 +34,15 @@ import {
   useReplyTopic,
 } from '../hooks';
 import { makeStyles, useTheme } from '../theme';
-import { RootStackNavProp, RootStackRouteProp, StackRouteProp } from '../types';
+import {
+  PollFormContextValues,
+  RootStackNavProp,
+  RootStackRouteProp,
+  StackRouteProp,
+} from '../types';
 import { useModal } from '../utils';
+import { FORM_DEFAULT_VALUES } from '../constants';
+import { PollPostPreview } from '../components/Poll';
 
 const ios = Platform.OS === 'ios';
 
@@ -62,7 +69,7 @@ export default function PostPreview() {
   const storage = useStorage();
   const channels = storage.getItem('channels');
 
-  const { reset: resetForm } = useFormContext();
+  const { reset: resetForm, getValues } = useFormContext();
 
   const [imageUrls, setImageUrls] = useState<Array<string>>();
 
@@ -118,8 +125,7 @@ export default function PostPreview() {
 
   const { newTopic, loading: newTopicLoading } = useNewTopic({
     onCompleted: ({ newTopic: result }) => {
-      resetForm();
-
+      resetForm(FORM_DEFAULT_VALUES);
       reset({
         index: 1,
         routes: [
@@ -147,7 +153,7 @@ export default function PostPreview() {
 
   const { editPost, loading: editPostLoading } = useEditPost({
     onCompleted: () => {
-      resetForm();
+      resetForm(FORM_DEFAULT_VALUES);
       !editTopicId && // if there's also editTopicId then don't do anything.
         navToPostDetail({
           topicId: ('topicId' in postData && postData.topicId) || 0,
@@ -161,7 +167,7 @@ export default function PostPreview() {
 
   const { editTopic, loading: editTopicLoading } = useEditTopic({
     onCompleted: () => {
-      resetForm();
+      resetForm(FORM_DEFAULT_VALUES);
       navToPostDetail({
         topicId: editTopicId || 0,
         focusedPostNumber,
@@ -194,13 +200,31 @@ export default function PostPreview() {
 
   const postToServer = () => {
     setModal(false);
+    let polls: Array<PollFormContextValues> = getValues('polls');
+
+    let newContent = content;
+
+    /**
+     * This condition is used to generate new content if there is a poll. If the user adds a poll, we want to generate the poll as the initial content.
+     */
+
+    if (polls && polls.length > 0) {
+      for (let i = polls.length - 1; i >= 0; i--) {
+        const poll = polls[i];
+        const { pollContent } = poll;
+        if (pollContent) {
+          newContent = `${pollContent}\n` + newContent;
+        }
+      }
+    }
+
     if (editPostId || editTopicId) {
       if (editPostId) {
         editPost({
           variables: {
             postId: editPostId,
             postInput: {
-              raw: content,
+              raw: newContent,
             },
           },
         });
@@ -223,7 +247,7 @@ export default function PostPreview() {
       const postNumber = 'postNumber' in postData ? postData.postNumber : null;
       replyTopic({
         variables: {
-          content,
+          content: newContent,
           topicId: ('topicId' in postData && postData.topicId) || 0,
           replyToPostNumber: postNumber,
         },
@@ -235,11 +259,26 @@ export default function PostPreview() {
             title,
             category: ('channelId' in postData && postData.channelId) || 0,
             tags,
-            raw: content,
+            raw: newContent,
           },
         },
       });
     }
+  };
+
+  const renderPolls = () => {
+    const polls: Array<PollFormContextValues> = getValues('polls');
+    if (!polls) {
+      return null;
+    }
+
+    return polls.map((poll, index) => (
+      <PollPostPreview
+        key={index}
+        options={poll.pollOptions}
+        title={poll.title}
+      />
+    ));
   };
 
   return (
@@ -316,7 +355,7 @@ export default function PostPreview() {
         {reply && 'replyToPostId' in postData && postData.replyToPostId && (
           <LocalRepliedPost replyToPostId={postData.replyToPostId} />
         )}
-
+        {renderPolls()}
         <Markdown
           style={styles.markdown}
           content={generateMarkdownContent(content, imageUrls)}

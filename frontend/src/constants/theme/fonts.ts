@@ -7,6 +7,8 @@ export const FONT_VARIANTS = {
 };
 
 export const FONT_SIZES = {
+  xxxl: 64,
+  xxl: 40,
   xl: 24,
   l: 18,
   m: 16,

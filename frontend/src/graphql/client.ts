@@ -22,7 +22,6 @@ import {
   handleDuplicates,
 } from '../helpers';
 import { networkStatusVar, requestFailedVar } from '../components/RequestError';
-import { reset } from '../navigation/NavigationService';
 import Config from '../../Config';
 import { logoutTokenVar, setTokenState, tokenVar } from '../reactiveVars';
 
@@ -199,14 +198,6 @@ const errorLink = onError(({ graphQLErrors, networkError, operation }) => {
     if (sessionExpired) {
       showLogoutAlert();
       setTokenState(null);
-      reset({
-        index: 0,
-        routes: [
-          {
-            name: 'InstanceLoading',
-          },
-        ],
-      });
 
       /**
        * Setting the error message to ERROR_HANDLED_BY_LINK const to avoid

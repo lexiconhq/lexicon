@@ -106,8 +106,8 @@ export default function Home() {
   const { addListener, navigate } = useNavigation<StackNavProp<'TabNav'>>();
 
   const { params } = useRoute<TabRouteProp<'Home'>>();
-  const { getValues } = useFormContext();
-  const { channelId: receivedChannelId } = getValues();
+  const { watch } = useFormContext();
+  const receivedChannelId: number | undefined = watch('channelId');
 
   const routeParams = params === undefined ? false : params.backToTop;
 
@@ -447,6 +447,7 @@ export default function Home() {
     if (topicsError) {
       return <LoadingOrError message={errorHandler(topicsError, true)} />;
     }
+
     if (!topicsData || channelsLoading || loading) {
       return <LoadingOrError loading />;
     }

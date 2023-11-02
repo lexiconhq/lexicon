@@ -6,7 +6,6 @@ import { transformTopicToPost, useStorage } from '../../helpers';
 import { makeStyles } from '../../theme';
 import { StackNavProp } from '../../types';
 import { TopicFragment, TopicFragmentDoc } from '../../generated/server';
-import { LoadingOrError } from '../LoadingOrError';
 import { MetricsProp } from '../Metrics/Metrics';
 
 import { PostItemFooter } from './PostItemFooter';
@@ -40,7 +39,7 @@ function BaseHomePostItem(props: Props) {
      * This shouldn't ever happen since postList
      * have always already loaded the topic by this point.
      */
-    return <LoadingOrError message="Post not found" />;
+    throw new Error('Post not found');
   }
 
   let channelsData = storage.getItem('channels');

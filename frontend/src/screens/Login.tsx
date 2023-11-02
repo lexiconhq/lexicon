@@ -31,7 +31,7 @@ export default function Login() {
 
   const [hidePassword, setHidePassword] = useState(true);
 
-  const { reset, navigate } = useNavigation<StackNavProp<'Login'>>();
+  const { navigate } = useNavigation<StackNavProp<'Login'>>();
   const { syncToken } = usePushNotificationsToken();
   const { login, loading, error } = useLogin({
     onCompleted: async ({ login: authUser }) => {
@@ -44,14 +44,14 @@ export default function Login() {
           username: user.username,
           name: user.name ?? '',
           avatar: getImage(user.avatar),
+          trustLevel: user.trustLevel,
+          groups: user.groups.map((group) => group.name),
         });
         syncToken();
 
         if (redirectPath) {
           handleRedirect();
           setRedirectPath('');
-        } else {
-          reset({ index: 0, routes: [{ name: 'TabNav' }] });
         }
         // eslint-disable-next-line no-underscore-dangle
       } else if (authUser.__typename === 'SecondFactorRequired') {

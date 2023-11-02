@@ -78,6 +78,7 @@ function BaseNestedComment(props: Props) {
     onPressMore,
     onPressAuthor,
     onLayout,
+    emojiStatus,
     ...otherProps
   } = props;
 
@@ -118,6 +119,8 @@ function BaseNestedComment(props: Props) {
             style={styles.author}
             subtitleStyle={styles.textTime}
             onPressAuthor={() => onPressAuthor && onPressAuthor(username)}
+            showStatus
+            emojiCode={emojiStatus}
           >
             {showOptions ? (
               <Icon

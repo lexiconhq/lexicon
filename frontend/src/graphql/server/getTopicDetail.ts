@@ -1,5 +1,8 @@
 import { gql } from '@apollo/client';
 
+import { USER_STATUS_FRAGMENT } from './userStatus';
+import { POLL_FRAGMENT } from './poll';
+
 export const USER_FRAGMENT = gql`
   fragment UserFragment on UserIcon {
     id
@@ -26,13 +29,24 @@ export const TOPIC_FRAGMENT = gql`
     likeCount
     categoryId
     posters {
-      userId
-      description
-      user {
-        id
-        username
-        name
-        avatar: avatarTemplate
+      ... on TopicPoster {
+        userId
+        description
+        user {
+          id
+          username
+          name
+          avatar: avatarTemplate
+        }
+      }
+      ... on SuggestionTopicPoster {
+        description
+        user {
+          id
+          username
+          name
+          avatar: avatarTemplate
+        }
       }
     }
     authorUserId
@@ -58,6 +72,8 @@ export const TOPIC_DETAIL_FRAGMENT = gql`
 `;
 
 export const POST_FRAGMENT = gql`
+  ${USER_STATUS_FRAGMENT}
+  ${POLL_FRAGMENT}
   fragment PostFragment on Post {
     id
     topicId
@@ -79,6 +95,16 @@ export const POST_FRAGMENT = gql`
     }
     postNumber
     replyToPostNumber
+    userStatus {
+      ...UserStatusFragment
+    }
+    polls {
+      ...PollFragment
+    }
+    pollsVotes {
+      pollName
+      pollOptionIds
+    }
   }
 `;
 

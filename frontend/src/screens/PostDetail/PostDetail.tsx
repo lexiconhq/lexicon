@@ -24,11 +24,15 @@ import {
   PostDetailHeaderItemProps,
   PostDetailHeaderItem,
 } from '../../components';
-import { MAX_POST_COUNT_PER_REQUEST } from '../../constants';
+import {
+  MAX_POST_COUNT_PER_REQUEST,
+  RESULTS_DROPDOWN_OPTIONS,
+} from '../../constants';
 import { Text } from '../../core-ui';
 import {
   errorHandler,
   errorHandlerAlert,
+  filterMarkdownContent,
   handleUnsupportedMarkdown,
   LoginError,
   postDetailContentHandler,
@@ -109,7 +113,7 @@ export default function PostDetail() {
   const postIdOnFocusRef = useRef<number>();
   const postIdOnFocus = postIdOnFocusRef.current;
 
-  const { setValue } = useFormContext();
+  const { setValue, reset: resetForm } = useFormContext();
 
   const ios = Platform.OS === 'ios';
 
@@ -319,7 +323,7 @@ export default function PostDetail() {
   };
 
   const navToPost = () => {
-    if (!topic || !postIdOnFocus) {
+    if (!topic || !postIdOnFocus || !firstPost) {
       return;
     }
     const {
@@ -329,6 +333,8 @@ export default function PostDetail() {
       selectedChannelId,
       selectedTag: selectedTagsIds,
     } = topic;
+
+    const { polls } = firstPost;
     const focusedPost = getPost(postIdOnFocus);
     if (!focusedPost) {
       return;
@@ -341,18 +347,55 @@ export default function PostDetail() {
     } = focusedPost;
 
     if (postIdOnFocus === firstPostId) {
-      setValue('title', title);
-      setValue('raw', oldContent);
-      setValue('tags', selectedTagsIds);
-      setValue('channelId', selectedChannelId);
-      setValue('editPostId', firstPostId);
-      setValue('editTopicId', id);
+      /**
+       * Here, we set the default value of the form context before navigating to edit a post.
+       * This is done to check if the value has changed compared to the initial value of the post before editing, using `react-hook-form`'s `isDirty` feature.
+       */
+
+      const newContentFilter = filterMarkdownContent(oldContent);
+
+      /**
+       * Add polls reset from based on PollFormContextValues type for default value if polls not null
+       * which mean if not empty array the post already has poll
+       */
+
+      resetForm({
+        title: title,
+        raw: newContentFilter.filteredMarkdown,
+        tags: selectedTagsIds,
+        channelId: selectedChannelId,
+        editPostId: firstPostId,
+        editTopicId: id,
+        polls:
+          (polls &&
+            newContentFilter.pollMarkdowns.length &&
+            polls.map((data, index) => {
+              return {
+                title: data.title,
+                minChoice: data.min,
+                maxChoice: data.max,
+                step: data.step,
+                results: RESULTS_DROPDOWN_OPTIONS.findIndex(
+                  ({ value }) => value === data.results,
+                ),
+                chartType: data.chartType === 'bar' ? 0 : 1,
+                isPublic: data.public,
+                pollOptions: data.options.map(({ html }) => ({
+                  option: html,
+                })),
+                groups: data.groups?.split(',') || [],
+                pollChoiceType: data.type,
+                closeDate: data.close ? new Date(data.close) : undefined,
+                pollContent: newContentFilter.pollMarkdowns[index],
+              };
+            })) ||
+          [],
+      });
+
+      setValue('oldContent', newContentFilter.filteredMarkdown);
+      setValue('oldTitle', title);
 
       navigate('NewPost', {
-        oldContent,
-        oldTitle: title,
-        oldChannel: selectedChannelId,
-        oldTags: selectedTagsIds,
         editedUser: { username, avatar },
       });
       return;
@@ -545,6 +588,9 @@ export default function PostDetail() {
               isHidden={isHidden}
               onPressViewIgnoredContent={onPressViewIgnoredContent}
               onPressReply={onPressReplyProps}
+              polls={firstPost?.polls}
+              pollsVotes={firstPost?.pollsVotes}
+              postId={firstPost?.id}
             />
           }
           onRefresh={hasOlderPost ? () => loadMoreComments(false) : refreshPost}

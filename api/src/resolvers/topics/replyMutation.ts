@@ -6,7 +6,7 @@ import snakecaseKey from 'snakecase-keys';
 import { FieldResolver, mutationField, arg, intArg, nullable } from 'nexus';
 
 import { CONTENT_FORM_URLENCODED } from '../../constants';
-import { errorHandler } from '../../helpers';
+import { errorHandler, formatPolls } from '../../helpers';
 import { Context } from '../../types';
 
 export let replyResolver: FieldResolver<'Mutation', 'reply'> = async (
@@ -55,7 +55,18 @@ export let replyResolver: FieldResolver<'Mutation', 'reply'> = async (
       stringify(replyInputSnake),
       config,
     );
-    return camelcaseKey(data, { deep: true });
+
+    let replyPostData = camelcaseKey(data, { deep: true });
+    const { formattedPolls, formattedPollsVotes } = formatPolls(
+      replyPostData.polls,
+      replyPostData.pollsVotes,
+    );
+
+    return {
+      ...replyPostData,
+      polls: formattedPolls,
+      pollsVotes: formattedPollsVotes,
+    };
   } catch (e) {
     throw errorHandler(e);
   }

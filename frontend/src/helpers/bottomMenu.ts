@@ -3,14 +3,21 @@ import { RootStackParamList, User } from '../types';
 import { errorHandlerAlert } from './errorHandler';
 import { imagePickerHandler } from './imagePickerHandler';
 
+export type BottomMenuNavigationScreens =
+  | 'PostImagePreview'
+  | 'HyperLink'
+  | 'Poll';
+export type BottomMenuNavigationParams =
+  | RootStackParamList['PostImagePreview']
+  | RootStackParamList['HyperLink']
+  | RootStackParamList['Poll'];
+
 type BottomMenuParams = {
   isKeyboardShow: boolean;
   user: User | null;
   navigate: (
-    screen: 'PostImagePreview' | 'HyperLink',
-    params:
-      | RootStackParamList['PostImagePreview']
-      | RootStackParamList['HyperLink'],
+    screen: BottomMenuNavigationScreens,
+    params: BottomMenuNavigationParams,
   ) => void;
   prevScreen: 'NewPost' | 'PostReply' | 'NewMessage';
   extensions?: Array<string>;
@@ -65,5 +72,12 @@ export function bottomMenu(params: BottomMenuParams) {
     });
   };
 
-  return { onInsertImage, onInsertLink };
+  const onInsertPoll = () => {
+    if (!isKeyboardShow) {
+      return;
+    }
+    navigate('Poll', { prevScreen });
+  };
+
+  return { onInsertImage, onInsertLink, onInsertPoll };
 }

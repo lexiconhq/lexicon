@@ -72,6 +72,8 @@ export default function EditProfile(props: ProfileProps) {
 
   const storage = useStorage();
   const username = storage.getItem('user')?.username || '';
+  const trustLevel = storage.getItem('user')?.trustLevel;
+  const userGroups = storage.getItem('user')?.groups;
 
   const {
     authorizedExtensions,
@@ -171,6 +173,8 @@ export default function EditProfile(props: ProfileProps) {
           username,
           name: name || '',
           avatar,
+          trustLevel,
+          groups: userGroups || [],
         });
 
         setForm({

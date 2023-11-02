@@ -3,7 +3,7 @@ import snakecaseKey from 'snakecase-keys';
 import { FieldResolver, mutationField, arg } from 'nexus';
 
 import { ACCEPTED_LANGUAGE, CONTENT_JSON } from '../../constants';
-import { errorHandler } from '../../helpers';
+import { errorHandler, formatPolls } from '../../helpers';
 import { Context } from '../../types';
 
 export let newTopicResolver: FieldResolver<'Mutation', 'newTopic'> = async (
@@ -27,7 +27,18 @@ export let newTopicResolver: FieldResolver<'Mutation', 'newTopic'> = async (
       topicInputSnake,
       config,
     );
-    return camelcaseKey(data, { deep: true });
+
+    let newTopicData = camelcaseKey(data, { deep: true });
+    const { formattedPolls, formattedPollsVotes } = formatPolls(
+      newTopicData.polls,
+      newTopicData.pollsVotes,
+    );
+
+    return {
+      ...newTopicData,
+      polls: formattedPolls,
+      pollsVotes: formattedPollsVotes,
+    };
   } catch (e) {
     errorHandler(e);
   }

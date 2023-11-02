@@ -19,7 +19,7 @@ const { sessionExpired, unauthorizedAccess } = errorTypes;
 /**
  * isLoading is true when we are still loading token from storage or SiteSettings request still loading.
  */
-type AuthContextProps = {
+export type AuthContextProps = {
   setTokenState: (token: string | null) => void;
   cleanSession: () => Promise<void>;
 } & (
@@ -66,6 +66,24 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     loading: siteSettingsLoading,
     error: siteSettingsError,
   } = useSiteSettings({
+    onCompleted: ({ site }) => {
+      const {
+        emojiSet,
+        externalEmojiUrl,
+        discourseBaseUrl,
+        allowPoll,
+        pollCreateMinimumTrustLevel,
+      } = site;
+      storage.setItem('userStatus', {
+        emojiSet,
+        externalEmojiUrl,
+        discourseBaseUrl,
+      });
+      storage.setItem('poll', {
+        allowPoll,
+        pollCreateMinimumTrustLevel,
+      });
+    },
     onError: ({ message }) => {
       if (
         message.includes(sessionExpired) ||

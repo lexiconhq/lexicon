@@ -208,7 +208,7 @@ export default function SelectUser() {
           )}
 
           {selectedUsers.length > 0 &&
-            selectedUsers.map((user, index) => {
+            selectedUsers.map((user) => {
               if (user.name) {
                 const isCheck = currentUsers.includes(user.username);
                 let userImage = getImage(user.avatar || '');
@@ -224,7 +224,7 @@ export default function SelectUser() {
                 );
               } else {
                 return (
-                  <Text style={styles.noUser} key={`noUser-${index}`}>
+                  <Text style={styles.noUser}>
                     {t('Find Users with the Search Bar above.')}
                   </Text>
                 );

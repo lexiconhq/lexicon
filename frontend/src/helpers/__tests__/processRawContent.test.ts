@@ -1,6 +1,7 @@
 import { NO_EXCERPT_WORDING } from '../../constants';
 import {
   anchorToMarkdown,
+  filterMarkdownContent,
   generateMarkdownContent,
   getPostShortUrl,
   sortImageUrl,
@@ -151,5 +152,32 @@ describe('generateMarkdownContent returns markdown content with complete urls', 
     ).toBe(
       `${markdownContent} ${completeImageUrl} ${secondCompleteUrlInMarkdown}`,
     );
+  });
+});
+
+describe('filterMarkdownContent returns filtered markdown content', () => {
+  it('should return the content without the poll markdown', () => {
+    const pollMarkdown =
+      'This is a poll![poll type=number results=always chartType=bar min=1 max=10 step=2][/poll]';
+    const result = 'This is a poll!';
+    const filterResult = filterMarkdownContent(pollMarkdown);
+    expect(filterResult.filteredMarkdown).toBe(result);
+    expect(filterResult.pollMarkdowns.length).toBe(1);
+    expect(filterResult.pollMarkdowns).toEqual([
+      '[poll type=number results=always chartType=bar min=1 max=10 step=2][/poll]',
+    ]);
+  });
+
+  it('should filter out multiple poll markdown', () => {
+    const pollMarkdown =
+      '[poll type=number results=always chartType=bar min=1 max=10 step=2][/poll]There is two poll![poll type=regular results=always chartType=bar]\n- Banana\n- Apple\n[/poll]';
+    const result = 'There is two poll!';
+    const filterResult = filterMarkdownContent(pollMarkdown);
+    expect(filterResult.filteredMarkdown).toBe(result);
+    expect(filterResult.pollMarkdowns.length).toBe(2);
+    expect(filterResult.pollMarkdowns).toEqual([
+      '[poll type=number results=always chartType=bar min=1 max=10 step=2][/poll]',
+      '[poll type=regular results=always chartType=bar]\n- Banana\n- Apple\n[/poll]',
+    ]);
   });
 });

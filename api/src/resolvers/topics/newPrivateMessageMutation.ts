@@ -5,7 +5,7 @@ import snakecaseKey from 'snakecase-keys';
 import { FieldResolver, mutationField, arg } from 'nexus';
 
 import { CONTENT_FORM_URLENCODED } from '../../constants';
-import { errorHandler } from '../../helpers';
+import { errorHandler, formatPolls } from '../../helpers';
 import { Context } from '../../types';
 
 export let newPrivateMessageResolver: FieldResolver<
@@ -28,7 +28,18 @@ export let newPrivateMessageResolver: FieldResolver<
       stringify(pmInputSnake),
       config,
     );
-    return camelcaseKey(data, { deep: true });
+
+    let newPrivateMessageData = camelcaseKey(data, { deep: true });
+    const { formattedPolls, formattedPollsVotes } = formatPolls(
+      newPrivateMessageData.polls,
+      newPrivateMessageData.pollsVotes,
+    );
+
+    return {
+      ...newPrivateMessageData,
+      polls: formattedPolls,
+      pollsVotes: formattedPollsVotes,
+    };
   } catch (e) {
     errorHandler(e);
   }

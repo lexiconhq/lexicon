@@ -17,7 +17,8 @@ import {
 } from './utils';
 import { AuthProvider } from './utils/AuthProvider';
 import { NewPostForm } from './types';
-import { NO_CHANNEL_FILTER_ID } from './constants';
+import { FORM_DEFAULT_VALUES } from './constants';
+import ErrorBoundary from './components/ErrorBoundary';
 
 if (Platform.OS === 'android') {
   require('intl');
@@ -41,15 +42,12 @@ export default function App() {
   const newPostMethods = useForm<NewPostForm>({
     mode: 'onChange',
     reValidateMode: 'onChange',
-    defaultValues: {
-      title: '',
-      raw: '',
-      tags: [],
-      channelId: NO_CHANNEL_FILTER_ID,
-      editPostId: undefined,
-      editTopicId: undefined,
-    },
+    defaultValues: FORM_DEFAULT_VALUES,
   });
+
+  /**
+   * Error Boundary is inside the ThemeProvider because we need to use the core UI, which relies on the theme provided by the ThemeProvider.
+   */
 
   return (
     <ApolloProvider client={client}>
@@ -58,22 +56,24 @@ export default function App() {
           <SafeAreaProvider>
             <AppearanceProvider>
               <ThemeProvider>
-                <>
-                  <OngoingLikedTopicProvider>
-                    <ModalProvider>
-                      <RedirectProvider>
-                        <RequestError>
-                          <AuthProvider>
-                            <FormProvider {...newPostMethods}>
-                              <AppNavigator />
-                            </FormProvider>
-                          </AuthProvider>
-                        </RequestError>
-                      </RedirectProvider>
-                    </ModalProvider>
-                  </OngoingLikedTopicProvider>
-                  <Toast />
-                </>
+                <ErrorBoundary>
+                  <>
+                    <OngoingLikedTopicProvider>
+                      <ModalProvider>
+                        <RedirectProvider>
+                          <RequestError>
+                            <AuthProvider>
+                              <FormProvider {...newPostMethods}>
+                                <AppNavigator />
+                              </FormProvider>
+                            </AuthProvider>
+                          </RequestError>
+                        </RedirectProvider>
+                      </ModalProvider>
+                    </OngoingLikedTopicProvider>
+                    <Toast />
+                  </>
+                </ErrorBoundary>
               </ThemeProvider>
             </AppearanceProvider>
           </SafeAreaProvider>

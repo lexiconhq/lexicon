@@ -32,6 +32,8 @@ import {
   newPostIsValid,
   getReplacedImageUploadStatus,
   useStorage,
+  BottomMenuNavigationParams,
+  BottomMenuNavigationScreens,
 } from '../helpers';
 import {
   useKASVWorkaround,
@@ -81,6 +83,7 @@ export default function PostReply() {
   const replyingTo = client.readFragment<PostFragment>({
     id: `Post:${replyToPostId}`,
     fragment: PostFragmentDoc,
+    fragmentName: 'PostFragment',
   });
 
   const ios = Platform.OS === 'ios';
@@ -212,10 +215,8 @@ export default function PostReply() {
   }, [hyperlinkTitle, hyperlinkUrl, getValues, setValue]);
 
   const onNavigate = (
-    screen: 'PostImagePreview' | 'HyperLink',
-    params:
-      | RootStackParamList['PostImagePreview']
-      | RootStackParamList['HyperLink'],
+    screen: BottomMenuNavigationScreens,
+    params: BottomMenuNavigationParams,
   ) => {
     navigate(screen, params);
   };
@@ -282,13 +283,13 @@ export default function PostReply() {
     let currentPostValidity; // temp variable to get the value of existingPostIsValid or newPostIsValid helper
 
     if (editPostId) {
-      currentPostValidity = existingPostIsValid(
+      currentPostValidity = existingPostIsValid({
         uploadsInProgress,
         title,
-        title,
+        oldTitle: title,
         content,
         oldContent,
-      );
+      });
       setPostValidity(currentPostValidity.isValid);
     } else {
       currentPostValidity = newPostIsValid(title, content, uploadsInProgress);
@@ -378,13 +379,13 @@ export default function PostReply() {
                 let currentPostValidity; // temp variable to get the value of existingPostIsValid or newPostIsValid helper
 
                 if (editPostId) {
-                  currentPostValidity = existingPostIsValid(
+                  currentPostValidity = existingPostIsValid({
                     uploadsInProgress,
                     title,
-                    title,
-                    text,
+                    oldTitle: title,
+                    content: text,
                     oldContent,
-                  );
+                  });
                   setPostValidity(currentPostValidity.isValid);
                 } else {
                   currentPostValidity = newPostIsValid(

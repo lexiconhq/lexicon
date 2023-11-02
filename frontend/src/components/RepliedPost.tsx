@@ -95,6 +95,7 @@ type LocalRepliedPostProps = {
 export function LocalRepliedPost(props: LocalRepliedPostProps) {
   let replyingTo = client.readFragment<PostFragment>({
     fragment: PostFragmentDoc,
+    fragmentName: 'postFragment',
     id: `Post:${String(props.replyToPostId)}`,
   });
   if (!replyingTo) {

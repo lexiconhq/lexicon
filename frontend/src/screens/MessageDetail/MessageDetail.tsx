@@ -9,11 +9,14 @@ import {
   SafeAreaView,
   View,
   VirtualizedList,
+  Alert,
 } from 'react-native';
 import { KeyboardAccessoryView } from 'react-native-keyboard-accessory';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
 import {
+  ActionSheet,
+  ActionSheetProps,
   AvatarRow,
   CustomHeader,
   FooterLoadingIndicator,
@@ -22,6 +25,7 @@ import {
 } from '../../components';
 import { Divider, Icon, TextInputType } from '../../core-ui';
 import {
+  LeaveMessageError,
   errorHandler,
   errorHandlerAlert,
   formatExtensions,
@@ -41,6 +45,7 @@ import {
   useSiteSettings,
   useMessageDetail,
   useLoadMorePost,
+  useLeaveMessage,
 } from '../../hooks';
 import { makeStyles, useTheme } from '../../theme';
 import {
@@ -52,6 +57,7 @@ import {
   User,
 } from '../../types';
 import { FIRST_POST_NUMBER, MAX_POST_COUNT_PER_REQUEST } from '../../constants';
+import { MESSAGE } from '../../graphql/server/message';
 import { useInitialLoad } from '../../hooks/useInitialLoad';
 
 import { MessageItem, ReplyInputField } from './components';
@@ -95,7 +101,8 @@ export default function MessageDetail() {
   const ios = Platform.OS === 'ios';
   const screen = Dimensions.get('screen');
 
-  const { navigate, reset } = useNavigation<StackNavProp<'MessageDetail'>>();
+  const { navigate, goBack, reset } =
+    useNavigation<StackNavProp<'MessageDetail'>>();
 
   const {
     params: { id, postNumber, emptied, hyperlinkUrl = '', hyperlinkTitle = '' },
@@ -129,6 +136,8 @@ export default function MessageDetail() {
     start: 0,
     end: 0,
   });
+  const [showActionSheet, setShowActionSheet] = useState(false);
+  const [canLeaveMessage, setCanLeaveMessage] = useState(false);
 
   let contentHeight = initialHeight ? initialHeight : 0;
 
@@ -170,6 +179,11 @@ export default function MessageDetail() {
             }),
           );
           setParticipants(participants);
+          setCanLeaveMessage(
+            result.details.allowedUsers
+              ? result.details.allowedUsers.length > 1
+              : false,
+          );
         }
       },
       onError: (error) => {
@@ -288,6 +302,23 @@ export default function MessageDetail() {
   });
 
   useMessageTiming(id, firstLoadedPostIndex, data?.contents);
+
+  const { leaveMessage } = useLeaveMessage({
+    onCompleted: ({ leaveMessage }) => {
+      if (leaveMessage === 'success') {
+        goBack();
+      }
+    },
+    onError: () => {
+      errorHandlerAlert(LeaveMessageError);
+    },
+    refetchQueries: [
+      {
+        query: MESSAGE,
+        variables: { username: user?.username },
+      },
+    ],
+  });
 
   const { loadMorePosts, isLoadingOlderPost } = useLoadMorePost(id);
   const loadMoreMessages = async (loadNewerMessages: boolean) => {
@@ -561,14 +592,56 @@ export default function MessageDetail() {
     }
   };
 
+  const onPressMore = () => {
+    setShowActionSheet(true);
+  };
+
+  const onLeaveMessage = () => {
+    leaveMessage({
+      variables: {
+        topicId: id,
+        username: '',
+      },
+    });
+  };
+
+  const actionItemOptions = () => {
+    let options: ActionSheetProps['options'] = [];
+
+    if (ios) {
+      options.push({ label: t('Cancel') });
+    }
+    options.push({ label: t('Leave Message') });
+
+    return options;
+  };
+
+  const actionItemOnPress = () => {
+    return Alert.alert(
+      t('Leave Message?'),
+      t('Are you sure you want to leave this message?'),
+      [
+        { text: t('Cancel') },
+        {
+          text: t('Leave'),
+          onPress: onLeaveMessage,
+        },
+      ],
+    );
+  };
+
   if (messageDetailLoading && title === '') {
     return <LoadingOrError loading />;
   }
 
-  const Header = ios ? (
-    <CustomHeader title={t('Message')} />
+  const Header = canLeaveMessage ? (
+    <CustomHeader
+      title={t('Message')}
+      rightIcon="More"
+      onPressRight={onPressMore}
+    />
   ) : (
-    <Divider style={styles.divider} />
+    !ios && <Divider style={styles.divider} />
   );
 
   if (error) {
@@ -581,45 +654,57 @@ export default function MessageDetail() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      {Header}
-      <AvatarRow
-        title={title}
-        posters={members}
-        style={styles.participants}
-        extended
-      />
+    <>
+      <SafeAreaView style={styles.container}>
+        {Header}
+        <AvatarRow
+          title={title}
+          posters={members}
+          style={styles.participants}
+          extended
+        />
 
-      <VirtualizedList
-        ref={virtualListRef}
-        refreshControl={
-          <RefreshControl
-            refreshing={refetching || isLoadingOlderPost}
-            onRefresh={() => loadMoreMessages(false)}
-            tintColor={colors.primary}
-          />
-        }
-        data={data?.contents ?? []}
-        getItem={getItem}
-        getItemCount={getItemCount}
-        renderItem={renderItem}
-        keyExtractor={keyExtractor}
-        contentInset={{
-          bottom: textInputFocused ? (35 * screen.height) / 100 : 0,
-          top: contentHeight ? ((5 * screen.height) / 100) * -1 : 0,
+        <VirtualizedList
+          ref={virtualListRef}
+          refreshControl={
+            <RefreshControl
+              refreshing={refetching || isLoadingOlderPost}
+              onRefresh={() => loadMoreMessages(false)}
+              tintColor={colors.primary}
+            />
+          }
+          data={data?.contents ?? []}
+          getItem={getItem}
+          getItemCount={getItemCount}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+          contentInset={{
+            bottom: textInputFocused ? (35 * screen.height) / 100 : 0,
+            top: contentHeight ? ((5 * screen.height) / 100) * -1 : 0,
+          }}
+          onEndReachedThreshold={0.1}
+          onEndReached={() => loadMoreMessages(true)}
+          onContentSizeChange={onContentSizeChange}
+          contentContainerStyle={styles.messages}
+          ListFooterComponent={
+            <FooterLoadingIndicator isHidden={!hasNewerMessages} />
+          }
+          onScroll={onMessageScroll}
+          onScrollToIndexFailed={onMessageScrollHandler}
+        />
+        {renderFooter}
+      </SafeAreaView>
+      <ActionSheet
+        visible={showActionSheet}
+        options={actionItemOptions()}
+        cancelButtonIndex={ios ? 0 : undefined}
+        actionItemOnPress={actionItemOnPress}
+        onClose={() => {
+          setShowActionSheet(false);
         }}
-        onEndReachedThreshold={0.1}
-        onEndReached={() => loadMoreMessages(true)}
-        onContentSizeChange={onContentSizeChange}
-        contentContainerStyle={styles.messages}
-        ListFooterComponent={
-          <FooterLoadingIndicator isHidden={!hasNewerMessages} />
-        }
-        onScroll={onMessageScroll}
-        onScrollToIndexFailed={onMessageScrollHandler}
+        style={!ios && styles.androidModalContainer}
       />
-      {renderFooter}
-    </SafeAreaView>
+    </>
   );
 }
 
@@ -664,6 +749,9 @@ const useStyles = makeStyles(({ colors, shadow, spacing }) => {
       paddingVertical: spacing.m,
       paddingRight: spacing.s,
       backgroundColor: colors.background,
+    },
+    androidModalContainer: {
+      paddingHorizontal: spacing.xxxl,
     },
   };
 });

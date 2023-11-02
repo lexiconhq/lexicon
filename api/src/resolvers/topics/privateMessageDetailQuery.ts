@@ -5,8 +5,9 @@ import {
   errorHandler,
   fetchTopicDetail,
   getTopicDetailBaseArgs,
+  formatPolls,
 } from '../../helpers';
-import { Context } from '../../types';
+import { Context, Post } from '../../types';
 
 // TODO: Move message detail handler from frontend to this endpoint #837
 let privateMessageDetailQueryResolver: FieldResolver<
@@ -15,12 +16,28 @@ let privateMessageDetailQueryResolver: FieldResolver<
 > = async (_, { topicId, postIds, postNumber }, { client }: Context) => {
   try {
     validateTopicDetailOptionalArgs({ postIds, postNumber });
-    return await fetchTopicDetail({
+    const data = await fetchTopicDetail({
       client,
       topicId,
       postIds,
       postNumber,
     });
+
+    let formattedPosts = data.postStream.posts.map((post: Post) => {
+      const { formattedPolls, formattedPollsVotes } = formatPolls(
+        post.polls,
+        post.pollsVotes,
+      );
+
+      return {
+        ...post,
+        polls: formattedPolls,
+        pollsVotes: formattedPollsVotes,
+      };
+    });
+    data.postStream.posts = formattedPosts;
+
+    return data;
   } catch (error) {
     throw errorHandler(error);
   }

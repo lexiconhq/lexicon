@@ -3,10 +3,12 @@ import { Keyboard, Platform, View } from 'react-native';
 
 import { Divider, Icon } from '../core-ui';
 import { makeStyles, useTheme } from '../theme';
+import { useStorage } from '../helpers';
 
 type Props = {
   onInsertImage: () => void;
   onInsertLink: () => void;
+  onInsertPoll?: () => void;
   showLeftMenu?: boolean;
 };
 
@@ -14,7 +16,16 @@ export function BottomMenu(props: Props) {
   const styles = useStyles();
   const { colors } = useTheme();
 
-  const { onInsertImage, onInsertLink, showLeftMenu = true } = props;
+  const storage = useStorage();
+  const pollSetting = storage.getItem('poll');
+  const userTrustLevel = storage.getItem('user')?.trustLevel;
+
+  const {
+    onInsertImage,
+    onInsertLink,
+    onInsertPoll,
+    showLeftMenu = true,
+  } = props;
 
   const ios = Platform.OS === 'ios';
 
@@ -42,6 +53,19 @@ export function BottomMenu(props: Props) {
               onPress={onInsertLink}
               style={styles.iconButton}
             />
+            <Divider vertical />
+            {onInsertPoll &&
+              pollSetting?.allowPoll &&
+              userTrustLevel &&
+              pollSetting.pollCreateMinimumTrustLevel <= userTrustLevel && (
+                <Icon
+                  name="Chart"
+                  size="l"
+                  color={colors.textLighter}
+                  onPress={onInsertPoll}
+                  style={styles.iconButton}
+                />
+              )}
             <Divider vertical />
           </View>
         </View>

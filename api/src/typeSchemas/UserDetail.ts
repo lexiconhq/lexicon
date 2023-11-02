@@ -86,6 +86,7 @@ export let UserDetail = objectType({
     });
     t.list.field('userAuthTokens', { type: 'UserAuthToken' });
     t.field('userOption', { type: 'UserOption' });
+    t.nullable.field('status', { type: 'UserStatus' });
   },
 });
 /**

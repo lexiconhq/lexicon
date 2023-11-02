@@ -94,7 +94,17 @@ export const GET_MESSAGE_DETAIL = gql`
           username
           avatar: avatarTemplate
         }
+        createdBy {
+          id
+          username
+        }
       }
     }
+  }
+`;
+
+export const LEAVE_MESSAGE = gql`
+  mutation LeaveMessage($topicId: Int!, $username: String!) {
+    leaveMessage(topicId: $topicId, username: $username)
   }
 `;

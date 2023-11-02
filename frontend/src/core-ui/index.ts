@@ -16,3 +16,4 @@ export * from './MentionedText';
 export * from './RadioButton';
 export * from './Text';
 export * from './TextInput';
+export * from './Emoji';

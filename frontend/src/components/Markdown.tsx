@@ -17,7 +17,11 @@ import { makeStyles } from '../theme';
 import { StackNavProp } from '../types';
 import CachedImage from '../core-ui/CachedImage';
 import { isEmojiImage } from '../helpers/emojiHandler';
-import { extractPathname, getValidDetailParams } from '../helpers';
+import {
+  extractPathname,
+  filterMarkdownContent,
+  getValidDetailParams,
+} from '../helpers';
 import { discourseHostVar } from '../constants';
 
 type Props = Omit<MarkdownProps, 'rules' | 'style'> & {
@@ -46,7 +50,7 @@ export function Markdown(props: Props) {
     ...otherProps
   } = props;
 
-  content = content || '';
+  content = filterMarkdownContent(content).filteredMarkdown;
 
   styles = fontColor
     ? { ...styles, ...{ body: { ...styles.body, color: fontColor } } }

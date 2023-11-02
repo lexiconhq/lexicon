@@ -103,6 +103,7 @@ export default function FlagPost() {
                     selected={checked === id}
                     onPress={() => setChecked(id)}
                     disabled={loading}
+                    checkCircleIcon
                   >
                     <Text style={styles.headerText} variant="bold">
                       {name}
@@ -134,6 +135,7 @@ export default function FlagPost() {
                       selected={checked === id}
                       onPress={() => setChecked(id)}
                       disabled={loading}
+                      checkCircleIcon
                     >
                       <Text style={styles.headerText} variant="bold">
                         {name.replace('@%{username}', `${flaggedAuthor}`)}

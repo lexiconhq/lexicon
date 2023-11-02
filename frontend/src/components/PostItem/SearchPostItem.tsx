@@ -8,7 +8,6 @@ import {
   SearchTopicFragment,
   SearchTopicFragmentDoc,
 } from '../../generated/server';
-import { LoadingOrError } from '../LoadingOrError';
 
 import { PostItem, PostItemProps } from './PostItem';
 
@@ -56,7 +55,7 @@ function BaseSearchPostItem(props: Props) {
      * This shouldn't ever happen since SearchTopic and SearchPost already
      * fetched in SearchScreen
      */
-    return <LoadingOrError message="Post not found" />;
+    throw new Error('Post not found');
   }
   let channels = storage.getItem('channels');
   const channel = findChannelByCategoryId({

@@ -9,6 +9,7 @@ import {
   PostList,
   ShowImageModal,
   UserInformationPostItem,
+  UserStatus,
 } from '../components';
 import { Avatar, Button, Text } from '../core-ui';
 import { errorHandler, getImage, useStorage } from '../helpers';
@@ -46,6 +47,10 @@ export default function UserInformation() {
   const userImage = getImage(profileData?.userProfile.user.avatar || '', 'xl');
   const bio = profileData?.userProfile.user.bioRaw;
   const splittedBio = bio ? bio.split(/\r\n|\r|\n/) : [''];
+  const statusUser =
+    // eslint-disable-next-line no-underscore-dangle
+    profileData?.userProfile.user.__typename === 'UserDetail' &&
+    profileData.userProfile.user.status;
 
   const { data, loading, error, networkStatus, refetch, fetchMore } =
     useActivity({ variables: { username: username, offset: 0 } }, 'HIDE_ALERT');
@@ -122,6 +127,13 @@ export default function UserInformation() {
             }
             style={styles.bioContainer}
           />
+          {statusUser && (
+            <UserStatus
+              emojiCode={statusUser.emoji}
+              status={statusUser.description}
+              styleContainer={styles.statusContainer}
+            />
+          )}
           <View style={styles.buttonContainer}>
             {currentUser !== username && (
               <Button content={t('Message')} onPress={onPressNewMessage} />
@@ -208,9 +220,13 @@ const useStyles = makeStyles(({ colors, spacing }) => ({
   bioContainer: {
     paddingHorizontal: spacing.xxl,
   },
+  statusContainer: {
+    marginTop: spacing.m,
+  },
   buttonContainer: {
     flexDirection: 'row',
     marginVertical: spacing.xl,
+    marginTop: spacing.m,
   },
   // TODO: This LoC is meant for the next phase
   // buttonDivider: {

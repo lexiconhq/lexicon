@@ -33,19 +33,33 @@ let transformTopicToPost = ({
   channels,
   imageUrl,
 }: Params): PostWithoutId => {
-  const author = posters.find(({ userId }) => userId === authorUserId);
-  const frequentUser = posters.map(({ user }) => {
+  const author = posters.find((poster) => {
+    return 'userId' in poster && poster.userId === authorUserId;
+  });
+  const frequentUser = posters.map((poster) => {
+    if ('user' in poster) {
+      const { user } = poster;
+      return {
+        id: user?.id || 0,
+        username: user?.username ?? '',
+        avatar: getImage(user?.avatar ?? ''),
+      };
+    }
     return {
-      id: user?.id || 0,
-      username: user?.username ?? '',
-      avatar: getImage(user?.avatar ?? ''),
+      id: 0,
+      username: '',
+      avatar: '',
     };
   });
   const channel = findChannelByCategoryId({
     categoryId,
     channels,
   });
-  const authorUser = author?.user;
+
+  const authorUser =
+    // eslint-disable-next-line no-underscore-dangle
+    author?.__typename === 'TopicPoster' ? author.user : undefined;
+
   return {
     topicId: id,
     title,

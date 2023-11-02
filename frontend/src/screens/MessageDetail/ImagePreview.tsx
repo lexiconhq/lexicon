@@ -9,6 +9,7 @@ import { MentionList } from '../../components';
 import { Icon, TextInputType } from '../../core-ui';
 import { UploadTypeEnum } from '../../generated/server';
 import {
+  convertUrl,
   createReactNativeFile,
   errorHandlerAlert,
   mentionHelper,
@@ -135,7 +136,7 @@ export default function ImagePreview() {
       <StatusBar style={'light'} />
       <SafeAreaView style={styles.fullContainer}>
         <ImageBackground
-          source={{ uri: imageUri }}
+          source={{ uri: convertUrl(imageUri) }}
           resizeMode="contain"
           style={styles.fullContainer}
         >

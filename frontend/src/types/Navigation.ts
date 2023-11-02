@@ -11,7 +11,12 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { NetworkStatus, WithRequestFailed } from '../components';
 
 import { NewPost, ReplyPost } from './Post';
-import { SelectedUserProps, UserDetail, UserMessageProps } from './Types';
+import {
+  SelectedUserProps,
+  StackAvatarUser,
+  UserDetail,
+  UserMessageProps,
+} from './Types';
 
 export type RootStackNavProp<T extends keyof RootStackParamList> =
   StackNavigationProp<RootStackParamList, T>;
@@ -88,10 +93,6 @@ type EditedUser = {
 type NewPostParams = {
   hyperlinkUrl?: string;
   hyperlinkTitle?: string;
-  oldTitle?: string;
-  oldContent?: string;
-  oldChannel?: number;
-  oldTags?: Array<string>;
   editedUser?: EditedUser;
   imageUri?: string;
 };
@@ -164,13 +165,31 @@ type UserInformationParams = {
   username: string;
 };
 
+type EditUserStatusParams = {
+  emojiCode?: string;
+  emojiText?: string;
+  status?: string;
+  endDate?: string;
+};
+
+type PollParams = {
+  pollIndex?: number;
+  prevScreen: 'NewPost' | 'PostReply' | 'NewMessage';
+};
+
+type StackAvatarModalParams = {
+  option: string;
+  amountVote: number;
+  users: Array<StackAvatarUser>;
+};
+
 export type RootStackParamList = {
   Channels: ChannelsParams;
   DarkMode: undefined;
   PushNotificationsPreferences: undefined;
   FlagPost: FlagPostParams;
   HyperLink: HyperlinkParams;
-  InstanceLoading: undefined;
+  Poll: PollParams;
   NewMessage: NewMessageParams;
   NewMessagePreview: NewMessagePreviewParams;
   NewPost: NewPostParams | undefined;
@@ -198,6 +217,9 @@ export type RootStackParamList = {
   Search: undefined;
   TwoFactorAuth: TwoFactorAuthParams;
   UserInformation: UserInformationParams;
+  EditUserStatus: EditUserStatusParams;
+  EmojiPicker: undefined;
+  StackAvatar: StackAvatarModalParams;
 };
 
 export type TabParamList = {

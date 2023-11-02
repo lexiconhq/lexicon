@@ -8,7 +8,6 @@ import EmailAddress from './EmailAddress/EmailAddress';
 import FlagPost from './FlagPost';
 import Home from './Home/Home';
 import Hyperlink from './Hyperlink';
-import InstanceLoading from './InstanceLoading';
 import ImagePreview from './MessageDetail/ImagePreview';
 import Login from './Login';
 import MessageDetail from './MessageDetail/MessageDetail';
@@ -17,6 +16,7 @@ import NewMessage from './NewMessage';
 import NewMessagePreview from './NewMessagePreview';
 import NewPost from './NewPost';
 import Notifications from './Notifications/Notifications';
+import Poll from './Poll';
 import PostDetail from './PostDetail';
 import PostImagePreview from './PostImagePreview';
 import PostPreview from './PostPreview';
@@ -31,6 +31,9 @@ import Tags from './Tags/Tags';
 import TwoFactorAuth from './TwoFactorAuth';
 import UserInformation from './UserInformation';
 import Troubleshoot from './Troubleshoot';
+import EditUSerStatus from './EditUserStatus/EditUserStatus';
+import EmojiPicker from './EmojiPicker';
+import StackAvatarModal from './StackAvatarModal';
 
 export {
   Activity,
@@ -43,7 +46,6 @@ export {
   FlagPost,
   Home,
   Hyperlink,
-  InstanceLoading,
   ImagePreview,
   Login,
   MessageDetail,
@@ -66,4 +68,8 @@ export {
   TwoFactorAuth,
   UserInformation,
   Troubleshoot,
+  Poll,
+  EditUSerStatus,
+  EmojiPicker,
+  StackAvatarModal,
 };

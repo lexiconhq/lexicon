@@ -3,7 +3,10 @@ import { FieldResolver, queryField } from 'nexus';
 
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';
-import { UNCATEGORIZED_CATEGORY_ID } from '../../constants';
+import {
+  PROSE_DISCOURSE_HOST,
+  UNCATEGORIZED_CATEGORY_ID,
+} from '../../constants';
 
 let siteResolver: FieldResolver<'Query', 'site'> = async (
   _,
@@ -55,6 +58,11 @@ let siteResolver: FieldResolver<'Query', 'site'> = async (
         full_name_required: fullNameRequired = false,
         default_composer_category: defaultComposerCategory = '',
         allow_uncategorized_topics: allowUncategorizedTopics = false,
+        enable_user_status: allowUserStatus = false,
+        external_emoji_url: externalEmojiUrl = '',
+        emoji_set: emojiSet = '',
+        poll_enabled: allowPoll = true,
+        poll_minimum_trust_level_to_create: pollCreateMinimumTrustLevel = 1,
       },
     } = await context.client.get(siteSettingsUrl);
 
@@ -76,6 +84,12 @@ let siteResolver: FieldResolver<'Query', 'site'> = async (
       defaultComposerCategory,
       allowUncategorizedTopics,
       uncategorizedCategoryId,
+      allowUserStatus,
+      externalEmojiUrl,
+      emojiSet,
+      discourseBaseUrl: PROSE_DISCOURSE_HOST || '',
+      allowPoll,
+      pollCreateMinimumTrustLevel,
       ...camelcaseKey(siteData, { deep: true }),
     };
   } catch (error) {

@@ -5,8 +5,6 @@ export const errorTypes = {
   incorrectCredentials: 'incorrect username, email or password',
 };
 
-export const ERROR_NOT_FOUND = 'Not found or private';
-
 /**
  * Below are the error messages that are displayed to the user.
  */

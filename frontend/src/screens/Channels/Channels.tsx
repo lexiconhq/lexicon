@@ -28,7 +28,7 @@ export default function Channels() {
   const ios = Platform.OS === 'ios';
 
   const onPress = (id: number) => {
-    setValue('channelId', id);
+    setValue('channelId', id, { shouldDirty: true });
     if (prevScreen === 'Home') {
       navigate('TabNav', { screen: 'Home' });
     } else {
@@ -46,6 +46,7 @@ export default function Channels() {
       ) : (
         <CustomHeader title={t('Channels')} noShadow />
       )}
+
       <ScrollView>
         {prevScreen === 'Home' && (
           <ChannelItem

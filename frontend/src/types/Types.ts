@@ -144,3 +144,9 @@ export type RawNotificationsType = NonNullable<
 export type UserActivity = GeneratedUserActivity['userActivity'][number];
 
 export type Tag = SearchTagsQuery['searchTag'][number];
+
+export type StackAvatarUser = {
+  avatar: string;
+  name: string;
+  username: string;
+};

@@ -35,3 +35,27 @@ export function formatDateTime(
     ...(time && presetTime),
   });
 }
+
+export function formatTime({
+  dateString,
+  hour12 = false,
+  locale = LOCALE,
+}: {
+  dateString: string;
+  hour12?: boolean;
+  locale?: string;
+}) {
+  let date = new Date(dateString);
+
+  if (isNaN(date.getDate())) {
+    return '';
+  }
+
+  const normalizedLocale = locale === 'mock' ? 'en-US' : locale;
+
+  return date.toLocaleTimeString(normalizedLocale, {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12,
+  });
+}

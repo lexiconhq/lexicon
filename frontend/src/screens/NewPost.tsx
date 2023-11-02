@@ -43,6 +43,9 @@ import {
   getReplacedImageUploadStatus,
   useStorage,
   parseInt,
+  BottomMenuNavigationParams,
+  BottomMenuNavigationScreens,
+  capitalizeAllWords,
 } from '../helpers';
 import {
   useKASVWorkaround,
@@ -54,12 +57,18 @@ import { makeStyles, useTheme } from '../theme';
 import {
   CursorPosition,
   Image,
+  PollFormContextValues,
   RootStackNavProp,
-  RootStackParamList,
   RootStackRouteProp,
 } from '../types';
 import { useModal } from '../utils';
-import { NO_CHANNEL_FILTER, isNoChannelFilter } from '../constants';
+import {
+  FORM_DEFAULT_VALUES,
+  NO_CHANNEL_FILTER,
+  POLL_CHOICE_TYPES,
+  isNoChannelFilter,
+} from '../constants';
+import { PollChoiceCard } from '../components/Poll';
 
 export default function NewPost() {
   const { modal, setModal } = useModal();
@@ -104,39 +113,42 @@ export default function NewPost() {
   const navigation = useNavigation<RootStackNavProp<'NewPost'>>();
   const { navigate, goBack } = navigation;
 
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    formState,
+    setValue,
+    getValues,
+    watch,
+    reset: resetForm,
+    getFieldState,
+  } = useFormContext();
+
   let { params } = useRoute<RootStackRouteProp<'NewPost'>>();
   let {
+    editPostId,
+    editTopicId,
     oldContent,
     oldTitle,
-    oldChannel,
-    oldTags,
     editedUser,
     hyperlinkUrl,
     hyperlinkTitle,
     imageUri,
   } = useMemo(() => {
+    const values = getValues();
+
     return {
-      oldContent: params?.oldContent || '',
-      oldTitle: params?.oldTitle || '',
-      oldChannel: params?.oldChannel || defaultChannelId,
-      oldTags: params?.oldTags || [],
+      editPostId: values?.editPostId,
+      editTopicId: values?.editTopicId,
+      oldContent: values?.oldContent || '',
+      oldTitle: values?.oldTitle || '',
       editedUser: params?.editedUser,
       hyperlinkUrl: params?.hyperlinkUrl || '',
       hyperlinkTitle: params?.hyperlinkTitle || '',
       imageUri: params?.imageUri || '',
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params]);
-
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    getValues,
-    watch,
-    reset: resetForm,
-  } = useFormContext();
+  }, [params, getValues]);
 
   /**
    * Using the watch function to update the values of the channel and tags fields when changes occur in the form.
@@ -145,8 +157,7 @@ export default function NewPost() {
 
   const selectedChannel: number = watch('channelId');
   const selectedTags: Array<string> = watch('tags');
-  const editPostId: number = getValues('editPostId');
-  const editTopicId: number = getValues('editTopicId');
+  const polls = watch('polls');
 
   const [imagesArray, setImagesArray] = useState<Array<Image>>([]);
   const [uri, setUri] = useState('');
@@ -298,15 +309,13 @@ export default function NewPost() {
   ]);
 
   const onNavigate = (
-    screen: 'PostImagePreview' | 'HyperLink',
-    params:
-      | RootStackParamList['PostImagePreview']
-      | RootStackParamList['HyperLink'],
+    screen: BottomMenuNavigationScreens,
+    params: BottomMenuNavigationParams,
   ) => {
     navigate(screen, params);
   };
 
-  const { onInsertImage, onInsertLink } = bottomMenu({
+  const { onInsertImage, onInsertLink, onInsertPoll } = bottomMenu({
     isKeyboardShow,
     user,
     navigate: onNavigate,
@@ -315,40 +324,41 @@ export default function NewPost() {
   });
 
   useEffect(() => {
-    const { title, raw: content } = getValues();
+    const { title, raw: content, polls } = getValues();
 
     let currentPostValidity; // temp variable to get the value of existingPostIsValid or newPostIsValid helper
 
     if (editTopicId || editPostId) {
-      currentPostValidity = existingPostIsValid(
+      currentPostValidity = existingPostIsValid({
         uploadsInProgress,
         title,
-        oldTitle,
         content,
-        oldContent,
-        selectedChannel,
-        oldChannel,
-        selectedTags,
-        oldTags,
-      );
+        getFieldState,
+        formState,
+      });
 
       setPostValidity(currentPostValidity.isValid);
       setEditPostType(currentPostValidity.editType);
     } else {
-      currentPostValidity = newPostIsValid(title, content, uploadsInProgress);
+      currentPostValidity = newPostIsValid(
+        title,
+        content,
+        uploadsInProgress,
+        polls,
+      );
       setPostValidity(currentPostValidity);
     }
   }, [
     editTopicId,
     editPostId,
     getValues,
-    oldChannel,
     oldContent,
-    oldTags,
     oldTitle,
     selectedChannel,
     selectedTags,
     uploadsInProgress,
+    getFieldState,
+    formState,
   ]);
 
   useEffect(
@@ -366,7 +376,7 @@ export default function NewPost() {
             {
               text: t('Discard'),
               onPress: () => {
-                resetForm();
+                resetForm(FORM_DEFAULT_VALUES);
                 navigation.dispatch(e.data.action);
               },
             },
@@ -389,7 +399,9 @@ export default function NewPost() {
             label={t('Cancel')}
             left
             onPressItem={() => {
-              resetForm();
+              if (!postValidity) {
+                resetForm(FORM_DEFAULT_VALUES);
+              }
               goBack();
             }}
           />
@@ -431,6 +443,7 @@ export default function NewPost() {
               <BottomMenu
                 onInsertImage={onInsertImage}
                 onInsertLink={onInsertLink}
+                onInsertPoll={onInsertPoll}
                 showLeftMenu={showLeftMenu}
               />
             </View>
@@ -449,22 +462,18 @@ export default function NewPost() {
                     label={t('Title')}
                     placeholder={t("What's on your mind?")}
                     onChangeText={(text) => {
-                      const { raw: content } = getValues();
+                      const { raw: content, polls } = getValues();
 
                       let currentPostValidity; // temp variable to get the value of existingPostIsValid or newPostIsValid helper
 
                       if (editTopicId || editPostId) {
-                        currentPostValidity = existingPostIsValid(
+                        currentPostValidity = existingPostIsValid({
                           uploadsInProgress,
-                          text,
-                          oldTitle,
+                          title: text,
                           content,
-                          oldContent,
-                          selectedChannel,
-                          oldChannel,
-                          selectedTags,
-                          oldTags,
-                        );
+                          getFieldState,
+                          formState,
+                        });
                         setPostValidity(currentPostValidity.isValid);
                         setEditPostType(currentPostValidity.editType);
                       } else {
@@ -472,6 +481,7 @@ export default function NewPost() {
                           text,
                           content,
                           uploadsInProgress,
+                          polls,
                         );
                         setPostValidity(currentPostValidity);
                       }
@@ -563,11 +573,47 @@ export default function NewPost() {
             )}
 
             <Divider horizontalSpacing="xxl" />
+            {polls && (
+              <ScrollView
+                style={styles.pollCardContainer}
+                contentContainerStyle={styles.pollCardContentContainer}
+                nestedScrollEnabled={true}
+              >
+                {polls.map((data: PollFormContextValues, index: number) => (
+                  <PollChoiceCard
+                    choice={
+                      data.title
+                        ? capitalizeAllWords(data.title)
+                        : data.pollChoiceType
+                        ? capitalizeAllWords(
+                            POLL_CHOICE_TYPES.find(
+                              ({ value }) => value === data.pollChoiceType,
+                            )?.label || '',
+                          )
+                        : ''
+                    }
+                    totalOption={data.pollOptions.length}
+                    onDelete={() => {
+                      polls.splice(index, 1);
+                      setValue('polls', polls);
+                    }}
+                    onEdit={() => {
+                      navigate('Poll', {
+                        pollIndex: index,
+                        prevScreen: 'NewPost',
+                      });
+                    }}
+                    key={`polls-card-${data.title}-${index}`}
+                    style={index > 0 && styles.pollCard}
+                  />
+                ))}
+              </ScrollView>
+            )}
 
             <Controller
               name="raw"
               defaultValue={oldContent}
-              rules={{ required: true }}
+              rules={{ required: polls.length === 0 }}
               control={control}
               render={({ field: { onChange, value } }) => (
                 <TextArea
@@ -586,22 +632,18 @@ export default function NewPost() {
                     onChange(text);
                     debounced(text, currentUploadToken);
 
-                    const { title } = getValues();
+                    const { title, polls } = getValues();
 
                     let currentPostValidity; // temp variable to get the value of existingPostIsValid or newPostIsValid helper
 
                     if (editTopicId || editPostId) {
-                      currentPostValidity = existingPostIsValid(
+                      currentPostValidity = existingPostIsValid({
                         uploadsInProgress,
                         title,
-                        oldTitle,
-                        text,
-                        oldContent,
-                        selectedChannel,
-                        oldChannel,
-                        selectedTags,
-                        oldTags,
-                      );
+                        content: text,
+                        getFieldState,
+                        formState,
+                      });
                       setPostValidity(currentPostValidity.isValid);
                       setEditPostType(currentPostValidity.editType);
                     } else {
@@ -609,6 +651,7 @@ export default function NewPost() {
                         title,
                         text,
                         uploadsInProgress,
+                        polls,
                       );
                       setPostValidity(currentPostValidity);
                     }
@@ -660,4 +703,15 @@ const useStyles = makeStyles(({ colors, spacing }) => ({
   },
   iconRight: { marginStart: spacing.m },
   label: { color: colors.textLight },
+  pollCardContainer: {
+    marginHorizontal: spacing.xxl,
+    paddingTop: spacing.xl,
+    maxHeight: 150,
+  },
+  pollCardContentContainer: {
+    paddingBottom: spacing.xl,
+  },
+  pollCard: {
+    marginTop: spacing.m,
+  },
 }));

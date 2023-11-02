@@ -33,6 +33,8 @@ import {
   mentionHelper,
   getReplacedImageUploadStatus,
   useStorage,
+  BottomMenuNavigationScreens,
+  BottomMenuNavigationParams,
 } from '../helpers';
 import {
   useKASVWorkaround,
@@ -46,7 +48,6 @@ import {
   FormTitle,
   Image,
   RootStackNavProp,
-  RootStackParamList,
   RootStackRouteProp,
   UserMessageProps,
 } from '../types';
@@ -178,10 +179,8 @@ export default function NewMessage() {
   ]);
 
   const onNavigate = (
-    screen: 'PostImagePreview' | 'HyperLink',
-    params:
-      | RootStackParamList['PostImagePreview']
-      | RootStackParamList['HyperLink'],
+    screen: BottomMenuNavigationScreens,
+    params: BottomMenuNavigationParams,
   ) => {
     navigate(screen, params);
   };
