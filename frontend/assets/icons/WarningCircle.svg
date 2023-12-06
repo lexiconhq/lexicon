@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+  <path id="Path_22864" data-name="Path 22864" d="M0,0H120V120H0Z" fill="none"/>
+  <circle id="Path_22865" data-name="Path 22865" cx="60" cy="60" r="45" fill="none" stroke="#ccc" stroke-linecap="round" stroke-linejoin="round" stroke-width="6"/>
+  <path id="Path_22866" data-name="Path 22866" d="M12,9V29" transform="translate(48 36)" fill="none" stroke="#ccc" stroke-linecap="round" stroke-linejoin="round" stroke-width="6"/>
+  <path id="Path_22867" data-name="Path 22867" d="M12,16v.05" transform="translate(48 64)" fill="none" stroke="#ccc" stroke-linecap="round" stroke-linejoin="round" stroke-width="6"/>
+</svg>

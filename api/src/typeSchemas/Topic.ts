@@ -50,12 +50,14 @@ export let Topic = objectType({
     t.nullable.boolean('pinnedGlobally');
     t.nullable.boolean('hasSummary');
 
-    t.list.field('posters', { type: 'TopicPoster' });
+    t.list.field('posters', { type: 'PosterOutputUnion' });
     t.nullable.list.field('participants', {
       type: 'MessageParticipant',
     });
     t.nullable.int('authorUserId', {
-      resolve: ({ posters }) => getTopicAuthorUserId(posters) ?? null,
+      resolve: ({ posters }) => {
+        return getTopicAuthorUserId(posters) ?? null;
+      },
     });
     // Note: Comment out for maybe next phase
     // t.nullable.int('recentPosterUserId', {

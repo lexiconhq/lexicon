@@ -32,6 +32,10 @@ export function useSiteSettings(options?: QueryHookOptions<SiteQuery>) {
     postActionTypes,
     defaultComposerCategory,
     allowUncategorizedTopics,
+    groups,
+    allowUserStatus,
+    allowPoll,
+    pollCreateMinimumTrustLevel,
   } = data?.site || {};
 
   return {
@@ -52,6 +56,10 @@ export function useSiteSettings(options?: QueryHookOptions<SiteQuery>) {
     postActionTypes,
     allowUncategorizedTopics,
     defaultComposerCategory,
+    groups,
+    allowUserStatus,
+    allowPoll,
+    pollCreateMinimumTrustLevel,
     loading,
     error,
     refetch,

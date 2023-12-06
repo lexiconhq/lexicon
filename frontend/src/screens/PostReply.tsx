@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Keyboard, Platform, SafeAreaView, View } from 'react-native';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useFormContext } from 'react-hook-form';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useDebouncedCallback } from 'use-debounce';
 
@@ -13,6 +13,7 @@ import {
   MentionList,
   ModalHeader,
   TextArea,
+  ListCreatePoll,
 } from '../components';
 import { Divider, IconWithLabel, TextInputType } from '../core-ui';
 import {
@@ -32,6 +33,8 @@ import {
   newPostIsValid,
   getReplacedImageUploadStatus,
   useStorage,
+  BottomMenuNavigationParams,
+  BottomMenuNavigationScreens,
 } from '../helpers';
 import {
   useKASVWorkaround,
@@ -42,15 +45,14 @@ import {
 import { makeStyles, useTheme } from '../theme';
 import {
   CursorPosition,
-  Form,
   Image,
-  ReplyPost,
   RootStackNavProp,
   RootStackParamList,
   RootStackRouteProp,
 } from '../types';
 import { useModal } from '../utils';
 import { client } from '../graphql/client';
+import { FORM_DEFAULT_VALUES } from '../constants';
 
 export default function PostReply() {
   const { modal, setModal } = useModal();
@@ -81,6 +83,7 @@ export default function PostReply() {
   const replyingTo = client.readFragment<PostFragment>({
     id: `Post:${replyToPostId}`,
     fragment: PostFragmentDoc,
+    fragmentName: 'PostFragment',
   });
 
   const ios = Platform.OS === 'ios';
@@ -107,9 +110,17 @@ export default function PostReply() {
   const [mentionLoading, setMentionLoading] = useState(false);
   const [mentionKeyword, setMentionKeyword] = useState('');
 
-  const { control, handleSubmit, setValue, getValues } = useForm<Form>({
-    mode: 'onChange',
-  });
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    getValues,
+    watch,
+    reset,
+    getFieldState,
+    formState,
+  } = useFormContext();
+  const polls = watch('polls');
 
   const [imagesArray, setImagesArray] = useState<Array<Image>>([]);
   const [uri, setUri] = useState('');
@@ -212,15 +223,13 @@ export default function PostReply() {
   }, [hyperlinkTitle, hyperlinkUrl, getValues, setValue]);
 
   const onNavigate = (
-    screen: 'PostImagePreview' | 'HyperLink',
-    params:
-      | RootStackParamList['PostImagePreview']
-      | RootStackParamList['HyperLink'],
+    screen: BottomMenuNavigationScreens,
+    params: BottomMenuNavigationParams,
   ) => {
     navigate(screen, params);
   };
 
-  const { onInsertImage, onInsertLink } = bottomMenu({
+  const { onInsertImage, onInsertLink, onInsertPoll } = bottomMenu({
     isKeyboardShow,
     user,
     navigate: onNavigate,
@@ -245,31 +254,23 @@ export default function PostReply() {
             { text: t('Cancel') },
             {
               text: t('Discard'),
-              onPress: () => navigation.dispatch(e.data.action),
+              onPress: () => {
+                reset(FORM_DEFAULT_VALUES);
+                navigation.dispatch(e.data.action);
+              },
             },
           ],
         );
       }),
-    [postValidity, modal, navigation, uploadsInProgress],
+    [postValidity, modal, navigation, uploadsInProgress, reset],
   );
-
-  const getData = (): ReplyPost => {
-    const { raw } = getValues();
-    return {
-      title,
-      content: raw,
-      topicId,
-      postNumber: replyingTo?.postNumber,
-      createdAt: new Date().toISOString(),
-      replyToPostId,
-    };
-  };
 
   const onPreview = handleSubmit(() => {
     Keyboard.dismiss();
+    setValue('title', title);
     navigate('PostPreview', {
       reply: true,
-      postData: getData(),
+      postData: { topicId, postNumber: replyingTo?.postNumber, replyToPostId },
       focusedPostNumber,
       editPostId,
       editedUser,
@@ -282,19 +283,34 @@ export default function PostReply() {
     let currentPostValidity; // temp variable to get the value of existingPostIsValid or newPostIsValid helper
 
     if (editPostId) {
-      currentPostValidity = existingPostIsValid(
+      currentPostValidity = existingPostIsValid({
         uploadsInProgress,
         title,
-        title,
+        oldTitle: title,
         content,
         oldContent,
-      );
+        polls,
+      });
       setPostValidity(currentPostValidity.isValid);
     } else {
-      currentPostValidity = newPostIsValid(title, content, uploadsInProgress);
+      currentPostValidity = newPostIsValid(
+        title,
+        content,
+        uploadsInProgress,
+        polls,
+      );
       setPostValidity(currentPostValidity);
     }
-  }, [editPostId, getValues, oldContent, title, uploadsInProgress]);
+  }, [
+    editPostId,
+    formState,
+    getFieldState,
+    getValues,
+    oldContent,
+    polls,
+    title,
+    uploadsInProgress,
+  ]);
 
   const setMentionValue = (text: string) => {
     setValue('raw', text);
@@ -312,7 +328,18 @@ export default function PostReply() {
       {ios && (
         <ModalHeader
           title={editPostId ? t('Edit Post') : t('Reply')}
-          left={<HeaderItem label={t('Cancel')} onPressItem={goBack} left />}
+          left={
+            <HeaderItem
+              label={t('Cancel')}
+              onPressItem={() => {
+                if (!postValidity) {
+                  reset(FORM_DEFAULT_VALUES);
+                }
+                goBack();
+              }}
+              left
+            />
+          }
           right={
             <HeaderItem
               label={t('Next')}
@@ -338,6 +365,7 @@ export default function PostReply() {
             <BottomMenu
               onInsertImage={onInsertImage}
               onInsertLink={onInsertLink}
+              onInsertPoll={onInsertPoll}
             />
           </View>
         }
@@ -352,10 +380,16 @@ export default function PostReply() {
         />
         <Divider style={styles.spacingBottom} horizontalSpacing="xxl" />
         {repliedPost}
+        <ListCreatePoll
+          polls={polls}
+          setValue={setValue}
+          navigate={navigate}
+          prevScreen="PostReply"
+        />
         <Controller
           name="raw"
           defaultValue={oldContent}
-          rules={{ required: true }}
+          rules={{ required: polls.length === 0 }}
           control={control}
           render={({ field: { onChange, value } }) => (
             <TextArea
@@ -378,13 +412,13 @@ export default function PostReply() {
                 let currentPostValidity; // temp variable to get the value of existingPostIsValid or newPostIsValid helper
 
                 if (editPostId) {
-                  currentPostValidity = existingPostIsValid(
+                  currentPostValidity = existingPostIsValid({
                     uploadsInProgress,
                     title,
-                    title,
-                    text,
+                    oldTitle: title,
+                    content: text,
                     oldContent,
-                  );
+                  });
                   setPostValidity(currentPostValidity.isValid);
                 } else {
                   currentPostValidity = newPostIsValid(

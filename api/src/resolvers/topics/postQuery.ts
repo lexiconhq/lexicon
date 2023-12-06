@@ -1,6 +1,6 @@
 import { FieldResolver, queryField, intArg } from 'nexus';
 
-import { errorHandler, fetchPost } from '../../helpers';
+import { errorHandler, fetchPost, formatPolls } from '../../helpers';
 import { Context } from '../../types';
 
 export let postQueryResolver: FieldResolver<'Query', 'post'> = async (
@@ -9,7 +9,17 @@ export let postQueryResolver: FieldResolver<'Query', 'post'> = async (
   { client }: Context,
 ) => {
   try {
-    return await fetchPost({ client, postId });
+    const data = await fetchPost({ client, postId });
+    const { formattedPolls, formattedPollsVotes } = formatPolls(
+      data.polls,
+      data.pollsVotes,
+    );
+
+    return {
+      ...data,
+      polls: formattedPolls,
+      pollsVotes: formattedPollsVotes,
+    };
   } catch (error) {
     throw errorHandler(error);
   }

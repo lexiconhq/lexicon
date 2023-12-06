@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { useFormContext } from 'react-hook-form';
 
 import {
   CustomHeader,
@@ -9,6 +10,7 @@ import {
   PostList,
   ShowImageModal,
   UserInformationPostItem,
+  UserStatus,
 } from '../components';
 import { Avatar, Button, Text } from '../core-ui';
 import { errorHandler, getImage, useStorage } from '../helpers';
@@ -24,6 +26,7 @@ export default function UserInformation() {
   const {
     params: { username },
   } = useRoute<StackRouteProp<'UserInformation'>>();
+  const { reset: resetForm } = useFormContext();
 
   const storage = useStorage();
   const currentUser = storage.getItem('user')?.username;
@@ -46,6 +49,10 @@ export default function UserInformation() {
   const userImage = getImage(profileData?.userProfile.user.avatar || '', 'xl');
   const bio = profileData?.userProfile.user.bioRaw;
   const splittedBio = bio ? bio.split(/\r\n|\r|\n/) : [''];
+  const statusUser =
+    // eslint-disable-next-line no-underscore-dangle
+    profileData?.userProfile.user.__typename === 'UserDetail' &&
+    profileData.userProfile.user.status;
 
   const { data, loading, error, networkStatus, refetch, fetchMore } =
     useActivity({ variables: { username: username, offset: 0 } }, 'HIDE_ALERT');
@@ -70,10 +77,11 @@ export default function UserInformation() {
   };
 
   const onPressNewMessage = () => {
-    navigate('NewMessage', {
-      users: [username],
-      listOfUser: [{ name, username, avatar: userImage }],
+    resetForm({
+      messageTargetSelectedUsers: [username],
+      messageUsersList: [{ name, username, avatar: userImage }],
     });
+    navigate('NewMessage');
   };
 
   if (error || profileError) {
@@ -122,6 +130,13 @@ export default function UserInformation() {
             }
             style={styles.bioContainer}
           />
+          {statusUser && (
+            <UserStatus
+              emojiCode={statusUser.emoji}
+              status={statusUser.description}
+              styleContainer={styles.statusContainer}
+            />
+          )}
           <View style={styles.buttonContainer}>
             {currentUser !== username && (
               <Button content={t('Message')} onPress={onPressNewMessage} />
@@ -208,9 +223,13 @@ const useStyles = makeStyles(({ colors, spacing }) => ({
   bioContainer: {
     paddingHorizontal: spacing.xxl,
   },
+  statusContainer: {
+    marginTop: spacing.m,
+  },
   buttonContainer: {
     flexDirection: 'row',
     marginVertical: spacing.xl,
+    marginTop: spacing.m,
   },
   // TODO: This LoC is meant for the next phase
   // buttonDivider: {

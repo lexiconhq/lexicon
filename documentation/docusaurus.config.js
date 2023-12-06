@@ -64,10 +64,11 @@ module.exports = {
           editUrl:
             'https://github.com/lexiconhq/lexicon/blob/master/documentation/',
           routeBasePath: '/',
-          onlyIncludeVersions: ['1.0.0', '2.0.0-beta'],
+          onlyIncludeVersions: ['1.0.0', '2.0.0'],
+          lastVersion: '2.0.0',
           versions: {
-            '2.0.0-beta': {
-              path: 'version-2.0.0-beta',
+            '2.0.0': {
+              path: 'version-2.0.0',
               banner: 'none',
             },
             '1.0.0': {

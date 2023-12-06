@@ -11,7 +11,7 @@ import { useNavigation } from '@react-navigation/native';
 
 import { Avatar, AvatarProps, Text } from '../core-ui';
 import { makeStyles } from '../theme';
-import { StackNavProp, User } from '../types';
+import { User, StackNavProp } from '../types';
 
 type Props = ViewProps &
   Pick<AvatarProps, 'size'> & {
@@ -60,7 +60,7 @@ export function AvatarRow(props: Props) {
         >
           {posters.map((item, index) => (
             <Avatar
-              key={item.id}
+              key={`poster-extended-${item.id}`}
               src={item.avatar}
               size={size}
               label={item.username[0]}
@@ -76,7 +76,7 @@ export function AvatarRow(props: Props) {
         <View style={styles.avatarContainer}>
           {posters.slice(0, 5).map((item, index) => (
             <Avatar
-              key={item.id}
+              key={`poster-${item.id}`}
               src={item.avatar}
               size={size}
               label={item.username[0]}

@@ -35,8 +35,11 @@ export * from './topics/replyMutation';
 export * from './topics/searchQuery';
 export * from './topics/searchTagsQuery';
 export * from './topics/timingsMutation';
+export * from './topics/togglePollStatusMutation';
 export * from './topics/topicDetailQuery';
 export * from './topics/topicsQuery';
+export * from './topics/undoVotePollMutation';
+export * from './topics/votePollMutation';
 
 export * from './upload/lookupUrlsQuery';
 export * from './upload/uploadMutation';
@@ -49,5 +52,7 @@ export * from './user/searchUserQuery';
 export * from './user/singleBadgeQuery';
 export * from './user/userActivityQuery';
 export * from './user/userProfileQuery';
+export * from './user/editUserStatusMutation';
+export * from './user/deleteUserStatusMutation';
 
 export * from './health/healthQuery';

@@ -5,7 +5,16 @@ export let TopicPoster = objectType({
   definition(t) {
     t.nullable.string('extras');
     t.string('description');
-    t.nullable.int('userId');
-    t.nullable.field('user', { type: 'UserIcon' });
+    t.int('userId');
+    t.field('user', { type: 'UserIcon' });
+  },
+});
+
+export let SuggestionTopicPoster = objectType({
+  name: 'SuggestionTopicPoster',
+  definition(t) {
+    t.nullable.string('extras');
+    t.string('description');
+    t.field('user', { type: 'UserIcon' });
   },
 });

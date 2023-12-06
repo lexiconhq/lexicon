@@ -82,5 +82,9 @@ export let Post = objectType({
 
     t.nullable.string('actionCode');
     t.nullable.string('actionCodeWho');
+
+    t.nullable.list.field('polls', { type: 'Poll' });
+    t.nullable.list.field('pollsVotes', { type: 'PollsVotes' });
+    t.nullable.field('userStatus', { type: 'UserStatus' });
   },
 });

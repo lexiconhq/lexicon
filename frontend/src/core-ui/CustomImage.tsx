@@ -11,7 +11,7 @@ import {
 import { DEFAULT_IMAGE } from '../../assets/images';
 import { ShowImageModal } from '../components/ShowImageModal';
 import { makeStyles } from '../theme';
-import { isImageValidUrl } from '../helpers';
+import { convertUrl, isImageValidUrl } from '../helpers';
 
 import CachedImage from './CachedImage';
 
@@ -49,7 +49,9 @@ export function CustomImage(props: Props) {
     ...(square && { width: variantSize[size] }),
   };
 
-  const imgSource = isImageValidUrl(src) ? { uri: src } : DEFAULT_IMAGE;
+  const imgSource = isImageValidUrl(src)
+    ? { uri: convertUrl(src) }
+    : DEFAULT_IMAGE;
 
   const hideImage = src === '' || error;
 

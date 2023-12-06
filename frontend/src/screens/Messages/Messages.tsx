@@ -48,7 +48,7 @@ export default function Messages() {
   const ios = Platform.OS === 'ios';
 
   const onPressNewMessage = () => {
-    navigate('NewMessage', { users: [], listOfUser: [] });
+    navigate('NewMessage');
   };
 
   const { error, refetch, fetchMore } = useMessageList(
@@ -167,7 +167,7 @@ export default function Messages() {
           <RefreshControl
             refreshing={loading}
             onRefresh={onRefresh}
-            tintColor={colors.primary}
+            tintColor={colors.loading}
           />
         }
         getItem={getItem}

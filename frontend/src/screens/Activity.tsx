@@ -39,7 +39,7 @@ export default function Activity() {
   }
 
   if (loading && activities.length < 1) {
-    return <LoadingOrError loading />;
+    return <LoadingOrError style={styles.loadingContainer} loading />;
   }
 
   let content;
@@ -80,7 +80,7 @@ export default function Activity() {
   return <View style={styles.container}>{content}</View>;
 }
 
-const useStyles = makeStyles(({ spacing }) => ({
+const useStyles = makeStyles(({ spacing, colors }) => ({
   contentContainer: {
     paddingTop: spacing.m,
   },
@@ -97,5 +97,8 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
   noActivityText: {
     alignSelf: 'center',
+  },
+  loadingContainer: {
+    backgroundColor: colors.background,
   },
 }));

@@ -9,7 +9,6 @@ import {
 import { makeStyles } from '../../theme';
 import { MetricsProp } from '../Metrics/Metrics';
 import { TopicFragment, TopicFragmentDoc } from '../../generated/server';
-import { LoadingOrError } from '../LoadingOrError';
 import { Channel } from '../../types';
 
 import { PostItemFooter, PostItemFooterProps } from './PostItemFooter';
@@ -21,6 +20,7 @@ type Props = Required<
     'isHidden' | 'mentionedUsers' | 'onPressViewIgnoredContent'
   >
 > &
+  Pick<PostItemProps, 'polls' | 'postId' | 'pollsVotes'> &
   Pick<MetricsProp, 'onPressReply'> & {
     topicId: number;
     content: string;
@@ -40,6 +40,9 @@ function BasePostDetailHeaderItem(props: Props) {
     mentionedUsers,
     onPressReply,
     onPressViewIgnoredContent,
+    polls,
+    postId,
+    pollsVotes,
   } = props;
 
   const cacheTopicResult = useFragment_experimental<
@@ -65,7 +68,7 @@ function BasePostDetailHeaderItem(props: Props) {
   });
 
   if (!resolvedPostItemPropsResult) {
-    return <LoadingOrError message="Post not found" />;
+    throw new Error('Post not found');
   }
 
   let { postItemProps, postItemFooterProps } = resolvedPostItemPropsResult;
@@ -84,6 +87,11 @@ function BasePostDetailHeaderItem(props: Props) {
       mentionedUsers={mentionedUsers}
       onPressViewIgnoredContent={onPressViewIgnoredContent}
       nonclickable
+      showStatus
+      emojiCode={postItemProps.emojiCode}
+      polls={polls}
+      pollsVotes={pollsVotes}
+      postId={postId}
       footer={
         <PostItemFooter
           postId={postItemFooterProps.postId}
@@ -134,6 +142,8 @@ const resolvePostItemProps = ({
         createdAt: firstPost.createdAt,
         username: firstPost.username,
         isLiked: firstPost.isLiked,
+        emojiCode: firstPost.emojiStatus,
+        postId: firstPost.id,
       },
       postItemFooterProps: {
         postId: firstPost.id,

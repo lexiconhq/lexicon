@@ -10,6 +10,7 @@ import {
   LoginError,
   UsedTitleError,
 } from './errorMessage';
+import { stripHTML } from './stripHTML';
 
 /** `isNotFoundError` accepts any object that has a string-based `message`
  * field. This includes `Error`, `ApolloError`, and `GraphQLError`.
@@ -94,5 +95,5 @@ export function errorHandlerAlert(
     default:
       alertTitle = t('Error');
   }
-  Alert.alert(alertTitle, errorMsg, [{ text: t('Got it') }]);
+  Alert.alert(alertTitle, stripHTML(errorMsg), [{ text: t('Got it') }]);
 }

@@ -21,6 +21,7 @@ import {
   RepliedPost,
   RepliedPostProps,
 } from './RepliedPost';
+import { PollPreview } from './Poll';
 
 export type PressMoreParams = {
   id?: number;
@@ -78,6 +79,9 @@ function BaseNestedComment(props: Props) {
     onPressMore,
     onPressAuthor,
     onLayout,
+    emojiStatus,
+    polls,
+    pollsVotes,
     ...otherProps
   } = props;
 
@@ -103,6 +107,30 @@ function BaseNestedComment(props: Props) {
     }
   };
 
+  const renderPolls = () => {
+    if (!polls) {
+      return null;
+    }
+
+    return polls?.map((poll, index) => {
+      const pollVotes = pollsVotes?.find(
+        (pollVotes) => pollVotes.pollName === poll.name,
+      );
+
+      return (
+        <PollPreview
+          key={index}
+          poll={poll}
+          pollVotes={pollVotes?.pollOptionIds}
+          isCreator={isTopicOwner}
+          postId={id}
+          topicId={topicId}
+          loadingBackground="backgroundDarker"
+        />
+      );
+    });
+  };
+
   return (
     <View
       style={style}
@@ -118,6 +146,8 @@ function BaseNestedComment(props: Props) {
             style={styles.author}
             subtitleStyle={styles.textTime}
             onPressAuthor={() => onPressAuthor && onPressAuthor(username)}
+            showStatus
+            emojiCode={emojiStatus}
           >
             {showOptions ? (
               <Icon
@@ -148,17 +178,20 @@ function BaseNestedComment(props: Props) {
             onPressViewIgnoredContent={onPressViewIgnoredContent}
           />
         ) : (
-          <Markdown
-            content={
-              // If `replyToPostId` is truthy, then we delete the quote in outer comment,
-              // because what's inside the quote is the inner part of a nested comment
-              replyToPostId
-                ? handleUnsupportedMarkdown(deleteQuoteBbCode(content))
-                : handleUnsupportedMarkdown(content)
-            }
-            fontColor={colors[color]}
-            mentions={mentionedUsers}
-          />
+          <>
+            {renderPolls()}
+            <Markdown
+              content={
+                // If `replyToPostId` is truthy, then we delete the quote in outer comment,
+                // because what's inside the quote is the inner part of a nested comment
+                replyToPostId
+                  ? handleUnsupportedMarkdown(deleteQuoteBbCode(content))
+                  : handleUnsupportedMarkdown(content)
+              }
+              fontColor={colors[color]}
+              mentions={mentionedUsers}
+            />
+          </>
         )}
         {hasMetrics && (
           <Metrics

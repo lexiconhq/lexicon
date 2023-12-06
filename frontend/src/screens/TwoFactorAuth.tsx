@@ -25,7 +25,7 @@ export default function TwoFactorAuth() {
   const { setTokenState } = useAuth();
   const { redirectPath, setRedirectPath, handleRedirect } = useRedirect();
 
-  const { reset, navigate } = useNavigation<StackNavProp<'TwoFactorAuth'>>();
+  const { navigate } = useNavigation<StackNavProp<'TwoFactorAuth'>>();
 
   const { params } = useRoute<StackRouteProp<'TwoFactorAuth'>>();
 
@@ -44,13 +44,13 @@ export default function TwoFactorAuth() {
           username: user.username,
           name: user.name ?? '',
           avatar: getImage(user.avatar),
+          trustLevel: user.trustLevel,
+          groups: user.groups.map((group) => group.name),
         });
 
         if (redirectPath) {
           handleRedirect();
           setRedirectPath('');
-        } else {
-          reset({ index: 0, routes: [{ name: 'TabNav' }] });
         }
       } else if (responseType === 'SecondFactorRequired') {
         setErrorMsg(authUser.error);

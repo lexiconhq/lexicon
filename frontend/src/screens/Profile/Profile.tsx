@@ -3,10 +3,10 @@ import { ScrollView, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Constants from 'expo-constants';
 
-import { Markdown, ShowImageModal } from '../../components';
-import { Avatar, Button, Divider, Text } from '../../core-ui';
+import { Markdown, ShowImageModal, UserStatus } from '../../components';
+import { Avatar, Button, Divider, IconWithLabel, Text } from '../../core-ui';
 import { getImage, useStorage } from '../../helpers';
-import { useLazyProfile, useLogout } from '../../hooks';
+import { useLazyProfile, useLogout, useSiteSettings } from '../../hooks';
 import { makeStyles, useTheme } from '../../theme';
 import { StackNavProp, UserDetail } from '../../types';
 import { useAuth } from '../../utils/AuthProvider';
@@ -18,7 +18,7 @@ export default function Profile() {
   const { colors } = useTheme();
 
   const navigation = useNavigation<StackNavProp<'Profile'>>();
-  const { navigate, reset } = navigation;
+  const { navigate } = navigation;
 
   const storage = useStorage();
   const username = storage.getItem('user')?.username || '';
@@ -37,6 +37,11 @@ export default function Profile() {
     unconfirmedEmails: [],
     canEditUsername: true,
     admin: true,
+    status: {
+      emoji: '',
+      description: '',
+      endsAt: '',
+    },
   });
   const [haveNotification, setHaveNotification] = useState(false);
   const [show, setShow] = useState(false);
@@ -48,6 +53,10 @@ export default function Profile() {
     },
     'HIDE_ALERT',
   );
+
+  const { allowUserStatus } = useSiteSettings({
+    fetchPolicy: 'network-only',
+  });
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
@@ -72,11 +81,6 @@ export default function Profile() {
     }
 
     logout({ username });
-
-    reset({
-      index: 0,
-      routes: [{ name: 'InstanceLoading' }],
-    });
   };
 
   useEffect(() => {
@@ -125,6 +129,31 @@ export default function Profile() {
               }
               style={styles.bioContainer}
             />
+            {allowUserStatus &&
+              (!user.status?.description && !user.status?.emoji ? (
+                <IconWithLabel
+                  label={t('Set Status')}
+                  icon="Edit"
+                  fontStyle={styles.setStatusText}
+                  color={colors.textLighter}
+                  onPress={() => {
+                    navigate('EditUserStatus', {});
+                  }}
+                />
+              ) : (
+                <UserStatus
+                  emojiCode={user.status.emoji}
+                  status={user.status.description}
+                  showEditIcon
+                  onPress={() => {
+                    navigate('EditUserStatus', {
+                      emojiCode: user.status?.emoji,
+                      status: user.status?.description,
+                      endDate: user.status?.endsAt || '',
+                    });
+                  }}
+                />
+              ))}
             <Button
               content={t('Edit Profile')}
               style={styles.button}
@@ -216,13 +245,18 @@ const useStyles = makeStyles(({ colors, spacing }) => ({
     paddingBottom: spacing.s,
   },
   email: {
-    paddingBottom: spacing.s,
+    paddingBottom: spacing.m,
   },
   bioContainer: {
     paddingHorizontal: spacing.xxl,
   },
+  setStatusText: {
+    color: colors.lightTextDarker,
+    flexGrow: 0,
+    paddingLeft: spacing.s,
+  },
   button: {
-    marginTop: spacing.xl,
+    marginTop: spacing.l,
     marginBottom: spacing.xxl,
   },
   bodyContainer: {

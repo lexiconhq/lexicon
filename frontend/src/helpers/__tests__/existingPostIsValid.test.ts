@@ -14,7 +14,7 @@ const uploadsInProgress = 0;
 
 it('should be false if there is no title', () => {
   const title = '';
-  const postIsValid = existingPostIsValid(
+  const postIsValid = existingPostIsValid({
     uploadsInProgress,
     title,
     oldTitle,
@@ -24,13 +24,13 @@ it('should be false if there is no title', () => {
     oldChannel,
     tags,
     oldTags,
-  );
+  });
   expect(postIsValid).toMatchObject({ isValid: false });
 });
 
 it('should be false if there is no content', () => {
   const content = '';
-  const postIsValid = existingPostIsValid(
+  const postIsValid = existingPostIsValid({
     uploadsInProgress,
     title,
     oldTitle,
@@ -40,7 +40,7 @@ it('should be false if there is no content', () => {
     oldChannel,
     tags,
     oldTags,
-  );
+  });
   expect(postIsValid).toMatchObject({ isValid: false });
 });
 
@@ -49,7 +49,7 @@ it('should be false when uploading an image', () => {
                       [uploading...](1)
                       that's his favorite toy`;
   const uploadsInProgress = 1;
-  const postIsValid = existingPostIsValid(
+  const postIsValid = existingPostIsValid({
     uploadsInProgress,
     title,
     oldTitle,
@@ -59,87 +59,87 @@ it('should be false when uploading an image', () => {
     oldChannel,
     tags,
     oldTags,
-  );
+  });
   expect(postIsValid).toMatchObject({ isValid: false });
 });
 
 it('should be false if nothing changes', () => {
-  const postIsValid = existingPostIsValid(
+  const postIsValid = existingPostIsValid({
     uploadsInProgress,
+    title: oldTitle,
     oldTitle,
-    oldTitle,
+    content: oldContent,
     oldContent,
-    oldContent,
+    channel: oldChannel,
     oldChannel,
-    oldChannel,
+    tags: oldTags,
     oldTags,
-    oldTags,
-  );
+  });
   expect(postIsValid).toMatchObject({ isValid: false });
 });
 
 it('should be true if the title changes', () => {
-  const postIsValid = existingPostIsValid(
+  const postIsValid = existingPostIsValid({
     uploadsInProgress,
     title,
     oldTitle,
+    content: oldContent,
     oldContent,
-    oldContent,
+    channel: oldChannel,
     oldChannel,
-    oldChannel,
+    tags: oldTags,
     oldTags,
-    oldTags,
-  );
+  });
   expect(postIsValid).toMatchObject({ isValid: true });
 });
 
 it('should be true if the content changes', () => {
-  const postIsValid = existingPostIsValid(
+  const postIsValid = existingPostIsValid({
     uploadsInProgress,
-    oldTitle,
+    title: oldTitle,
     oldTitle,
     content,
     oldContent,
+    channel: oldChannel,
     oldChannel,
-    oldChannel,
+    tags: oldTags,
     oldTags,
-    oldTags,
-  );
+  });
   expect(postIsValid).toMatchObject({ isValid: true });
 });
 
 it('should be true if the channel changes', () => {
-  const postIsValid = existingPostIsValid(
+  const postIsValid = existingPostIsValid({
     uploadsInProgress,
+    title: oldTitle,
     oldTitle,
-    oldTitle,
-    oldContent,
+    content: oldContent,
     oldContent,
     channel,
     oldChannel,
+    tags: oldTags,
     oldTags,
-    oldTags,
-  );
+  });
   expect(postIsValid).toMatchObject({ isValid: true });
 });
 
 it('should be true if tags change', () => {
-  const postIsValid = existingPostIsValid(
+  const postIsValid = existingPostIsValid({
     uploadsInProgress,
+    title: oldTitle,
     oldTitle,
-    oldTitle,
+    content: oldContent,
     oldContent,
-    oldContent,
-    oldChannel,
+    channel: oldChannel,
     oldChannel,
     tags,
     oldTags,
-  );
+  });
   expect(postIsValid).toMatchObject({ isValid: true });
 });
 
 it('should be true if all data changes', () => {
-  const postIsValid = existingPostIsValid(
+  const postIsValid = existingPostIsValid({
     uploadsInProgress,
     title,
     oldTitle,
@@ -149,6 +149,6 @@ it('should be true if all data changes', () => {
     oldChannel,
     tags,
     oldTags,
-  );
+  });
   expect(postIsValid).toMatchObject({ isValid: true });
 });

@@ -34,9 +34,6 @@ export function handleUnsupportedMarkdown(content?: string) {
   const toogleRegex = /\[(details)([\s\S]*?)(\[\/\1)\]/g;
   result = result.replace(toogleRegex, message('Toogles'));
 
-  const pollRegex = /\[(poll)([\s\S]*?)(\[\/\1)\]/g;
-  result = result.replace(pollRegex, message('Polls'));
-
   const dateRegex = /\[(?:date=)([\d/-]*) (?:timezone=")(.*?)"\]/g;
   result = result.replace(dateRegex, formatTime);
 
@@ -138,4 +135,22 @@ export function generateMarkdownContent(
     },
   );
   return markdown;
+}
+
+export function filterMarkdownContent(content?: string) {
+  if (!content) {
+    return {
+      pollMarkdowns: [],
+      filteredMarkdown: '',
+    };
+  }
+
+  let result = content;
+
+  const pollRegex = /\[(poll)([\s\S]*?)(\[\/\1)\]/g;
+
+  return {
+    pollMarkdowns: result.match(pollRegex) || [],
+    filteredMarkdown: result.replace(pollRegex, '').trimStart(),
+  };
 }

@@ -19,12 +19,14 @@ type Props = Omit<TextInputProps, 'style'> & {
   label?: string;
   error?: boolean;
   rightIcon?: IconName;
+  rightIconColor?: string;
   iconSize?: IconSize;
   onPressIcon?: () => void;
   errorMsg?: string;
   inputRef?: RefObject<BaseTextInput>;
   inputStyle?: StyleProp<TextStyle>;
   style?: StyleProp<ViewStyle>;
+  disabled?: boolean;
 };
 
 export { BaseTextInput as TextInputType };
@@ -44,6 +46,8 @@ export function TextInput(props: Props) {
     inputStyle,
     style,
     secureTextEntry,
+    rightIconColor,
+    disabled,
     ...otherProps
   } = props;
 
@@ -62,8 +66,9 @@ export function TextInput(props: Props) {
         <Text
           size="s"
           color={error ? 'error' : 'textLight'}
-          style={styles.label}
+          style={[styles.label, disabled && styles.disabled]}
           onPress={() => onPressLabel()}
+          disabled={disabled}
         >
           {label}
         </Text>
@@ -74,14 +79,18 @@ export function TextInput(props: Props) {
           placeholderTextColor={colors.darkTextLighter}
           onFocus={() => setBorderColor(colors.primary)}
           onEndEditing={() => setBorderColor(colors.border)}
-          style={[styles.input, inputStyle]}
+          style={[styles.input, disabled && styles.disabled, inputStyle]}
           secureTextEntry={secureTextEntry}
           {...otherProps}
         />
         {rightIcon && (
           <Icon
             name={rightIcon}
-            color={secureTextEntry ? colors.textLighter : colors.primary}
+            color={
+              disabled || secureTextEntry
+                ? colors.textLighter
+                : rightIconColor || colors.primary
+            }
             size={iconSize}
             onPress={onPressIcon}
           />
@@ -124,4 +133,5 @@ const useStyles = makeStyles(({ colors, fontSizes, spacing }) => ({
   error: {
     paddingTop: spacing.m,
   },
+  disabled: { color: colors.textLighter },
 }));

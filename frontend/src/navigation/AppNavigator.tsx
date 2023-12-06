@@ -23,6 +23,7 @@ import { isRouteBesidePost, postOrMessageDetailPathToRoutes } from '../helpers';
 import { useRedirect } from '../utils';
 import { useInitialLoad } from '../hooks/useInitialLoad';
 import { LoadingOrErrorView } from '../components';
+import { useAuth } from '../utils/AuthProvider';
 
 import RootStackNavigator from './RootStackNavigator';
 import { navigationRef } from './NavigationService';
@@ -31,13 +32,14 @@ export default function AppNavigator() {
   const { colorScheme } = useColorScheme();
   const useInitialLoadResult = useInitialLoad();
   const { setRedirectPath } = useRedirect();
+  const auth = useAuth();
 
   const darkMode = colorScheme === 'dark';
 
   return (
     <>
       <StatusBar style={darkMode ? 'light' : 'dark'} />
-      {useInitialLoadResult.loading ? (
+      {useInitialLoadResult.loading || auth.isLoading ? (
         <LoadingOrErrorView loading />
       ) : (
         <NavigationContainer
@@ -49,7 +51,7 @@ export default function AppNavigator() {
           theme={darkMode ? DarkTheme : DefaultTheme}
           ref={navigationRef}
         >
-          <RootStackNavigator initialRouteName={'InstanceLoading'} />
+          <RootStackNavigator authProps={auth} />
         </NavigationContainer>
       )}
     </>

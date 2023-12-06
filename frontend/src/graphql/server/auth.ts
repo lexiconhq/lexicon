@@ -18,6 +18,11 @@ export const LOGIN = gql`
           name
           username
           avatar: avatarTemplate
+          trustLevel
+          groups {
+            id
+            name
+          }
         }
       }
       ... on SecondFactorRequired {

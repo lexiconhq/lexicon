@@ -9,7 +9,7 @@ import {
   SearchTagsQuery,
 } from '../generated/server';
 
-import { User } from './Post';
+import { Poll, PollsVotes, User } from './Post';
 
 let ChannelRecord = runtypes.Record({
   id: runtypes.Number,
@@ -85,6 +85,8 @@ export type MessageContent = {
   time: string;
   message: string;
   mentions?: Array<string>;
+  polls?: Array<Poll>;
+  pollsVotes?: Array<PollsVotes>;
 };
 
 export type Message = {
@@ -144,3 +146,9 @@ export type RawNotificationsType = NonNullable<
 export type UserActivity = GeneratedUserActivity['userActivity'][number];
 
 export type Tag = SearchTagsQuery['searchTag'][number];
+
+export type StackAvatarUser = {
+  avatar: string;
+  name: string;
+  username: string;
+};

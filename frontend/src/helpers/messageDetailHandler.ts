@@ -69,6 +69,8 @@ function transformPostsToFrontendMessageContent(
       actionCodeWho,
       markdownContent,
       mentions,
+      polls,
+      pollsVotes,
     }) => ({
       id,
       username,
@@ -81,6 +83,8 @@ function transformPostsToFrontendMessageContent(
         time,
       ),
       mentions: mentions ?? undefined,
+      polls: polls ?? undefined,
+      pollsVotes: pollsVotes ?? undefined,
     }),
   );
   return modifiedPosts;

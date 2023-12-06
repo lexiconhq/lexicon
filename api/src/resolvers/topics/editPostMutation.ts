@@ -2,7 +2,7 @@ import camelcaseKey from 'camelcase-keys';
 import snakecaseKey from 'snakecase-keys';
 import { FieldResolver, mutationField, arg, intArg } from 'nexus';
 
-import { errorHandler } from '../../helpers';
+import { errorHandler, formatPolls } from '../../helpers';
 import { Context } from '../../types';
 import { ACCEPTED_LANGUAGE, CONTENT_JSON } from '../../constants';
 
@@ -24,7 +24,18 @@ export let editPostResolver: FieldResolver<'Mutation', 'editPost'> = async (
       { post },
       config,
     );
-    return camelcaseKey(data.post, { deep: true });
+
+    let editPostData = camelcaseKey(data.post, { deep: true });
+    const { formattedPolls, formattedPollsVotes } = formatPolls(
+      editPostData.polls,
+      editPostData.pollsVotes,
+    );
+
+    return {
+      ...editPostData,
+      polls: formattedPolls,
+      pollsVotes: formattedPollsVotes,
+    };
   } catch (e) {
     errorHandler(e);
   }

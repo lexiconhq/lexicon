@@ -15,7 +15,6 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated';
-import { useFormContext } from 'react-hook-form';
 
 import {
   FooterLoadingIndicator,
@@ -34,7 +33,6 @@ import {
   TopicsSortEnum,
   TopicsQuery,
   TopicsQueryVariables,
-  TopicsDocument,
   TopicFragmentDoc,
   TopicFragment,
 } from '../../generated/server';
@@ -106,8 +104,6 @@ export default function Home() {
   const { addListener, navigate } = useNavigation<StackNavProp<'TabNav'>>();
 
   const { params } = useRoute<TabRouteProp<'Home'>>();
-  const { getValues } = useFormContext();
-  const { channelId: receivedChannelId } = getValues();
 
   const routeParams = params === undefined ? false : params.backToTop;
 
@@ -174,7 +170,11 @@ export default function Home() {
   const [allTopicCount, setAllTopicCount] = useState(0);
   const [width, setWidth] = useState(0);
 
-  const { loading: channelsLoading, error: channelsError } = useChannels(
+  const {
+    loading: channelsLoading,
+    error: channelsError,
+    refetch: channelsRefetch,
+  } = useChannels(
     {
       onCompleted: (data) => {
         if (data && data.category.categories) {
@@ -184,6 +184,10 @@ export default function Home() {
           });
           storage.setItem('channels', channels);
         }
+      },
+      onError: () => {
+        setRefreshing(false);
+        setLoading(false);
       },
     },
     'HIDE_ALERT',
@@ -230,6 +234,7 @@ export default function Home() {
     error: topicsError,
     refetch: refetchTopics,
     fetchMore: fetchMoreTopics,
+    data: topicDataList,
   } = useLazyTopicList({
     variables: isNoChannelFilter(selectedChannelId)
       ? { sort: sortState, page, username }
@@ -238,29 +243,33 @@ export default function Home() {
       setRefreshing(false);
       setLoading(false);
     },
-    onCompleted: (data) => {
-      if (data) {
-        setData(data);
-        setLoading(false);
-      }
+    onCompleted: () => {
+      setLoading(false);
     },
   });
 
   const getData = useCallback(
     (variables: TopicsQueryVariables) => {
-      try {
-        const data: TopicsQuery | null = client.readQuery({
-          query: TopicsDocument,
-          variables,
-        });
-        data && setData(data);
-      } catch (e) {
-        setLoading(true);
-      }
       getTopicList({ variables });
     },
-    [getTopicList, setData],
+    [getTopicList],
   );
+
+  useEffect(() => {
+    /**
+     * This useEffect is used to set data if there are changes in the result query.
+     * If the topics list is cached, it will show the result in `topicDataList`.
+     * But if the topics list is not in the cache, it will show `undefined` until it finishes getting data from the query.
+     *
+     */
+
+    if (topicDataList) {
+      setData(topicDataList);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
+  }, [setData, topicDataList]);
 
   useLayoutEffect(() => {
     if (!isFlatList(postListRef.current)) {
@@ -273,18 +282,27 @@ export default function Home() {
   }, [selectedChannelId]);
 
   useEffect(() => {
-    let channels = storage.getItem('channels');
-    if (channels && receivedChannelId) {
-      setSelectedChannelId(receivedChannelId);
-    } else if (channels) {
-      setSelectedChannelId(NO_CHANNEL_FILTER.id);
-    }
-
     const unsubscribe = addListener('focus', () => {
+      /**
+       * We need to call `getHomeChannelId` to retrieve the initial value because this function will only be called once during the first render.
+       *
+       * During the first render, the value of `receivedChannelId` has not changed outside of the `useEffect`. This can result in the function using the previously selected channel's value.
+       *
+       * In the previous code, we utilized param screen or `watch` from `react-hook-form`, ensuring that the value had already changed during the initial render or before calling this function.
+       */
+
+      const receivedChannelId = storage.getItem('homeChannelId');
+      let channels = storage.getItem('channels');
+      if (channels && receivedChannelId) {
+        setSelectedChannelId(receivedChannelId);
+      } else if (channels) {
+        setSelectedChannelId(NO_CHANNEL_FILTER.id);
+      }
+
       let categoryId = receivedChannelId;
       if (receivedChannelId) {
         categoryId = isNoChannelFilter(receivedChannelId)
-          ? undefined
+          ? null
           : receivedChannelId;
       }
       let currentPage = page;
@@ -308,7 +326,6 @@ export default function Home() {
   }, [
     selectedChannelId,
     getAbout,
-    receivedChannelId,
     username,
     storage,
     sortState,
@@ -346,8 +363,13 @@ export default function Home() {
     setRefreshing(true);
     if (refetchTopics) {
       setPage(FIRST_PAGE);
-      refetchTopics().then(() => setRefreshing(false));
+      refetchTopics().finally(() => setRefreshing(false));
     }
+  };
+
+  const onRefreshError = () => {
+    channelsRefetch();
+    onRefresh();
   };
 
   const onSegmentedControlItemPress = ({ name }: SortOption) => {
@@ -442,11 +464,29 @@ export default function Home() {
 
   const content = () => {
     if (channelsError) {
-      return <LoadingOrError message={errorHandler(channelsError, true)} />;
+      return (
+        <LoadingOrError
+          message={errorHandler(channelsError, true)}
+          refreshing={refreshing}
+          progressViewOffset={headerViewHeight}
+          onRefresh={() => {
+            channelsRefetch();
+            onRefresh();
+          }}
+        />
+      );
     }
     if (topicsError) {
-      return <LoadingOrError message={errorHandler(topicsError, true)} />;
+      return (
+        <LoadingOrError
+          message={errorHandler(topicsError, true)}
+          refreshing={refreshing}
+          progressViewOffset={headerViewHeight}
+          onRefresh={onRefreshError}
+        />
+      );
     }
+
     if (!topicsData || channelsLoading || loading) {
       return <LoadingOrError loading />;
     }
@@ -454,37 +494,39 @@ export default function Home() {
       return <LoadingOrError message={t('No Posts available')} />;
     }
     return (
-      <PostList
-        postListRef={postListRef}
-        data={topicsData}
-        contentInset={{ top: headerViewHeight }}
-        contentOffset={{
-          x: 0,
-          y: Platform.OS === 'ios' ? -headerViewHeight : 0,
-        }}
-        progressViewOffset={headerViewHeight}
-        automaticallyAdjustContentInsets={false}
-        onRefresh={onRefresh}
-        refreshing={refreshing}
-        style={styles.fill}
-        contentContainerStyle={styles.postListContent}
-        scrollEventThrottle={16}
-        onScroll={scrollHandler}
-        onEndReachedThreshold={0.1}
-        onEndReached={onEndReached}
-        renderItem={({ item }) => {
-          return (
-            <HomePostItem
-              topicId={item.topicId}
-              prevScreen={'Home'}
-              onPressReply={onPressReply}
-            />
-          );
-        }}
-        ListFooterComponent={
-          <FooterLoadingIndicator isHidden={!hasMoreTopics || !topicsData} />
-        }
-      />
+      <>
+        <PostList
+          postListRef={postListRef}
+          data={topicsData}
+          contentInset={{ top: headerViewHeight }}
+          contentOffset={{
+            x: 0,
+            y: Platform.OS === 'ios' ? -headerViewHeight : 0,
+          }}
+          progressViewOffset={headerViewHeight}
+          automaticallyAdjustContentInsets={false}
+          onRefresh={onRefresh}
+          refreshing={refreshing}
+          style={styles.fill}
+          contentContainerStyle={styles.postListContent}
+          scrollEventThrottle={16}
+          onScroll={scrollHandler}
+          onEndReachedThreshold={0.1}
+          onEndReached={onEndReached}
+          renderItem={({ item }) => {
+            return (
+              <HomePostItem
+                topicId={item.topicId}
+                prevScreen={'Home'}
+                onPressReply={onPressReply}
+              />
+            );
+          }}
+          ListFooterComponent={
+            <FooterLoadingIndicator isHidden={!hasMoreTopics || !topicsData} />
+          }
+        />
+      </>
     );
   };
 
@@ -527,7 +569,6 @@ const useStyles = makeStyles(({ colors, shadow, spacing }) => ({
   container: {
     flex: 1,
     width: '100%',
-    alignItems: 'flex-start',
     justifyContent: 'flex-start',
     backgroundColor: colors.backgroundDarker,
   },

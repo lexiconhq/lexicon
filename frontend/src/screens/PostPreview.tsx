@@ -25,6 +25,7 @@ import {
   sortImageUrl,
   useStorage,
   generateMarkdownContent,
+  combineContentWithPollContent,
 } from '../helpers';
 import {
   useEditPost,
@@ -34,8 +35,15 @@ import {
   useReplyTopic,
 } from '../hooks';
 import { makeStyles, useTheme } from '../theme';
-import { RootStackNavProp, RootStackRouteProp, StackRouteProp } from '../types';
+import {
+  PollFormContextValues,
+  RootStackNavProp,
+  RootStackRouteProp,
+  StackRouteProp,
+} from '../types';
 import { useModal } from '../utils';
+import { FORM_DEFAULT_VALUES } from '../constants';
+import { PollPostPreview } from '../components/Poll';
 
 const ios = Platform.OS === 'ios';
 
@@ -62,14 +70,13 @@ export default function PostPreview() {
   const storage = useStorage();
   const channels = storage.getItem('channels');
 
-  const { reset: resetForm } = useFormContext();
+  const { reset: resetForm, getValues } = useFormContext();
 
   const [imageUrls, setImageUrls] = useState<Array<string>>();
 
-  const { title, content } = postData;
+  const { title, raw: content, tags, channelId } = getValues();
   const shortUrls = getPostShortUrl(content) ?? [];
-  const tags = 'tagIds' in postData ? postData.tagIds : [];
-  const images = 'images' in postData ? postData.images : undefined;
+  const images = postData.images;
 
   const navToPostDetail = ({
     topicId,
@@ -118,8 +125,7 @@ export default function PostPreview() {
 
   const { newTopic, loading: newTopicLoading } = useNewTopic({
     onCompleted: ({ newTopic: result }) => {
-      resetForm();
-
+      resetForm(FORM_DEFAULT_VALUES);
       reset({
         index: 1,
         routes: [
@@ -135,8 +141,9 @@ export default function PostPreview() {
 
   const { reply: replyTopic, loading: replyLoading } = useReplyTopic({
     onCompleted: ({ reply: { postNumber } }) => {
+      resetForm(FORM_DEFAULT_VALUES);
       navToPostDetail({
-        topicId: ('topicId' in postData && postData.topicId) || 0,
+        topicId: postData.topicId || 0,
         focusedPostNumber: postNumber,
       });
     },
@@ -147,10 +154,10 @@ export default function PostPreview() {
 
   const { editPost, loading: editPostLoading } = useEditPost({
     onCompleted: () => {
-      resetForm();
+      resetForm(FORM_DEFAULT_VALUES);
       !editTopicId && // if there's also editTopicId then don't do anything.
         navToPostDetail({
-          topicId: ('topicId' in postData && postData.topicId) || 0,
+          topicId: postData.topicId || 0,
           focusedPostNumber,
         });
     },
@@ -161,7 +168,7 @@ export default function PostPreview() {
 
   const { editTopic, loading: editTopicLoading } = useEditTopic({
     onCompleted: () => {
-      resetForm();
+      resetForm(FORM_DEFAULT_VALUES);
       navToPostDetail({
         topicId: editTopicId || 0,
         focusedPostNumber,
@@ -194,13 +201,20 @@ export default function PostPreview() {
 
   const postToServer = () => {
     setModal(false);
+    let polls: Array<PollFormContextValues> = getValues('polls');
+
+    const updatedContentWithPoll = combineContentWithPollContent({
+      content,
+      polls,
+    });
+
     if (editPostId || editTopicId) {
       if (editPostId) {
         editPost({
           variables: {
             postId: editPostId,
             postInput: {
-              raw: content,
+              raw: updatedContentWithPoll,
             },
           },
         });
@@ -211,7 +225,7 @@ export default function PostPreview() {
             topicId: editTopicId,
             topicInput: {
               title,
-              categoryId: ('channelId' in postData && postData.channelId) || 0,
+              categoryId: channelId || 0,
               tags,
             },
           },
@@ -220,12 +234,11 @@ export default function PostPreview() {
       return;
     }
     if (reply) {
-      const postNumber = 'postNumber' in postData ? postData.postNumber : null;
       replyTopic({
         variables: {
-          content,
-          topicId: ('topicId' in postData && postData.topicId) || 0,
-          replyToPostNumber: postNumber,
+          content: updatedContentWithPoll,
+          topicId: postData.topicId || 0,
+          replyToPostNumber: postData.postNumber,
         },
       });
     } else {
@@ -233,13 +246,28 @@ export default function PostPreview() {
         variables: {
           newTopicInput: {
             title,
-            category: ('channelId' in postData && postData.channelId) || 0,
+            category: channelId || 0,
             tags,
-            raw: content,
+            raw: updatedContentWithPoll,
           },
         },
       });
     }
+  };
+
+  const renderPolls = () => {
+    const polls: Array<PollFormContextValues> = getValues('polls');
+    if (!polls) {
+      return null;
+    }
+
+    return polls.map((poll, index) => (
+      <PollPostPreview
+        key={index}
+        options={poll.pollOptions}
+        title={poll.title}
+      />
+    ));
   };
 
   return (
@@ -303,20 +331,19 @@ export default function PostPreview() {
           style={styles.spacingBottom}
         />
 
-        {!reply && 'channelId' in postData && (
+        {!reply && channelId && (
           <PostGroupings
             style={styles.spacingBottom}
             channel={
-              channels?.find(({ id }) => id === postData.channelId) ||
-              mock.channels[0]
+              channels?.find(({ id }) => id === channelId) || mock.channels[0]
             }
             tags={tags}
           />
         )}
-        {reply && 'replyToPostId' in postData && postData.replyToPostId && (
+        {reply && postData.replyToPostId && (
           <LocalRepliedPost replyToPostId={postData.replyToPostId} />
         )}
-
+        {renderPolls()}
         <Markdown
           style={styles.markdown}
           content={generateMarkdownContent(content, imageUrls)}
