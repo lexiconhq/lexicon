@@ -1,5 +1,7 @@
 import { gql } from '@apollo/client';
 
+import { POLL_FRAGMENT } from './poll';
+
 export const MESSAGE = gql`
   query Message($username: String!, $page: Int) {
     privateMessage(username: $username, page: $page) {
@@ -62,6 +64,7 @@ export const NEW_PRIVATE_MESSAGE = gql`
 `;
 
 export const GET_MESSAGE_DETAIL = gql`
+  ${POLL_FRAGMENT}
   query GetMessageDetail($topicId: Int!, $postIds: [Int!], $postNumber: Int) {
     privateMessageDetail(
       topicId: $topicId
@@ -80,6 +83,13 @@ export const GET_MESSAGE_DETAIL = gql`
           mentions
           createdAt
           postNumber
+          polls {
+            ...PollFragment
+          }
+          pollsVotes {
+            pollName
+            pollOptionIds
+          }
         }
         stream
       }
@@ -94,7 +104,17 @@ export const GET_MESSAGE_DETAIL = gql`
           username
           avatar: avatarTemplate
         }
+        createdBy {
+          id
+          username
+        }
       }
     }
+  }
+`;
+
+export const LEAVE_MESSAGE = gql`
+  mutation LeaveMessage($topicId: Int!, $username: String!) {
+    leaveMessage(topicId: $topicId, username: $username)
   }
 `;

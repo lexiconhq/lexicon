@@ -236,7 +236,7 @@ export default function Notifications() {
             <RefreshControl
               refreshing={loading}
               onRefresh={onRefresh}
-              tintColor={colors.primary}
+              tintColor={colors.loading}
             />
           }
           getItem={getItem}

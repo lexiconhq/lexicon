@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 
-import { Avatar, AvatarProps, Text } from '../core-ui';
+import { Avatar, AvatarProps, Emoji, Text } from '../core-ui';
 import { FontVariant, makeStyles } from '../theme';
 
 type Props = TouchableOpacityProps &
@@ -24,6 +24,8 @@ type Props = TouchableOpacityProps &
     imageStyle?: StyleProp<ImageStyle>;
     onPressAuthor?: (username: string) => void;
     onPressEmptySpaceInPost?: () => void;
+    showStatus?: boolean;
+    emojiCode?: string;
   };
 
 export function Author(props: Props) {
@@ -43,6 +45,8 @@ export function Author(props: Props) {
     children,
     onPressAuthor,
     onPressEmptySpaceInPost,
+    showStatus,
+    emojiCode,
     ...otherProps
   } = props;
 
@@ -57,9 +61,14 @@ export function Author(props: Props) {
           onPress={() => onPressAuthor && onPressAuthor(title)}
         />
         <View>
-          <Text style={[styles.textTitle, titleStyle]} variant={variant}>
-            {title}
-          </Text>
+          <View style={styles.nameContainer}>
+            <Text style={[styles.textTitle, titleStyle]} variant={variant}>
+              {title}
+            </Text>
+            {showStatus && emojiCode && (
+              <Emoji emojiCode={emojiCode} disableOnPress />
+            )}
+          </View>
           {subtitle && (
             <Text color="textLight" style={subtitleStyle}>
               {subtitle}
@@ -108,11 +117,17 @@ const useStyles = makeStyles(({ spacing }) => ({
   textTitle: {
     textTransform: 'capitalize',
     paddingBottom: spacing.xs,
+    marginRight: spacing.s,
   },
   image: {
     marginRight: spacing.m,
   },
   children: {
     alignSelf: 'center',
+  },
+  nameContainer: {
+    flexDirection: 'row',
+    flex: 1,
+    alignItems: 'center',
   },
 }));

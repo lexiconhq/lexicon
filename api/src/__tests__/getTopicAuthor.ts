@@ -2,23 +2,26 @@ import {
   getTopicAuthor,
   getTopicAuthorUserId,
 } from '../helpers/getTopicAuthor';
-import { TopicPoster } from '../types';
+import { PosterUnion } from '../types';
 
-function getUserWithId(
-  userId: number | null,
-  description: string,
-): TopicPoster {
+function getUserWithId(userId: number, description: string): PosterUnion {
   return {
     userId,
     description,
     extras: null,
-    user: null,
+    user: {
+      id: userId,
+      name: '',
+      username: '',
+      avatarTemplate: '',
+    },
   };
 }
 
-function getUserWithObject(userId: number, description: string): TopicPoster {
+function getUserWithObject(userId: number, description: string): PosterUnion {
   return {
-    ...getUserWithId(null, description),
+    description,
+    extras: null,
     user: {
       id: userId,
       username: 'bill',
@@ -30,7 +33,7 @@ function getUserWithObject(userId: number, description: string): TopicPoster {
 
 describe('getTopicAuthor', () => {
   it('returns the author of the topic when present', () => {
-    const posters: Array<TopicPoster> = [
+    const posters: Array<PosterUnion> = [
       getUserWithId(1, 'Frequent Poster'),
       getUserWithId(2, 'Most Recent Poster'),
       getUserWithId(3, 'Frequent Poster, Original Poster'),
@@ -40,7 +43,7 @@ describe('getTopicAuthor', () => {
   });
 
   it('returns the first author when multiple are somehow present', () => {
-    const posters: Array<TopicPoster> = [
+    const posters: Array<PosterUnion> = [
       getUserWithId(1, 'Original Poster'),
       getUserWithId(2, 'Most Recent Poster'),
       getUserWithId(3, 'Frequent Poster, Original Poster'),
@@ -50,7 +53,7 @@ describe('getTopicAuthor', () => {
   });
 
   it('returns undefined when no author is present', () => {
-    const posters: Array<TopicPoster> = [
+    const posters: Array<PosterUnion> = [
       getUserWithId(1, 'Frequent Poster'),
       getUserWithId(2, 'Frequent Poster'),
       getUserWithId(3, 'Frequent Poster, Most Recent Poster'),
@@ -66,7 +69,7 @@ describe('getTopicAuthor', () => {
 
 describe('getTopicAuthorUserId', () => {
   it(`returns the author's userId when present`, () => {
-    const posters: Array<TopicPoster> = [
+    const posters: Array<PosterUnion> = [
       getUserWithId(1, 'Frequent Poster'),
       getUserWithId(2, 'Most Recent Poster'),
       getUserWithId(3, 'Frequent Poster, Original Poster'),
@@ -75,7 +78,7 @@ describe('getTopicAuthorUserId', () => {
   });
 
   it(`returns the author's user.id when present`, () => {
-    const posters: Array<TopicPoster> = [
+    const posters: Array<PosterUnion> = [
       getUserWithId(1, 'Frequent Poster'),
       getUserWithId(2, 'Most Recent Poster'),
       getUserWithObject(3, 'Frequent Poster, Original Poster'),
@@ -84,7 +87,7 @@ describe('getTopicAuthorUserId', () => {
   });
 
   it(`prefers the author's userId when the user object is set too`, () => {
-    const posters: Array<TopicPoster> = [
+    const posters: Array<PosterUnion> = [
       getUserWithId(1, 'Frequent Poster'),
       getUserWithId(2, 'Most Recent Poster'),
       {

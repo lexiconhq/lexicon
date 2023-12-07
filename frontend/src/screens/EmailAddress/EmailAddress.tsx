@@ -66,7 +66,7 @@ export default function EmailAddress() {
   );
 
   if (userLoading && emailAddress.length === 0) {
-    return <LoadingOrError loading />;
+    return <LoadingOrError style={styles.loadingContainer} loading />;
   }
 
   return (
@@ -108,5 +108,8 @@ const useStyles = makeStyles(({ colors, spacing }) => ({
     marginBottom: spacing.xxxl,
     right: 0,
     bottom: 0,
+  },
+  loadingContainer: {
+    backgroundColor: colors.background,
   },
 }));

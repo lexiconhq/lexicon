@@ -7,8 +7,9 @@ import {
   fetchPost,
   fetchTopicDetail,
   getTopicDetailBaseArgs,
+  formatPolls,
 } from '../../helpers';
-import { Context } from '../../types';
+import { Context, Post } from '../../types';
 
 let topicDetailQueryResolver: FieldResolver<'Query', 'topicDetail'> = async (
   _,
@@ -23,6 +24,21 @@ let topicDetailQueryResolver: FieldResolver<'Query', 'topicDetail'> = async (
       postIds,
       postNumber,
     });
+
+    let formattedPosts = data.postStream.posts.map((post: Post) => {
+      const { formattedPolls, formattedPollsVotes } = formatPolls(
+        post.polls,
+        post.pollsVotes,
+      );
+
+      return {
+        ...post,
+        polls: formattedPolls,
+        pollsVotes: formattedPollsVotes,
+      };
+    });
+    data.postStream.posts = formattedPosts;
+
     const firstPostOfData = data.postStream.posts[0];
     if (firstPostOfData) {
       let isLiked = !!firstPostOfData.actionsSummary.find(

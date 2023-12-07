@@ -161,6 +161,9 @@ let transformPostsToFrontendPost = (params: {
     postNumber,
     replyToPostNumber,
     canEdit,
+    userStatus,
+    polls,
+    pollsVotes,
   } = params.post;
   if (!actionsSummary) {
     throw new Error('Unexpected condition: actionsSummary was undefined');
@@ -188,5 +191,8 @@ let transformPostsToFrontendPost = (params: {
     replyToPostNumber,
     canEdit,
     canFlag,
+    emojiStatus: userStatus?.emoji,
+    polls: polls ?? undefined,
+    pollsVotes: pollsVotes ?? undefined,
   };
 };

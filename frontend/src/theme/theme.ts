@@ -4,6 +4,7 @@ import {
   FONT_SIZES,
   FONT_VARIANTS,
   FUNCTIONAL_COLORS,
+  GRAPH_SIZES,
   HEADING_FONT_SIZES,
   ICON_SIZES,
   SPACING,
@@ -55,6 +56,18 @@ function colorTheme(isDarkMode: boolean) {
     toastInfoText: isDarkMode
       ? FUNCTIONAL_COLORS.darkTextLighter
       : FUNCTIONAL_COLORS.lightTextDarker,
+    skeletonLoadingBackgroundMode: isDarkMode
+      ? FUNCTIONAL_COLORS.skeletonLoadingDarkBackGround
+      : FUNCTIONAL_COLORS.skeletonLoadingLightBackGround,
+    skeletonLoadingHighlightMode: isDarkMode
+      ? FUNCTIONAL_COLORS.skeletonLoadingDarkHighlight
+      : FUNCTIONAL_COLORS.skeletonLoadingLightHighlight,
+    icon: isDarkMode
+      ? FUNCTIONAL_COLORS.lightTextDarkest
+      : FUNCTIONAL_COLORS.pureBlack,
+    loading: isDarkMode
+      ? FUNCTIONAL_COLORS.pureWhite
+      : FUNCTIONAL_COLORS.primary,
   };
 }
 
@@ -81,6 +94,7 @@ export const getTheme = ({ colorScheme, aesthetic }: Config) => {
     colors,
     fontSizes: FONT_SIZES,
     iconSizes: ICON_SIZES,
+    graphSizes: GRAPH_SIZES,
     spacing: SPACING,
     fontVariants: FONT_VARIANTS,
     headingFontSizes: HEADING_FONT_SIZES,

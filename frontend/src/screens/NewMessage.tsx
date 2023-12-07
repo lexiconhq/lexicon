@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Platform,
@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useFormContext } from 'react-hook-form';
 import { useDebouncedCallback } from 'use-debounce';
 
 import {
@@ -16,6 +16,8 @@ import {
   CustomHeader,
   HeaderItem,
   KeyboardTextAreaScrollView,
+  LoadingOrError,
+  ListCreatePoll,
   MentionList,
   ModalHeader,
   TextArea,
@@ -27,30 +29,34 @@ import {
   createReactNativeFile,
   formatExtensions,
   getHyperlink,
-  getImage,
   insertHyperlink,
   insertImageUploadStatus,
   mentionHelper,
   getReplacedImageUploadStatus,
   useStorage,
+  BottomMenuNavigationScreens,
+  BottomMenuNavigationParams,
+  errorHandlerAlert,
+  combineContentWithPollContent,
 } from '../helpers';
 import {
   useKASVWorkaround,
   useMention,
+  useNewMessage,
   useSiteSettings,
   useStatefulUpload,
 } from '../hooks';
 import { makeStyles, useTheme } from '../theme';
 import {
   CursorPosition,
-  FormTitle,
   Image,
+  PollFormContextValues,
   RootStackNavProp,
-  RootStackParamList,
   RootStackRouteProp,
-  UserMessageProps,
 } from '../types';
 import { useModal } from '../utils';
+import { FORM_DEFAULT_VALUES } from '../constants';
+import { MESSAGE } from '../graphql/server/message';
 
 export default function NewMessage() {
   const { modal, setModal } = useModal();
@@ -69,18 +75,28 @@ export default function NewMessage() {
   const navigation = useNavigation<RootStackNavProp<'NewMessage'>>();
   const { navigate, goBack } = navigation;
 
-  let {
-    params: {
-      users = [],
-      listOfUser = [],
-      hyperlinkTitle = '',
-      hyperlinkUrl,
-      imageUri = '',
-    },
-  } = useRoute<RootStackRouteProp<'NewMessage'>>();
+  let { params } = useRoute<RootStackRouteProp<'NewMessage'>>();
 
-  const { control, handleSubmit, setValue, getValues, formState } =
-    useForm<FormTitle>({ mode: 'onChange' });
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    getValues,
+    formState,
+    watch,
+    reset: resetForm,
+  } = useFormContext();
+
+  const users: Array<string> = watch('messageTargetSelectedUsers');
+  const polls: Array<PollFormContextValues> = watch('polls');
+
+  let { hyperlinkUrl, hyperlinkTitle, imageUri } = useMemo(() => {
+    return {
+      hyperlinkUrl: params?.hyperlinkUrl || '',
+      hyperlinkTitle: params?.hyperlinkTitle || '',
+      imageUri: params?.imageUri || '',
+    };
+  }, [params]);
 
   const kasv = useKASVWorkaround();
 
@@ -109,10 +125,28 @@ export default function NewMessage() {
     }
   }, 1500);
 
+  const username = storage.getItem('user')?.username ?? '';
+
   const { upload, tempArray, completedToken } = useStatefulUpload(
     imagesArray,
     currentUploadToken,
   );
+
+  const { newMessage, loading: newMessageLoading } = useNewMessage({
+    onCompleted: () => {
+      resetForm(FORM_DEFAULT_VALUES);
+      navigate('Messages');
+    },
+    onError: (error) => {
+      errorHandlerAlert(error);
+    },
+    refetchQueries: [
+      {
+        query: MESSAGE,
+        variables: { username },
+      },
+    ],
+  });
 
   useEffect(() => {
     const { raw } = getValues();
@@ -178,15 +212,13 @@ export default function NewMessage() {
   ]);
 
   const onNavigate = (
-    screen: 'PostImagePreview' | 'HyperLink',
-    params:
-      | RootStackParamList['PostImagePreview']
-      | RootStackParamList['HyperLink'],
+    screen: BottomMenuNavigationScreens,
+    params: BottomMenuNavigationParams,
   ) => {
     navigate(screen, params);
   };
 
-  const { onInsertImage, onInsertLink } = bottomMenu({
+  const { onInsertImage, onInsertLink, onInsertPoll } = bottomMenu({
     isKeyboardShow,
     user,
     navigate: onNavigate,
@@ -219,7 +251,8 @@ export default function NewMessage() {
   useEffect(
     () =>
       navigation.addListener('beforeRemove', (e) => {
-        if (uploadsInProgress < 1 || !formState.isValid || !modal) {
+        if (uploadsInProgress < 1 && (!formState.isValid || !modal)) {
+          resetForm(FORM_DEFAULT_VALUES);
           return;
         }
         e.preventDefault();
@@ -230,35 +263,39 @@ export default function NewMessage() {
             { text: t('Cancel') },
             {
               text: t('Discard'),
-              onPress: () => navigation.dispatch(e.data.action),
+              onPress: () => {
+                resetForm(FORM_DEFAULT_VALUES);
+                navigation.dispatch(e.data.action);
+              },
             },
           ],
         );
       }),
-    [navigation, formState.isValid, modal, uploadsInProgress],
+    [navigation, formState.isValid, modal, uploadsInProgress, resetForm],
   );
 
-  const onFinishComposingMessage = handleSubmit(({ title, raw }) => {
-    const userList: Array<UserMessageProps> = [];
-    let index = 0;
-    listOfUser.forEach(({ username, avatar, name }) => {
-      userList.push({
-        id: index++,
-        username: username,
-        avatar: getImage(avatar),
-        name: name,
-      });
+  const sendMessage = handleSubmit(() => {
+    const { title, raw } = getValues();
+
+    const updatedContentWithPoll = combineContentWithPollContent({
+      content: raw,
+      polls,
     });
-    navigate('NewMessagePreview', {
-      raw,
-      targetRecipients: selectedUsers,
-      userList,
-      title,
+
+    setModal(false);
+    newMessage({
+      variables: {
+        newPrivateMessageInput: {
+          title,
+          raw: updatedContentWithPoll,
+          targetRecipients: users,
+        },
+      },
     });
   });
 
   const onPressSelectUser = () => {
-    navigate('SelectUser', { users, listOfUser });
+    navigate('SelectUser');
   };
 
   const setMentionValue = (text: string) => {
@@ -269,146 +306,170 @@ export default function NewMessage() {
     ios ? (
       <ModalHeader
         title={t('New Message')}
-        left={<HeaderItem label={t('Cancel')} onPressItem={goBack} left />}
+        left={
+          <HeaderItem
+            label={t('Cancel')}
+            onPressItem={goBack}
+            left
+            disabled={newMessageLoading}
+          />
+        }
         right={
           <HeaderItem
-            label={t('Next')}
-            onPressItem={onFinishComposingMessage}
-            disabled={!formState.isValid || selectedUsers.length === 0}
+            label={t('Send')}
+            onPressItem={sendMessage}
+            disabled={
+              !formState.isValid ||
+              selectedUsers.length === 0 ||
+              newMessageLoading
+            }
           />
         }
       />
     ) : (
       <CustomHeader
         title={t('New Message')}
-        rightTitle={t('Next')}
-        onPressRight={onFinishComposingMessage}
+        rightTitle={t('Send')}
+        onPressRight={sendMessage}
         disabled={!formState.isValid || selectedUsers.length === 0}
         noShadow
+        isLoading={newMessageLoading}
       />
     );
 
   return (
     <SafeAreaView style={styles.container}>
       <Header />
-      <KeyboardTextAreaScrollView
-        {...kasv.props}
-        bottomMenu={
-          <View>
-            <MentionList
-              showUserList={showUserList}
-              members={mentionMembers}
-              mentionLoading={mentionLoading}
-              rawText={getValues('raw')}
-              textRef={newMessageRef}
-              setMentionValue={setMentionValue}
-              setShowUserList={setShowUserList}
+      {newMessageLoading ? (
+        <LoadingOrError loading />
+      ) : (
+        <KeyboardTextAreaScrollView
+          {...kasv.props}
+          bottomMenu={
+            <View>
+              <MentionList
+                showUserList={showUserList}
+                members={mentionMembers}
+                mentionLoading={mentionLoading}
+                rawText={getValues('raw')}
+                textRef={newMessageRef}
+                setMentionValue={setMentionValue}
+                setShowUserList={setShowUserList}
+              />
+              <BottomMenu
+                onInsertImage={onInsertImage}
+                onInsertLink={onInsertLink}
+                onInsertPoll={onInsertPoll}
+                showLeftMenu={showLeftMenu}
+              />
+            </View>
+          }
+        >
+          <>
+            <View style={styles.formContainer}>
+              <Text style={styles.label}>{t('Subject')}</Text>
+              <Controller
+                name="title"
+                defaultValue=""
+                rules={{ required: true }}
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <TextInput
+                    style={[
+                      styles.textInput,
+                      { marginLeft: spacing.m, textAlign: 'right' },
+                    ]}
+                    value={value}
+                    onChangeText={onChange}
+                    onFocus={() => setShowLeftMenu(false)}
+                    placeholder={t('What do you want to talk about?')}
+                    placeholderTextColor={colors.darkTextLighter}
+                  />
+                )}
+              />
+            </View>
+
+            <Divider horizontalSpacing="xxl" />
+
+            <View style={styles.formContainer}>
+              <Text style={styles.label}>{t('Recipients')}</Text>
+              <TouchableOpacity
+                style={styles.row}
+                onPress={onPressSelectUser}
+                hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+              >
+                <Text
+                  style={{
+                    color: length ? colors.textNormal : colors.darkTextLighter,
+                    paddingRight: spacing.m,
+                  }}
+                >
+                  {length > 0
+                    ? t('{users} {length}', {
+                        users: selectedUsers[0],
+                        length:
+                          length - 1 > 0
+                            ? '+' +
+                              (length - 1) +
+                              (length - 1 === 1 ? ' other' : ' others')
+                            : '',
+                      })
+                    : t('Add a recipient')}
+                </Text>
+                <Icon name="ChevronRight" color={colors.textLighter} />
+              </TouchableOpacity>
+            </View>
+
+            <Divider horizontalSpacing="xxl" />
+
+            <ListCreatePoll
+              polls={polls}
+              setValue={setValue}
+              navigate={navigate}
+              prevScreen="NewMessage"
             />
-            <BottomMenu
-              onInsertImage={onInsertImage}
-              onInsertLink={onInsertLink}
-              showLeftMenu={showLeftMenu}
-            />
-          </View>
-        }
-      >
-        <>
-          <View style={styles.formContainer}>
-            <Text style={styles.label}>{t('Subject')}</Text>
+
             <Controller
-              name="title"
+              name="raw"
               defaultValue=""
               rules={{ required: true }}
               control={control}
               render={({ field: { onChange, value } }) => (
-                <TextInput
-                  style={[
-                    styles.textInput,
-                    { marginLeft: spacing.m, textAlign: 'right' },
-                  ]}
+                <TextArea
+                  isKeyboardShow={isKeyboardShow}
                   value={value}
-                  onChangeText={onChange}
-                  onFocus={() => setShowLeftMenu(false)}
-                  placeholder={t('What do you want to talk about?')}
-                  placeholderTextColor={colors.darkTextLighter}
+                  inputRef={newMessageRef}
+                  onChangeValue={(text) => {
+                    mentionHelper(
+                      text,
+                      cursorPosition,
+                      setShowUserList,
+                      setMentionLoading,
+                      setMentionKeyword,
+                    );
+                    onChange(text);
+                    debounced(text, currentUploadToken);
+                  }}
+                  style={styles.spacingHorizontal}
+                  onFocus={(event) => {
+                    kasv.scrollToFocusedInput(event);
+                    setKeyboardShow(true);
+                    setShowLeftMenu(true);
+                  }}
+                  onBlur={() => {
+                    setKeyboardShow(false);
+                  }}
+                  onSelectedChange={(cursor) => {
+                    setCursorPosition(cursor);
+                  }}
+                  placeholder={t('Type a message')}
+                  mentionToggled={showUserList}
                 />
               )}
             />
-          </View>
-
-          <Divider horizontalSpacing="xxl" />
-
-          <View style={styles.formContainer}>
-            <Text style={styles.label}>{t('Recipients')}</Text>
-            <TouchableOpacity
-              style={styles.row}
-              onPress={onPressSelectUser}
-              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-            >
-              <Text
-                style={{
-                  color: length ? colors.textNormal : colors.darkTextLighter,
-                  paddingRight: spacing.m,
-                }}
-              >
-                {length > 0
-                  ? t('{users} {length}', {
-                      users: selectedUsers[0],
-                      length:
-                        length - 1 > 0
-                          ? '+' +
-                            (length - 1) +
-                            (length - 1 === 1 ? ' other' : ' others')
-                          : '',
-                    })
-                  : t('Add a recipient')}
-              </Text>
-              <Icon name="ChevronRight" color={colors.textLighter} />
-            </TouchableOpacity>
-          </View>
-
-          <Divider horizontalSpacing="xxl" />
-
-          <Controller
-            name="raw"
-            defaultValue=""
-            rules={{ required: true }}
-            control={control}
-            render={({ field: { onChange, value } }) => (
-              <TextArea
-                isKeyboardShow={isKeyboardShow}
-                value={value}
-                inputRef={newMessageRef}
-                onChangeValue={(text) => {
-                  mentionHelper(
-                    text,
-                    cursorPosition,
-                    setShowUserList,
-                    setMentionLoading,
-                    setMentionKeyword,
-                  );
-                  onChange(text);
-                  debounced(text, currentUploadToken);
-                }}
-                style={styles.spacingHorizontal}
-                onFocus={(event) => {
-                  kasv.scrollToFocusedInput(event);
-                  setKeyboardShow(true);
-                  setShowLeftMenu(true);
-                }}
-                onBlur={() => {
-                  setKeyboardShow(false);
-                }}
-                onSelectedChange={(cursor) => {
-                  setCursorPosition(cursor);
-                }}
-                placeholder={t('Type a message')}
-                mentionToggled={showUserList}
-              />
-            )}
-          />
-        </>
-      </KeyboardTextAreaScrollView>
+          </>
+        </KeyboardTextAreaScrollView>
+      )}
     </SafeAreaView>
   );
 }

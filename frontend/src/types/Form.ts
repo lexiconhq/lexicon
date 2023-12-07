@@ -1,3 +1,8 @@
+import { PollType } from '../generated/server';
+import { PollOption } from '../helpers';
+
+import { UserMessageProps } from './Types';
+
 export type Form = {
   raw: string;
 };
@@ -11,4 +16,27 @@ export type NewPostForm = FormTitle & {
   tags: Array<string>;
   editPostId?: number;
   editTopicId?: number;
+  oldContent?: string;
+  oldTitle?: string;
+  polls?: Array<PollFormContextValues>;
+  messageTargetSelectedUsers?: Array<string>;
+  messageUsersList?: Array<UserMessageProps>;
+};
+
+export type PollFormValues = {
+  title?: string;
+  minChoice: number;
+  maxChoice: number;
+  step: number;
+  pollOptions: Array<PollOption | string>;
+  results: number;
+  chartType?: number;
+  groups: Array<string>;
+  closeDate: Date | undefined;
+  isPublic: boolean;
+};
+
+export type PollFormContextValues = PollFormValues & {
+  pollChoiceType: PollType;
+  pollContent: string;
 };

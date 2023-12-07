@@ -72,6 +72,8 @@ export default function EditProfile(props: ProfileProps) {
 
   const storage = useStorage();
   const username = storage.getItem('user')?.username || '';
+  const trustLevel = storage.getItem('user')?.trustLevel;
+  const userGroups = storage.getItem('user')?.groups;
 
   const {
     authorizedExtensions,
@@ -108,7 +110,7 @@ export default function EditProfile(props: ProfileProps) {
 
   let setForm = useCallback(
     (user: ProfileForm & { avatar: string }) => {
-      setUserImage(getImage(user.avatar));
+      setUserImage(getImage(user.avatar, 'xl'));
       setOldUsername(user.username);
       setValue('username', user.username);
       setValue('name', user.name || '');
@@ -171,6 +173,8 @@ export default function EditProfile(props: ProfileProps) {
           username,
           name: name || '',
           avatar,
+          trustLevel,
+          groups: userGroups || [],
         });
 
         setForm({
@@ -387,6 +391,9 @@ export default function EditProfile(props: ProfileProps) {
                   value={value}
                   editable={
                     currentUserData.canEditUsername || currentUserData.admin
+                  }
+                  disabled={
+                    !(currentUserData.canEditUsername || currentUserData.admin)
                   }
                   onChangeText={(text) => {
                     if (currentUserData.username === text) {

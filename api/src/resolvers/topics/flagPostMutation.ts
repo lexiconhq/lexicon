@@ -10,7 +10,7 @@ import {
 } from 'nexus';
 
 import { ACCEPTED_LANGUAGE, CONTENT_FORM_URLENCODED } from '../../constants';
-import { errorHandler } from '../../helpers';
+import { errorHandler, formatPolls } from '../../helpers';
 import { Context } from '../../types';
 
 export let flagPostResolver: FieldResolver<'Mutation', 'flagPost'> = async (
@@ -34,7 +34,17 @@ export let flagPostResolver: FieldResolver<'Mutation', 'flagPost'> = async (
       stringify(body),
       config,
     );
-    return camelcaseKeys(data, { deep: true });
+    let flagPostData = camelcaseKeys(data, { deep: true });
+    const { formattedPolls, formattedPollsVotes } = formatPolls(
+      flagPostData.polls,
+      flagPostData.pollsVotes,
+    );
+
+    return {
+      ...flagPostData,
+      polls: formattedPolls,
+      pollsVotes: formattedPollsVotes,
+    };
   } catch (e) {
     errorHandler(e);
   }

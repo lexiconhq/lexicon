@@ -59,10 +59,17 @@ let topicsQueryResolver: FieldResolver<'Query', 'topics'> = async (
     topics.topicList.topics = topics.topicList.topics.map((topic: Topic) => {
       const { posters } = topic;
       let postersWithUser = posters.map((poster) => {
-        return {
-          ...poster,
-          user: poster.user ?? users.find(({ id }) => id === poster.userId),
-        };
+        if ('userId' in poster) {
+          return {
+            ...poster,
+            user: poster.user ?? users.find(({ id }) => id === poster.userId),
+          };
+        } else {
+          return {
+            ...poster,
+            user: poster.user,
+          };
+        }
       });
       return { ...topic, posters: postersWithUser };
     });

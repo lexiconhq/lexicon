@@ -24,5 +24,31 @@ export let SiteSetting = objectType({
     t.list.field('postActionTypes', {
       type: 'TopicFlagTypes',
     });
+    /**
+     * This field is used for user status
+     */
+    t.boolean('allowUserStatus');
+    t.string('externalEmojiUrl');
+    t.string('emojiSet');
+    t.string('discourseBaseUrl');
+
+    /**
+     * This field is used for Poll
+     */
+
+    t.boolean('allowPoll');
+    t.int('pollCreateMinimumTrustLevel');
+
+    t.list.field('groups', {
+      type: 'GroupSiteSetting',
+    });
+  },
+});
+
+export let GroupSiteSetting = objectType({
+  name: 'GroupSiteSetting',
+  definition(t) {
+    t.int('id');
+    t.string('name');
   },
 });

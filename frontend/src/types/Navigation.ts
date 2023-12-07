@@ -10,8 +10,8 @@ import { StackNavigationProp } from '@react-navigation/stack';
 
 import { NetworkStatus, WithRequestFailed } from '../components';
 
-import { NewPost, ReplyPost } from './Post';
-import { SelectedUserProps, UserDetail, UserMessageProps } from './Types';
+import { StackAvatarUser, UserDetail } from './Types';
+import { Poll, PostData, User } from './Post';
 
 export type RootStackNavProp<T extends keyof RootStackParamList> =
   StackNavigationProp<RootStackParamList, T>;
@@ -73,8 +73,6 @@ export type MessageDetailParams = {
 };
 
 type NewMessageParams = {
-  listOfUser?: Array<SelectedUserProps>;
-  users?: Array<string>;
   hyperlinkUrl?: string;
   hyperlinkTitle?: string;
   imageUri?: string;
@@ -88,28 +86,17 @@ type EditedUser = {
 type NewPostParams = {
   hyperlinkUrl?: string;
   hyperlinkTitle?: string;
-  oldTitle?: string;
-  oldContent?: string;
-  oldChannel?: number;
-  oldTags?: Array<string>;
   editedUser?: EditedUser;
   imageUri?: string;
 };
 
 type PostPreviewParams = {
   reply: boolean;
-  postData: NewPost | ReplyPost;
+  postData: PostData;
   focusedPostNumber?: number;
   editPostId?: number;
   editTopicId?: number;
   editedUser?: EditedUser;
-};
-
-type NewMessagePreviewParams = {
-  title: string;
-  raw: string;
-  targetRecipients: Array<string>;
-  userList: Array<UserMessageProps>;
 };
 
 type PostDetailParams = {
@@ -133,11 +120,6 @@ export type PostReplyParams = {
   oldContent?: string;
   editedUser?: EditedUser;
   imageUri?: string;
-};
-
-type SelectUserParams = {
-  listOfUser: Array<SelectedUserProps>;
-  users: Array<string>;
 };
 
 type TagsParams = {
@@ -164,20 +146,49 @@ type UserInformationParams = {
   username: string;
 };
 
+type EditUserStatusParams = {
+  emojiCode?: string;
+  emojiText?: string;
+  status?: string;
+  endDate?: string;
+};
+
+type NewPollParams = {
+  pollIndex?: number;
+  prevScreen: 'NewPost' | 'PostReply' | 'NewMessage' | 'MessageDetail';
+  editPost?: boolean;
+  messageTopicId?: number;
+};
+
+type StackAvatarModalParams = {
+  option: string;
+  amountVote: number;
+  users: Array<StackAvatarUser>;
+};
+
+type PollParams = {
+  poll: Poll;
+  pollVotes?: Array<string>;
+  isCreator: boolean;
+  postId?: number;
+  topicId: number;
+  author?: User;
+  createdAt: string;
+};
+
 export type RootStackParamList = {
   Channels: ChannelsParams;
   DarkMode: undefined;
   PushNotificationsPreferences: undefined;
   FlagPost: FlagPostParams;
   HyperLink: HyperlinkParams;
-  InstanceLoading: undefined;
-  NewMessage: NewMessageParams;
-  NewMessagePreview: NewMessagePreviewParams;
+  NewPoll: NewPollParams;
+  NewMessage: NewMessageParams | undefined;
   NewPost: NewPostParams | undefined;
   PostPreview: PostPreviewParams;
   PostReply: PostReplyParams;
   PostImagePreview: PostImagePreviewParams;
-  SelectUser: SelectUserParams;
+  SelectUser: undefined;
   Tags: TagsParams;
   Troubleshoot: TroubleshootParams;
   TabNav: NavigatorScreenParams<TabParamList>;
@@ -198,6 +209,10 @@ export type RootStackParamList = {
   Search: undefined;
   TwoFactorAuth: TwoFactorAuthParams;
   UserInformation: UserInformationParams;
+  EditUserStatus: EditUserStatusParams;
+  EmojiPicker: undefined;
+  StackAvatar: StackAvatarModalParams;
+  Poll: PollParams;
 };
 
 export type TabParamList = {

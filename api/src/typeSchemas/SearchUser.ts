@@ -11,5 +11,6 @@ export let SearchUser = objectType({
     });
     t.nullable.string('name');
     t.string('username');
+    t.int('id');
   },
 });

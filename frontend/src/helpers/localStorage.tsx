@@ -1,4 +1,13 @@
-import { Boolean, Literal, Number, Record, String } from 'runtypes';
+import {
+  Boolean,
+  Literal,
+  Number,
+  Record,
+  String,
+  Undefined,
+  Union,
+  Array,
+} from 'runtypes';
 
 import { ChannelList } from '../types';
 
@@ -15,6 +24,19 @@ export let User = Record({
   name: String,
   username: String,
   avatar: String,
+  trustLevel: Union(Number, Undefined),
+  groups: Array(String),
+});
+
+export let UserStatus = Record({
+  emojiSet: String,
+  externalEmojiUrl: String,
+  discourseBaseUrl: String,
+});
+
+export let PollSetting = Record({
+  allowPoll: Boolean,
+  pollCreateMinimumTrustLevel: Number,
 });
 
 export let PushNotificationsPreferences = Record({
@@ -22,6 +44,8 @@ export let PushNotificationsPreferences = Record({
   shouldPlaySound: Boolean,
   shouldSetBadge: Boolean,
 });
+
+export let SelectedHomeChannelId = Number;
 
 let [StorageProvider, useStorage] = createCachedStorage(
   {
@@ -31,6 +55,9 @@ let [StorageProvider, useStorage] = createCachedStorage(
     expoPushToken: (value) => String.check(value),
     channels: (value) => ChannelList.check(value),
     pushNotifications: (value) => PushNotificationsPreferences.check(value),
+    userStatus: (value) => UserStatus.check(value),
+    poll: (value) => PollSetting.check(value),
+    homeChannelId: (value) => SelectedHomeChannelId.check(value),
   },
   '@Cached/',
 );

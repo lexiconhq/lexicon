@@ -65,6 +65,7 @@ export const SEARCH_USER = gql`
         avatar: avatarTemplate
         name
         username
+        id
       }
     }
   }

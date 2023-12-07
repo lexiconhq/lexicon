@@ -1,3 +1,9 @@
+import {
+  Poll as BasePoll,
+  PollOption as BasePollOption,
+  PollsVotes as BasePollsVotes,
+} from '../generated/server';
+
 import { PostReplyParams } from './Navigation';
 import { Channel } from './Types';
 
@@ -7,6 +13,10 @@ export type User = {
   avatar: string;
   name?: string | null;
 };
+
+export type Poll = Omit<BasePoll, '__typename'>;
+export type PollOption = Omit<BasePollOption, '__typename'>;
+export type PollsVotes = Omit<BasePollsVotes, '__typename'>;
 
 export type Post = {
   id: number;
@@ -31,6 +41,9 @@ export type Post = {
   canEdit?: boolean;
   canFlag?: boolean;
   imageUrls?: Array<string>;
+  emojiStatus?: string;
+  polls?: Array<Poll>;
+  pollsVotes?: Array<PollsVotes>;
 };
 
 export type PostWithoutId = Omit<Post, 'id'>;
@@ -47,20 +60,8 @@ export type Topic = {
   selectedChannelId: number;
 };
 
-export type NewPost = {
-  title: string;
-  content: string;
+export type PostData = {
   images?: Array<string>;
-  channelId: number;
-  tagIds: Array<string>;
-  createdAt: string;
-};
-
-export type ReplyPost = {
-  title: string;
-  content: string;
   topicId: number;
-  createdAt: string;
   postNumber?: number;
-  channelId?: number;
 } & Pick<PostReplyParams, 'replyToPostId'>;

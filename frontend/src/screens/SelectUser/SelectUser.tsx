@@ -8,18 +8,15 @@ import {
   View,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { EventArg, useNavigation, useRoute } from '@react-navigation/native';
+import { EventArg, useNavigation } from '@react-navigation/native';
+import { useFormContext } from 'react-hook-form';
 
 import { CustomHeader, HeaderItem, ModalHeader } from '../../components';
 import { Button, Divider, Icon, Text } from '../../core-ui';
 import { getImage, useStorage } from '../../helpers';
 import { useSearchUsers } from '../../hooks';
 import { makeStyles, useTheme } from '../../theme';
-import {
-  RootStackNavProp,
-  RootStackRouteProp,
-  SelectedUserProps,
-} from '../../types';
+import { RootStackNavProp, UserMessageProps } from '../../types';
 
 import UserItem from './components/UserItem';
 
@@ -35,13 +32,14 @@ export default function SelectUser() {
   const navigation = useNavigation<RootStackNavProp<'SelectUser'>>();
   const { navigate, setOptions, goBack } = navigation;
 
-  const {
-    params: { users, listOfUser },
-  } = useRoute<RootStackRouteProp<'SelectUser'>>();
+  const { getValues, setValue } = useFormContext();
+
+  const { messageTargetSelectedUsers: users, messageUsersList: listOfUser } =
+    getValues();
 
   const [searchValue, setSearchValue] = useState<string>('');
   const [selectedUsers, setSelectedUsers] =
-    useState<Array<SelectedUserProps>>(listOfUser);
+    useState<Array<UserMessageProps>>(listOfUser);
   const [currentUsers, setCurrentUsers] = useState<Array<string>>(users);
 
   const ios = Platform.OS === 'ios';
@@ -67,9 +65,12 @@ export default function SelectUser() {
         }
       });
     } else {
-      chosenList?.forEach((index) => {
-        if (index.username === username) {
-          tempUserList.add({ ...index, name: index.name ?? null });
+      chosenList?.forEach((item) => {
+        if (item.username === username) {
+          tempUserList.add({
+            ...item,
+            name: item.name || null,
+          });
         }
       });
       tempUsers.add(username);
@@ -119,10 +120,9 @@ export default function SelectUser() {
 
   const doneSelectingUser = () => {
     navigation.removeListener('beforeRemove', beforeRemoveListener);
-    navigate('NewMessage', {
-      users: currentUsers,
-      listOfUser: selectedUsers,
-    });
+    setValue('messageTargetSelectedUsers', currentUsers);
+    setValue('messageUsersList', selectedUsers);
+    navigate('NewMessage');
   };
 
   const Header = () => {
@@ -182,7 +182,12 @@ export default function SelectUser() {
                   user.username
                     .toLowerCase()
                     .includes(searchValue.toLowerCase()) &&
-                  !selectedUsers.includes({ ...user, name: user.name ?? null }),
+                  !selectedUsers.some(
+                    (selectedUser) =>
+                      selectedUser.name === user.name &&
+                      selectedUser.username === user.username &&
+                      user.avatar === selectedUser.avatar,
+                  ),
               )
               .map((user) => {
                 if (user.name && user.name !== ownerName) {
@@ -208,7 +213,7 @@ export default function SelectUser() {
           )}
 
           {selectedUsers.length > 0 &&
-            selectedUsers.map((user, index) => {
+            selectedUsers.map((user) => {
               if (user.name) {
                 const isCheck = currentUsers.includes(user.username);
                 let userImage = getImage(user.avatar || '');
@@ -224,7 +229,7 @@ export default function SelectUser() {
                 );
               } else {
                 return (
-                  <Text style={styles.noUser} key={`noUser-${index}`}>
+                  <Text style={styles.noUser}>
                     {t('Find Users with the Search Bar above.')}
                   </Text>
                 );

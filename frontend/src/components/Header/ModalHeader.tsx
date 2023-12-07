@@ -22,7 +22,12 @@ export function ModalHeader(props: Props) {
       <View style={[styles.container, style]} {...otherProps}>
         <View style={styles.left}>{left}</View>
         {title && (
-          <Text variant="semiBold" size="l" style={[styles.title, titleStyle]}>
+          <Text
+            numberOfLines={1}
+            variant="semiBold"
+            size="l"
+            style={[styles.title, titleStyle]}
+          >
             {title}
           </Text>
         )}
@@ -54,6 +59,7 @@ const useStyles = makeStyles(({ colors, spacing }) => ({
   title: {
     flexGrow: 1,
     textAlign: 'center',
+    maxWidth: '70%',
   },
   left: {
     flex: 1,

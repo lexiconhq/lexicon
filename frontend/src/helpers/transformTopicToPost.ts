@@ -1,6 +1,6 @@
 import { NO_EXCERPT_WORDING } from '../constants';
 import { TopicsQuery } from '../generated/server';
-import { Channel, PostWithoutId } from '../types';
+import { Channel, PostWithoutId, User } from '../types';
 
 import { findChannelByCategoryId } from './findChannelByCategoryId';
 import { getImage } from './getUserImage';
@@ -33,19 +33,31 @@ let transformTopicToPost = ({
   channels,
   imageUrl,
 }: Params): PostWithoutId => {
-  const author = posters.find(({ userId }) => userId === authorUserId);
-  const frequentUser = posters.map(({ user }) => {
-    return {
-      id: user?.id || 0,
-      username: user?.username ?? '',
-      avatar: getImage(user?.avatar ?? ''),
-    };
+  const author = posters.find((poster) => {
+    return 'userId' in poster && poster.userId === authorUserId;
   });
+
+  const frequentUserArray: Array<User> = [];
+  posters.forEach((poster) => {
+    if ('user' in poster && poster.user) {
+      const { user } = poster;
+      frequentUserArray.push({
+        id: user.id,
+        username: user.username,
+        avatar: getImage(user.avatar),
+      });
+    }
+  });
+
   const channel = findChannelByCategoryId({
     categoryId,
     channels,
   });
-  const authorUser = author?.user;
+
+  const authorUser =
+    // eslint-disable-next-line no-underscore-dangle
+    author?.__typename === 'TopicPoster' ? author.user : undefined;
+
   return {
     topicId: id,
     title,
@@ -61,7 +73,7 @@ let transformTopicToPost = ({
     channel: channel,
     tags: tags || [],
     createdAt,
-    freqPosters: frequentUser,
+    freqPosters: frequentUserArray,
     imageUrls: imageUrl ? [imageUrl] : undefined,
   };
 };

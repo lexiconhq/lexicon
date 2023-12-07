@@ -1,11 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Platform, SafeAreaView, View } from 'react-native';
+import { Platform, SafeAreaView } from 'react-native';
 import { KeyboardAccessoryView } from 'react-native-keyboard-accessory';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useNavigation } from '@react-navigation/native';
 import { useFormContext } from 'react-hook-form';
 
-import { CustomHeader, HeaderItem, ModalHeader } from '../../components';
+import {
+  AlertBanner,
+  CustomHeader,
+  HeaderItem,
+  ModalHeader,
+} from '../../components';
 import { Button, Text } from '../../core-ui';
 import {
   SearchTagsDocument,
@@ -155,7 +160,7 @@ export default function Tags() {
 
   function submitTags() {
     close.current = true;
-    setValue('tags', currentTagsIds);
+    setValue('tags', currentTagsIds, { shouldDirty: true });
     navigate('NewPost');
   }
 
@@ -201,12 +206,11 @@ export default function Tags() {
           style={styles.searchBar}
         />
         {availableTags.length === 0 && !canCreateTag && !tagsLoading && (
-          // TODO: Make this into a component (#1221)
-          <View style={styles.tagsInfoContainer}>
-            <Text style={styles.tagsInfo}>
-              {t("You don't have permission to create tags")}
-            </Text>
-          </View>
+          <AlertBanner
+            type="warning"
+            message={t("You don't have permission to create tags")}
+            style={styles.alertBanner}
+          />
         )}
         <SelectedTags
           selectedTags={currentTagsIds}
@@ -275,12 +279,5 @@ const useStyles = makeStyles(({ colors, spacing }) => ({
     marginVertical: spacing.xl,
     marginHorizontal: spacing.xxl,
   },
-  tagsInfoContainer: {
-    backgroundColor: colors.lightYellowBackground,
-    borderRadius: spacing.m,
-    paddingHorizontal: spacing.l,
-    paddingVertical: spacing.m,
-    marginBottom: spacing.xxl,
-  },
-  tagsInfo: { color: colors.yellowText },
+  alertBanner: { marginBottom: spacing.xxl },
 }));

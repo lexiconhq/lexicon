@@ -38,6 +38,16 @@ export const SITE = gql`
         nameKey
         shortDescription
       }
+      groups {
+        id
+        name
+      }
+      allowUserStatus
+      emojiSet
+      externalEmojiUrl
+      discourseBaseUrl
+      allowPoll
+      pollCreateMinimumTrustLevel
     }
   }
 `;

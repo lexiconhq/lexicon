@@ -16,6 +16,7 @@ import {
   CustomHeader,
   HeaderItem,
   KeyboardTextAreaScrollView,
+  ListCreatePoll,
   MentionList,
   ModalHeader,
   TextArea,
@@ -43,6 +44,8 @@ import {
   getReplacedImageUploadStatus,
   useStorage,
   parseInt,
+  BottomMenuNavigationParams,
+  BottomMenuNavigationScreens,
 } from '../helpers';
 import {
   useKASVWorkaround,
@@ -55,11 +58,14 @@ import {
   CursorPosition,
   Image,
   RootStackNavProp,
-  RootStackParamList,
   RootStackRouteProp,
 } from '../types';
 import { useModal } from '../utils';
-import { NO_CHANNEL_FILTER, isNoChannelFilter } from '../constants';
+import {
+  FORM_DEFAULT_VALUES,
+  NO_CHANNEL_FILTER,
+  isNoChannelFilter,
+} from '../constants';
 
 export default function NewPost() {
   const { modal, setModal } = useModal();
@@ -104,39 +110,42 @@ export default function NewPost() {
   const navigation = useNavigation<RootStackNavProp<'NewPost'>>();
   const { navigate, goBack } = navigation;
 
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    formState,
+    setValue,
+    getValues,
+    watch,
+    reset: resetForm,
+    getFieldState,
+  } = useFormContext();
+
   let { params } = useRoute<RootStackRouteProp<'NewPost'>>();
   let {
+    editPostId,
+    editTopicId,
     oldContent,
     oldTitle,
-    oldChannel,
-    oldTags,
     editedUser,
     hyperlinkUrl,
     hyperlinkTitle,
     imageUri,
   } = useMemo(() => {
+    const values = getValues();
+
     return {
-      oldContent: params?.oldContent || '',
-      oldTitle: params?.oldTitle || '',
-      oldChannel: params?.oldChannel || defaultChannelId,
-      oldTags: params?.oldTags || [],
+      editPostId: values?.editPostId,
+      editTopicId: values?.editTopicId,
+      oldContent: values?.oldContent || '',
+      oldTitle: values?.oldTitle || '',
       editedUser: params?.editedUser,
       hyperlinkUrl: params?.hyperlinkUrl || '',
       hyperlinkTitle: params?.hyperlinkTitle || '',
       imageUri: params?.imageUri || '',
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params]);
-
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    getValues,
-    watch,
-    reset: resetForm,
-  } = useFormContext();
+  }, [params, getValues]);
 
   /**
    * Using the watch function to update the values of the channel and tags fields when changes occur in the form.
@@ -145,8 +154,7 @@ export default function NewPost() {
 
   const selectedChannel: number = watch('channelId');
   const selectedTags: Array<string> = watch('tags');
-  const editPostId: number = getValues('editPostId');
-  const editTopicId: number = getValues('editTopicId');
+  const polls = watch('polls');
 
   const [imagesArray, setImagesArray] = useState<Array<Image>>([]);
   const [uri, setUri] = useState('');
@@ -214,18 +222,6 @@ export default function NewPost() {
     navigate('Channels', { prevScreen: 'NewPost' });
   };
 
-  const getPostData = () => {
-    const { title, raw } = getValues();
-    return {
-      title,
-      content: raw,
-      channelId: selectedChannel,
-      tagIds: selectedTags,
-      createdAt: new Date().toISOString(),
-      topicId: editTopicId,
-    };
-  };
-
   const onPressSelectTags = () => {
     navigate('Tags', {
       canCreateTag: canCreateTag || false,
@@ -235,7 +231,7 @@ export default function NewPost() {
   const doneCreatePost = handleSubmit(() => {
     navigate('PostPreview', {
       reply: false,
-      postData: getPostData(),
+      postData: { topicId: editTopicId },
       editPostId:
         editPostType === 'Post' || editPostType === 'Both'
           ? editPostId
@@ -298,15 +294,13 @@ export default function NewPost() {
   ]);
 
   const onNavigate = (
-    screen: 'PostImagePreview' | 'HyperLink',
-    params:
-      | RootStackParamList['PostImagePreview']
-      | RootStackParamList['HyperLink'],
+    screen: BottomMenuNavigationScreens,
+    params: BottomMenuNavigationParams,
   ) => {
     navigate(screen, params);
   };
 
-  const { onInsertImage, onInsertLink } = bottomMenu({
+  const { onInsertImage, onInsertLink, onInsertPoll } = bottomMenu({
     isKeyboardShow,
     user,
     navigate: onNavigate,
@@ -315,40 +309,42 @@ export default function NewPost() {
   });
 
   useEffect(() => {
-    const { title, raw: content } = getValues();
+    const { title, raw: content, polls } = getValues();
 
     let currentPostValidity; // temp variable to get the value of existingPostIsValid or newPostIsValid helper
 
     if (editTopicId || editPostId) {
-      currentPostValidity = existingPostIsValid(
+      currentPostValidity = existingPostIsValid({
         uploadsInProgress,
         title,
-        oldTitle,
         content,
-        oldContent,
-        selectedChannel,
-        oldChannel,
-        selectedTags,
-        oldTags,
-      );
+        getFieldState,
+        formState,
+        polls,
+      });
 
       setPostValidity(currentPostValidity.isValid);
       setEditPostType(currentPostValidity.editType);
     } else {
-      currentPostValidity = newPostIsValid(title, content, uploadsInProgress);
+      currentPostValidity = newPostIsValid(
+        title,
+        content,
+        uploadsInProgress,
+        polls,
+      );
       setPostValidity(currentPostValidity);
     }
   }, [
     editTopicId,
     editPostId,
     getValues,
-    oldChannel,
     oldContent,
-    oldTags,
     oldTitle,
     selectedChannel,
     selectedTags,
     uploadsInProgress,
+    getFieldState,
+    formState,
   ]);
 
   useEffect(
@@ -366,7 +362,7 @@ export default function NewPost() {
             {
               text: t('Discard'),
               onPress: () => {
-                resetForm();
+                resetForm(FORM_DEFAULT_VALUES);
                 navigation.dispatch(e.data.action);
               },
             },
@@ -389,7 +385,9 @@ export default function NewPost() {
             label={t('Cancel')}
             left
             onPressItem={() => {
-              resetForm();
+              if (!postValidity) {
+                resetForm(FORM_DEFAULT_VALUES);
+              }
               goBack();
             }}
           />
@@ -414,104 +412,100 @@ export default function NewPost() {
   return (
     <SafeAreaView style={styles.container}>
       <Header />
-      {
-        <KeyboardTextAreaScrollView
-          {...kasv.props}
-          bottomMenu={
-            <View>
-              <MentionList
-                showUserList={showUserList}
-                members={mentionMembers}
-                mentionLoading={mentionLoading}
-                rawText={getValues('raw')}
-                textRef={newPostRef}
-                setMentionValue={setMentionValue}
-                setShowUserList={setShowUserList}
-              />
-              <BottomMenu
-                onInsertImage={onInsertImage}
-                onInsertLink={onInsertLink}
-                showLeftMenu={showLeftMenu}
-              />
-            </View>
-          }
-        >
-          <>
-            <View style={styles.titleInputContainer}>
-              <Controller
-                name="title"
-                defaultValue={oldTitle}
-                rules={{ required: true }}
-                control={control}
-                render={({ field: { onChange, value } }) => (
-                  <TextInput
-                    value={value}
-                    label={t('Title')}
-                    placeholder={t("What's on your mind?")}
-                    onChangeText={(text) => {
-                      const { raw: content } = getValues();
+      <KeyboardTextAreaScrollView
+        {...kasv.props}
+        bottomMenu={
+          <View>
+            <MentionList
+              showUserList={showUserList}
+              members={mentionMembers}
+              mentionLoading={mentionLoading}
+              rawText={getValues('raw')}
+              textRef={newPostRef}
+              setMentionValue={setMentionValue}
+              setShowUserList={setShowUserList}
+            />
+            <BottomMenu
+              onInsertImage={onInsertImage}
+              onInsertLink={onInsertLink}
+              onInsertPoll={onInsertPoll}
+              showLeftMenu={showLeftMenu}
+            />
+          </View>
+        }
+      >
+        <>
+          <View style={styles.titleInputContainer}>
+            <Controller
+              name="title"
+              defaultValue={oldTitle}
+              rules={{ required: true }}
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <TextInput
+                  value={value}
+                  label={t('Title')}
+                  placeholder={t("What's on your mind?")}
+                  onChangeText={(text) => {
+                    const { raw: content, polls } = getValues();
 
-                      let currentPostValidity; // temp variable to get the value of existingPostIsValid or newPostIsValid helper
+                    let currentPostValidity; // temp variable to get the value of existingPostIsValid or newPostIsValid helper
 
-                      if (editTopicId || editPostId) {
-                        currentPostValidity = existingPostIsValid(
-                          uploadsInProgress,
-                          text,
-                          oldTitle,
-                          content,
-                          oldContent,
-                          selectedChannel,
-                          oldChannel,
-                          selectedTags,
-                          oldTags,
-                        );
-                        setPostValidity(currentPostValidity.isValid);
-                        setEditPostType(currentPostValidity.editType);
-                      } else {
-                        currentPostValidity = newPostIsValid(
-                          text,
-                          content,
-                          uploadsInProgress,
-                        );
-                        setPostValidity(currentPostValidity);
-                      }
-                      onChange(text);
-                    }}
-                    onFocus={() => setShowLeftMenu(false)}
-                    error={errors.title != null}
-                  />
-                )}
-              />
-            </View>
-
-            <View style={[styles.formContainer, styles.row]}>
-              <Text style={styles.label}>{t('Channel')}</Text>
-              <TouchableOpacity
-                style={styles.row}
-                onPress={onPressSelectChannel}
-              >
-                <Dot
-                  variant="large"
-                  color={`#${
-                    channels?.find(({ id }) => id === selectedChannel)?.color
-                  }`}
-                  style={{ marginEnd: spacing.m }}
+                    if (editTopicId || editPostId) {
+                      currentPostValidity = existingPostIsValid({
+                        uploadsInProgress,
+                        title: text,
+                        content,
+                        getFieldState,
+                        formState,
+                        polls,
+                      });
+                      setPostValidity(currentPostValidity.isValid);
+                      setEditPostType(currentPostValidity.editType);
+                    } else {
+                      currentPostValidity = newPostIsValid(
+                        text,
+                        content,
+                        uploadsInProgress,
+                        polls,
+                      );
+                      setPostValidity(currentPostValidity);
+                    }
+                    onChange(text);
+                  }}
+                  onFocus={() => setShowLeftMenu(false)}
+                  error={errors.title != null}
                 />
-                <Text color="textNormal">
-                  {channels?.find(({ id }) => id === selectedChannel)?.name}
-                </Text>
-                <Icon
-                  name="ChevronRight"
-                  size="l"
-                  style={styles.iconRight}
-                  color={colors.textLighter}
-                />
-              </TouchableOpacity>
-            </View>
+              )}
+            />
+          </View>
 
-            <Divider horizontalSpacing="xxl" />
+          <View style={[styles.formContainer, styles.row]}>
+            <Text style={styles.label}>{t('Channel')}</Text>
+            <TouchableOpacity style={styles.row} onPress={onPressSelectChannel}>
+              <Dot
+                variant="large"
+                color={`#${
+                  channels?.find(({ id }) => id === selectedChannel)?.color
+                }`}
+                style={{ marginEnd: spacing.m }}
+              />
+              <Text color="textNormal">
+                {channels?.find(({ id }) => id === selectedChannel)?.name}
+              </Text>
+              <Icon
+                name="ChevronRight"
+                size="l"
+                style={styles.iconRight}
+                color={colors.textLighter}
+              />
+            </TouchableOpacity>
+          </View>
 
-            {canTagTopics && (
+          <Divider horizontalSpacing="xxl" />
+
+          {canTagTopics && (
+            <>
               <View style={[styles.formContainer, styles.row]}>
                 <Text style={[styles.label, { flex: 1 }]}>{t('Tags')}</Text>
                 <TouchableOpacity
@@ -560,78 +554,83 @@ export default function NewPost() {
                   />
                 </TouchableOpacity>
               </View>
-            )}
+              <Divider horizontalSpacing="xxl" />
+            </>
+          )}
 
-            <Divider horizontalSpacing="xxl" />
+          <ListCreatePoll
+            polls={polls}
+            setValue={setValue}
+            navigate={navigate}
+            editPostId={editPostId}
+            prevScreen="NewPost"
+          />
 
-            <Controller
-              name="raw"
-              defaultValue={oldContent}
-              rules={{ required: true }}
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <TextArea
-                  value={value}
-                  isKeyboardShow={isKeyboardShow}
-                  inputRef={newPostRef}
-                  placeholder={t('Enter a description')}
-                  onChangeValue={(text) => {
-                    mentionHelper(
+          <Controller
+            name="raw"
+            defaultValue={oldContent}
+            rules={{ required: polls.length === 0 }}
+            control={control}
+            render={({ field: { onChange, value } }) => (
+              <TextArea
+                value={value}
+                isKeyboardShow={isKeyboardShow}
+                inputRef={newPostRef}
+                placeholder={t('Enter a description')}
+                onChangeValue={(text) => {
+                  mentionHelper(
+                    text,
+                    cursorPosition,
+                    setShowUserList,
+                    setMentionLoading,
+                    setMentionKeyword,
+                  );
+                  onChange(text);
+                  debounced(text, currentUploadToken);
+
+                  const { title, polls } = getValues();
+
+                  let currentPostValidity; // temp variable to get the value of existingPostIsValid or newPostIsValid helper
+
+                  if (editTopicId || editPostId) {
+                    currentPostValidity = existingPostIsValid({
+                      uploadsInProgress,
+                      title,
+                      content: text,
+                      getFieldState,
+                      formState,
+                      polls,
+                    });
+                    setPostValidity(currentPostValidity.isValid);
+                    setEditPostType(currentPostValidity.editType);
+                  } else {
+                    currentPostValidity = newPostIsValid(
+                      title,
                       text,
-                      cursorPosition,
-                      setShowUserList,
-                      setMentionLoading,
-                      setMentionKeyword,
+                      uploadsInProgress,
+                      polls,
                     );
-                    onChange(text);
-                    debounced(text, currentUploadToken);
-
-                    const { title } = getValues();
-
-                    let currentPostValidity; // temp variable to get the value of existingPostIsValid or newPostIsValid helper
-
-                    if (editTopicId || editPostId) {
-                      currentPostValidity = existingPostIsValid(
-                        uploadsInProgress,
-                        title,
-                        oldTitle,
-                        text,
-                        oldContent,
-                        selectedChannel,
-                        oldChannel,
-                        selectedTags,
-                        oldTags,
-                      );
-                      setPostValidity(currentPostValidity.isValid);
-                      setEditPostType(currentPostValidity.editType);
-                    } else {
-                      currentPostValidity = newPostIsValid(
-                        title,
-                        text,
-                        uploadsInProgress,
-                      );
-                      setPostValidity(currentPostValidity);
-                    }
-                  }}
-                  onFocus={(event) => {
-                    kasv.scrollToFocusedInput(event);
-                    setKeyboardShow(true);
-                    setShowLeftMenu(true);
-                  }}
-                  onSelectedChange={(cursor) => {
-                    setCursorPosition(cursor);
-                  }}
-                  onBlur={() => {
-                    setKeyboardShow(false);
-                  }}
-                  style={styles.spacingHorizontal}
-                  mentionToggled={showUserList}
-                />
-              )}
-            />
-          </>
-        </KeyboardTextAreaScrollView>
-      }
+                    setPostValidity(currentPostValidity);
+                  }
+                }}
+                onFocus={(event) => {
+                  kasv.scrollToFocusedInput(event);
+                  setKeyboardShow(true);
+                  setShowLeftMenu(true);
+                }}
+                onSelectedChange={(cursor) => {
+                  setCursorPosition(cursor);
+                }}
+                onBlur={() => {
+                  setKeyboardShow(false);
+                }}
+                style={styles.spacingHorizontal}
+                mentionToggled={showUserList}
+              />
+            )}
+          />
+        </>
+      </KeyboardTextAreaScrollView>
     </SafeAreaView>
   );
 }

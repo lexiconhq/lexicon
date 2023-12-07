@@ -11,6 +11,7 @@ import {
   AVATAR_LETTER_SIZES,
 } from '../../constants';
 import { makeStyles, useTheme } from '../../theme';
+import { convertUrl } from '../../helpers';
 
 import { LetterAvatar } from './LetterAvatar';
 
@@ -46,7 +47,7 @@ export function Avatar(props: Props) {
   const fontSize = AVATAR_LETTER_SIZES[size];
 
   const loadChild = src === '' || error;
-  const imgSource = { uri: src };
+  const imgSource = { uri: convertUrl(src) };
 
   const letterAvatar = (
     <LetterAvatar

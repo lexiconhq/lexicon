@@ -82,6 +82,8 @@ const guardedMutations = [
   'upload',
   'editProfile',
   'saveProfilePicture',
+  'editUserStatus',
+  'deleteUserStatus',
 ];
 
 const authenticatedSchema: AuthSchema = {

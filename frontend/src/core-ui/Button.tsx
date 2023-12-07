@@ -11,6 +11,7 @@ type Props = TouchableOpacityProps & {
   large?: boolean;
   loading?: boolean;
   textColor?: Color;
+  outline?: boolean;
 };
 
 export function Button(props: Props) {
@@ -23,6 +24,7 @@ export function Button(props: Props) {
     textColor = 'pureWhite',
     disabled,
     style,
+    outline,
     ...otherProps
   } = props;
 
@@ -33,6 +35,7 @@ export function Button(props: Props) {
         styles.container,
         (loading || disabled) && styles.opacityReduced,
         large && styles.largeButton,
+        outline ? styles.outline : styles.default,
         style,
       ]}
       {...otherProps}
@@ -40,7 +43,7 @@ export function Button(props: Props) {
       {loading && (
         <ActivityIndicator color="pureWhite" style={styles.spacingRight} />
       )}
-      <Text variant="semiBold" color={textColor}>
+      <Text variant="semiBold" color={outline ? 'textNormal' : textColor}>
         {content}
       </Text>
     </TouchableOpacity>
@@ -49,13 +52,18 @@ export function Button(props: Props) {
 
 const useStyles = makeStyles(({ colors, spacing }) => ({
   container: {
-    backgroundColor: colors.primary,
     height: 36,
     paddingHorizontal: spacing.xxl,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 20,
     flexDirection: 'row',
+  },
+  default: { backgroundColor: colors.primary },
+  outline: {
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   spacingRight: {
     paddingRight: spacing.xl,

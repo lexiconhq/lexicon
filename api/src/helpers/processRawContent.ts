@@ -4,13 +4,13 @@ import { PROSE_DISCOURSE_UPLOAD_HOST } from '../constants';
 
 const imageRegex = /<img.*? src="(\S+(?:jpe?g|png|gif|heic|heif))"/g;
 const anchoredImageVideoRegex =
-  /<a.*? href="(https?:\/\/[^ ]*\.(?:jpe?g|png|gif|heic|heif|mov|mp4|webm|avi|wmv|flv|webp))".*?>/g;
+  /<a.*? href="((https?:)?\/\/[^ ]*\.(?:jpe?g|png|gif|heic|heif|mov|mp4|webm|avi|wmv|flv|webp))".*?>/g;
 const srcSetRegex = /srcset="(.+?)"/g;
-const imageUrlRegex = /(https?:\/\/[^ ]*\.(?:jpe?g|png|gif|heic|heif))/g;
+const imageUrlRegex = /((https?:)?\/\/[^ ]*\.(?:jpe?g|png|gif|heic|heif))/g;
 const mentionRegex = /<a class=\"mention\".*?>@(.*?)<\/a>/g;
 const imageMarkdownRegex = /(!\[.*?\]\()(upload:\/\/\S*)(\))/g;
 const imageVideoTagRegex =
-  /(?:<img[^>]*src(?:set)?=")(.+?)"|(?:<a[^>]* href="(https?:\/\/[^ ]*\.(?:jpe?g|png|gif|heic|heif|mov|mp4|webm|avi|wmv|flv|webp))")([^$]+?)<\/a>/g;
+  /(?:<img[^>]*src(?:set)?=")(.+?)"|(?:<a[^>]* href="((https?:)?\/\/[^ ]*\.(?:jpe?g|png|gif|heic|heif|mov|mp4|webm|avi|wmv|flv|webp))")([^$]+?)<\/a>/g;
 
 const emojiBBCodeRegex = /(?<=^|\s):\w+:(?:t\d+:)?/g;
 const emojiImageTagRegex = /<img.*?class="emoji.*? alt="(.*?)">/g;
@@ -34,14 +34,30 @@ function handleRegexResult(
         optimizedUrl.push(url[url.length - 1]);
       }
     });
-    return optimizedUrl.map((item) => item.replace(transparantRegex, ''));
+    return optimizedUrl.map((item) => {
+      const itemReplace = item.replace(transparantRegex, '');
+      /**
+       * This changes is used to handle some image which using local url into https url example :
+       *
+       * //kflounge-staging.kfox.io/uploads/default/optimized/1X/1a4ea5cb345d30d4230bdfa3671d1bc1026c772e_2_690x388.jpeg
+       * into
+       * https://kflounge-staging.kfox.io/uploads/default/optimized/1X/1a4ea5cb345d30d4230bdfa3671d1bc1026c772e_2_690x388.jpeg
+       */
+
+      return itemReplace[0] === '/' ? `https:${itemReplace}` : itemReplace;
+    });
   } else if (
     regex === anchoredImageVideoRegex ||
     regex === imageRegex ||
     regex === mentionRegex
   ) {
     result = result.map((item) => item.replace(regex, '$1'));
-    return result.map((item) => item.replace(transparantRegex, ''));
+
+    return result.map((item) => {
+      const itemReplace = item.replace(transparantRegex, '');
+
+      return itemReplace[0] === '/' ? `https:${itemReplace}` : itemReplace;
+    });
   }
 }
 
@@ -62,6 +78,7 @@ export function getPostImageUrl(
   host: string = PROSE_DISCOURSE_UPLOAD_HOST,
 ): string | undefined {
   // Return only the first element of array because only one url is found
+
   let result = content.match(srcSetRegex) ?? undefined;
 
   if (result) {

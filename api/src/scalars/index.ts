@@ -7,3 +7,5 @@ export * from './TopPeriodEnum';
 export * from './File';
 export * from './UploadTypeEnum';
 export * from './UserUnion';
+export * from './PosterOutputUnion';
+export * from './PollEnums';

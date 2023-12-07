@@ -1,9 +1,9 @@
-import { objectType } from 'nexus';
+import { interfaceType, objectType } from 'nexus';
 
 import { getNormalizedUrlTemplate } from '../resolvers/utils';
 
-export let UserIcon = objectType({
-  name: 'UserIcon',
+export let BaseUserIcon = interfaceType({
+  name: 'BaseUserIcon',
   definition(t) {
     t.int('id');
     t.string('username');
@@ -12,5 +12,13 @@ export let UserIcon = objectType({
       resolve: (userIcon) => getNormalizedUrlTemplate(userIcon),
       sourceType: 'string',
     });
+  },
+  resolveType: () => null,
+});
+
+export let UserIcon = objectType({
+  name: 'UserIcon',
+  definition(t) {
+    t.implements('BaseUserIcon');
   },
 });
