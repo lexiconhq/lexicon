@@ -27,7 +27,7 @@ _If you are manually overriding any environment variables when running the packa
 <Paste in the contents of the file here>
 ```
 
-**frontend/.env**
+**frontend/Config.ts**
 ```
 <Paste in the contents of the file here>
 ```
