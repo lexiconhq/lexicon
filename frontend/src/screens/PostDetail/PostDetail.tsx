@@ -175,7 +175,7 @@ export default function PostDetail() {
 
   const showOptions =
     false ||
-    !!(topic && topic.canEditTopic) ||
+    !!(firstPost && firstPost.canEdit) ||
     (!!firstPost && firstPost.canFlag && !firstPost.hidden);
 
   useEffect(() => {
@@ -373,7 +373,7 @@ export default function PostDetail() {
       let {
         id,
         canFlag = !!(firstPost && firstPost.canFlag),
-        canEdit = !!(topic && topic.canEditTopic),
+        canEdit = !!(firstPost && firstPost.canEdit),
         flaggedByCommunity = !!(firstPost && firstPost.hidden),
         fromPost = true,
         author,
@@ -551,7 +551,7 @@ export default function PostDetail() {
           refreshing={
             (loadingRefresh || isLoadingOlderPost) && !isLoadingNewerPost
           }
-          refreshControlTintColor={colors.primary}
+          refreshControlTintColor={colors.loading}
           onEndReachedThreshold={0.1}
           onEndReached={() => loadMoreComments(true)}
           ListFooterComponent={

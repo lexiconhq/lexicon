@@ -46,3 +46,4 @@ export * from './checkImageFile';
 export * from './PrivateTopicAlert';
 export * from './PushNotificationsSetupFailAlert';
 export * from './parser';
+export * from './unescapeHTML';

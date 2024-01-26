@@ -19,7 +19,7 @@ type Props = {
 
 export { Props as MetricsProp };
 
-const DEBOUNCE_WAIT_TIME = 500;
+const DEBOUNCE_WAIT_TIME = 1000;
 
 export function Metrics(props: Props) {
   const { likedTopics } = useOngoingLikedTopic();
@@ -136,19 +136,21 @@ export function Metrics(props: Props) {
   }, [performDebouncedLike]);
 
   // TODO: Add navigation #800
-  const [like] = useLikeTopicOrPost();
+  const [like, { loading }] = useLikeTopicOrPost();
 
   const onPressLike = useCallback(() => {
-    setLikeData(({ liked: prevLiked, likeCount: previousCount }) => {
-      const liked = !prevLiked;
-      const likeCount = getUpdatedLikeCount({
-        liked,
-        previousCount,
+    if (!loading) {
+      setLikeData(({ liked: prevLiked, likeCount: previousCount }) => {
+        const liked = !prevLiked;
+        const likeCount = getUpdatedLikeCount({
+          liked,
+          previousCount,
+        });
+        performDebouncedLike(liked);
+        return { liked, likeCount };
       });
-      performDebouncedLike(liked);
-      return { liked, likeCount };
-    });
-  }, [performDebouncedLike]);
+    }
+  }, [loading, performDebouncedLike]);
 
   return (
     <MetricsView

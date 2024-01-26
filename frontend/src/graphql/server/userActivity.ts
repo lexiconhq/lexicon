@@ -13,6 +13,7 @@ export const USER_ACTIONS_FRAGMENT = gql`
     topicId
     username
     hidden
+    markdownContent
   }
 `;
 

@@ -11,7 +11,7 @@ export function useChannels(
   options?: QueryHookOptions<ChannelsType>,
   errorAlert: ErrorAlertOptionType = 'SHOW_ALERT',
 ) {
-  const { data, loading, error } = useQuery<ChannelsType>(
+  const { data, loading, error, refetch } = useQuery<ChannelsType>(
     GetChannelsDocument,
     {
       ...options,
@@ -19,5 +19,5 @@ export function useChannels(
     errorAlert,
   );
 
-  return { data, loading, error };
+  return { data, loading, error, refetch };
 }

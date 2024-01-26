@@ -46,12 +46,13 @@ function BaseUserInformationPostItem(props: Props) {
 
   let {
     title,
-    excerpt: content,
+    excerpt,
     avatarTemplate,
     categoryId,
     hidden,
     createdAt,
     username,
+    markdownContent: content,
   } = cacheUserAction;
   const channels = storage.getItem('channels');
 
@@ -68,7 +69,7 @@ function BaseUserInformationPostItem(props: Props) {
       topicId={topicId}
       title={title}
       currentUser={currentUser}
-      content={content}
+      content={content || excerpt}
       avatar={avatar}
       channel={channel}
       hidden={!!hidden}

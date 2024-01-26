@@ -182,7 +182,12 @@ export default function SelectUser() {
                   user.username
                     .toLowerCase()
                     .includes(searchValue.toLowerCase()) &&
-                  !selectedUsers.includes({ ...user, name: user.name ?? null }),
+                  !selectedUsers.some(
+                    (selectedUser) =>
+                      selectedUser.name === user.name &&
+                      selectedUser.username === user.username &&
+                      user.avatar === selectedUser.avatar,
+                  ),
               )
               .map((user) => {
                 if (user.name && user.name !== ownerName) {

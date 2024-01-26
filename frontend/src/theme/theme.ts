@@ -55,6 +55,15 @@ function colorTheme(isDarkMode: boolean) {
     toastInfoText: isDarkMode
       ? FUNCTIONAL_COLORS.darkTextLighter
       : FUNCTIONAL_COLORS.lightTextDarker,
+    skeletonLoadingBackgroundMode: isDarkMode
+      ? FUNCTIONAL_COLORS.skeletonLoadingDarkBackGround
+      : FUNCTIONAL_COLORS.skeletonLoadingLightBackGround,
+    skeletonLoadingHighlightMode: isDarkMode
+      ? FUNCTIONAL_COLORS.skeletonLoadingDarkHighlight
+      : FUNCTIONAL_COLORS.skeletonLoadingLightHighlight,
+    loading: isDarkMode
+      ? FUNCTIONAL_COLORS.pureWhite
+      : FUNCTIONAL_COLORS.primary,
   };
 }
 

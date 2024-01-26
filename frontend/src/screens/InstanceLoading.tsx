@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { View } from 'react-native';
 
 import { LoadingOrError } from '../components';
 import { StackNavProp } from '../types';
 import { useSiteSettings } from '../hooks';
+import { makeStyles } from '../theme';
 
 export default function Loading() {
   const { reset } = useNavigation<StackNavProp<'Login'>>();
@@ -12,6 +14,7 @@ export default function Loading() {
     canSignUp,
     error: siteSettingsError,
   } = useSiteSettings({ fetchPolicy: 'network-only' });
+  const styles = useStyles();
 
   useEffect(() => {
     if (loading) {
@@ -31,5 +34,16 @@ export default function Loading() {
     }
   }, [canSignUp, siteSettingsError, loading, reset]);
 
-  return <>{loading && <LoadingOrError loading />}</>;
+  return (
+    <View style={styles.background}>
+      {loading && <LoadingOrError loading />}
+    </View>
+  );
 }
+
+const useStyles = makeStyles(({ colors }) => ({
+  background: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+}));

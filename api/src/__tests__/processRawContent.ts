@@ -2,6 +2,7 @@ import {
   generateMarkdownContent,
   getCompleteImageVideoUrls,
   getEmojiImageUrls,
+  userActivityMarkdownContent,
 } from '../helpers';
 
 describe('getCompleteImageUrls return image urls from html tags', () => {
@@ -184,5 +185,52 @@ describe('generate emoji url from image tag', () => {
       },
     ]);
     expect(getEmojiImageUrls(content3)).toEqual([]);
+  });
+});
+
+describe('generate new content for user activity', () => {
+  it('it should return Content based input', () => {
+    const content = 'Hello\n who is this';
+    const content1 = 'Just want to test\n\n something';
+
+    expect(userActivityMarkdownContent(content)).toEqual(content);
+    expect(userActivityMarkdownContent(content1)).toEqual(content1);
+  });
+  it('it should replace content image', () => {
+    const contentImage =
+      'Hello\n <a class="lightbox" href="https://image.jpeg" data-download-href="https://image" title="exampleImage1">[exampleImage1]</a>';
+    const contentImageSrc =
+      '<img src="https://wiki.kfox.io/uploads/default/original.jpeg" alt="download" width="276" height="183">';
+
+    expect(userActivityMarkdownContent(contentImage)).toEqual(
+      'Hello\n ![exampleImage1](https://image.jpeg)',
+    );
+    expect(userActivityMarkdownContent(contentImageSrc)).toEqual(
+      '![undefined](https://wiki.kfox.io/uploads/default/original.jpeg)',
+    );
+  });
+  it('it should convert emoji', () => {
+    const emojiContent =
+      'Hello\n <img src="https://image/heart.png?v=12" title=":heart:" class="emoji" alt=":heart:" loading="lazy" width="20" height="20">';
+
+    expect(userActivityMarkdownContent(emojiContent)).toEqual(
+      'Hello\n ![emoji-:heart:](https://image/heart.png?v=12)',
+    );
+  });
+  it('it should convert mention', () => {
+    const mentionContent =
+      'Is this true? <a class="mention" href="/u/marcello">@marcello</a>';
+
+    expect(userActivityMarkdownContent(mentionContent)).toEqual(
+      'Is this true? @marcello',
+    );
+  });
+  it('it should convert Link', () => {
+    const mentionContent =
+      '<a href="https://www.google.com" rel="noopener nofollow ugc">Hello</a>';
+
+    expect(userActivityMarkdownContent(mentionContent)).toEqual(
+      '[Hello](https://www.google.com)',
+    );
   });
 });

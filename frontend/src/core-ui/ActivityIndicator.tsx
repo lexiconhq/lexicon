@@ -13,7 +13,7 @@ type Props = ActivityIndicatorProps & {
 export function ActivityIndicator(props: Props) {
   const { colors } = useTheme();
 
-  const { color = 'primary', ...otherProps } = props;
+  const { color = 'loading', ...otherProps } = props;
   const indicatorColor = colors[color];
 
   return <BaseActivityIndicator color={indicatorColor} {...otherProps} />;

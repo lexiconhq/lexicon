@@ -23,6 +23,8 @@ export let PushNotificationsPreferences = Record({
   shouldSetBadge: Boolean,
 });
 
+export let SelectedHomeChannelId = Number;
+
 let [StorageProvider, useStorage] = createCachedStorage(
   {
     colorScheme: (value) => ColorScheme.check(value),
@@ -31,6 +33,7 @@ let [StorageProvider, useStorage] = createCachedStorage(
     expoPushToken: (value) => String.check(value),
     channels: (value) => ChannelList.check(value),
     pushNotifications: (value) => PushNotificationsPreferences.check(value),
+    homeChannelId: (value) => SelectedHomeChannelId.check(value),
   },
   '@Cached/',
 );
