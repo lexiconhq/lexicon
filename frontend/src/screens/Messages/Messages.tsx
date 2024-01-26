@@ -167,7 +167,7 @@ export default function Messages() {
           <RefreshControl
             refreshing={loading}
             onRefresh={onRefresh}
-            tintColor={colors.primary}
+            tintColor={colors.loading}
           />
         }
         getItem={getItem}

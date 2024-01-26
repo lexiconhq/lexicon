@@ -4,7 +4,7 @@ import { TouchableOpacity, View, ViewProps } from 'react-native';
 
 import { NO_EXCERPT_WORDING } from '../../constants';
 import { CustomImage, Text } from '../../core-ui';
-import { formatRelativeTime, useStorage } from '../../helpers';
+import { formatRelativeTime, unescapeHTML, useStorage } from '../../helpers';
 import { Color, makeStyles, useTheme } from '../../theme';
 import { Channel, StackNavProp } from '../../types';
 import { Author } from '../Author';
@@ -139,7 +139,7 @@ function BasePostItem(props: Props) {
           color={isTapToView ? 'primary' : color}
           variant={isTapToView ? 'bold' : 'normal'}
         >
-          {content}
+          {unescapeHTML(content)}
         </Text>
       )}
     </>

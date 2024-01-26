@@ -16,8 +16,8 @@ export default function (props: Props) {
     <SkeletonPlaceholder
       enabled={isLoading}
       borderRadius={4}
-      backgroundColor={colors.skeletonLoadingBackGround}
-      highlightColor={colors.skeletonLoadingHighlight}
+      backgroundColor={colors.skeletonLoadingBackgroundMode}
+      highlightColor={colors.skeletonLoadingHighlightMode}
     >
       <View style={styles.container}>
         <View style={styles.titleBox} />

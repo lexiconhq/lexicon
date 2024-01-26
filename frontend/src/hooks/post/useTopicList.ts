@@ -21,13 +21,11 @@ export function useTopicList(
 export function useLazyTopicList(
   options?: LazyQueryHookOptions<TopicListType, TopicListVariables>,
 ) {
-  const [getTopicList, { loading, error, refetch, fetchMore }] = useLazyQuery<
-    TopicListType,
-    TopicListVariables
-  >(TopicsDocument, {
-    context: { queryDeduplication: true },
-    ...options,
-  });
+  const [getTopicList, { data, loading, error, refetch, fetchMore }] =
+    useLazyQuery<TopicListType, TopicListVariables>(TopicsDocument, {
+      context: { queryDeduplication: true },
+      ...options,
+    });
 
-  return { getTopicList, loading, error, refetch, fetchMore };
+  return { getTopicList, loading, error, refetch, fetchMore, data };
 }

@@ -219,6 +219,7 @@ function BaseCustomFlatList<ItemType>(
         <RefreshControl
           refreshing={refreshing ?? false}
           onRefresh={internalOnRefresh}
+          tintColor={refreshControlTintColor}
         />
       }
       onEndReached={(info) => {

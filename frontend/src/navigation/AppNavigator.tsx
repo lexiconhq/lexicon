@@ -9,8 +9,9 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import * as Linking from 'expo-linking';
 import * as Notifications from 'expo-notifications';
+import { View } from 'react-native';
 
-import { useColorScheme } from '../theme';
+import { makeStyles, useColorScheme } from '../theme';
 import { RootStackParamList } from '../types';
 import {
   DEEP_LINK_SCREEN_CONFIG,
@@ -23,34 +24,41 @@ import { isRouteBesidePost, postOrMessageDetailPathToRoutes } from '../helpers';
 import { useRedirect } from '../utils';
 import { useInitialLoad } from '../hooks/useInitialLoad';
 import { LoadingOrErrorView } from '../components';
+import { useUpdateApp } from '../hooks/useUpdateApp';
 
 import RootStackNavigator from './RootStackNavigator';
 import { navigationRef } from './NavigationService';
+import { useAuth } from '../utils/AuthProvider';
 
 export default function AppNavigator() {
   const { colorScheme } = useColorScheme();
   const useInitialLoadResult = useInitialLoad();
   const { setRedirectPath } = useRedirect();
+  const auth = useAuth();
+  const styles = useStyles();
+  const { loading: appUpdateLoading } = useUpdateApp();
 
   const darkMode = colorScheme === 'dark';
 
   return (
     <>
       <StatusBar style={darkMode ? 'light' : 'dark'} />
-      {useInitialLoadResult.loading ? (
-        <LoadingOrErrorView loading />
+      {useInitialLoadResult.loading || auth.isLoading || appUpdateLoading ? (
+        <LoadingOrErrorView loading style={styles.background} />
       ) : (
-        <NavigationContainer
-          linking={createLinkingConfig({
-            setRedirectPath,
-            isLoggedIn: useInitialLoadResult.isLoggedIn,
-            isPublicDiscourse: useInitialLoadResult.isPublicDiscourse,
-          })}
-          theme={darkMode ? DarkTheme : DefaultTheme}
-          ref={navigationRef}
-        >
-          <RootStackNavigator initialRouteName={'InstanceLoading'} />
-        </NavigationContainer>
+        <View style={styles.background}>
+          <NavigationContainer
+            linking={createLinkingConfig({
+              setRedirectPath,
+              isLoggedIn: useInitialLoadResult.isLoggedIn,
+              isPublicDiscourse: useInitialLoadResult.isPublicDiscourse,
+            })}
+            theme={darkMode ? DarkTheme : DefaultTheme}
+            ref={navigationRef}
+          >
+            <RootStackNavigator initialRouteName={'InstanceLoading'} />
+          </NavigationContainer>
+        </View>
       )}
     </>
   );
@@ -123,3 +131,10 @@ const createLinkingConfig = (params: CreateLinkingConfigParams) => {
   };
   return linking;
 };
+
+const useStyles = makeStyles(({ colors }) => ({
+  background: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+}));

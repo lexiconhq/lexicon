@@ -4,7 +4,11 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { useFormContext } from 'react-hook-form';
 
 import { CustomHeader, HeaderItem, ModalHeader } from '../../components';
-import { isNoChannelFilter, NO_CHANNEL_FILTER } from '../../constants';
+import {
+  isNoChannelFilter,
+  NO_CHANNEL_FILTER,
+  NO_CHANNEL_FILTER_ID,
+} from '../../constants';
 import { useStorage } from '../../helpers';
 import { makeStyles } from '../../theme';
 import { RootStackNavProp, RootStackRouteProp } from '../../types';
@@ -25,13 +29,19 @@ export default function Channels() {
   const { setValue, getValues } = useFormContext();
   const { channelId: selectedChannelId } = getValues();
 
+  const homeSelectedChannelId = storage.getItem('homeChannelId');
+
+  const selectedChannel =
+    prevScreen === 'Home' ? homeSelectedChannelId : selectedChannelId;
+
   const ios = Platform.OS === 'ios';
 
   const onPress = (id: number) => {
-    setValue('channelId', id);
     if (prevScreen === 'Home') {
+      storage.setItem('homeChannelId', id);
       navigate('TabNav', { screen: 'Home' });
     } else {
+      setValue('channelId', id, { shouldDirty: true });
       navigate(prevScreen);
     }
   };
@@ -49,7 +59,9 @@ export default function Channels() {
       <ScrollView>
         {prevScreen === 'Home' && (
           <ChannelItem
-            isSelected={isNoChannelFilter(selectedChannelId)}
+            isSelected={isNoChannelFilter(
+              homeSelectedChannelId || NO_CHANNEL_FILTER_ID,
+            )}
             channel={NO_CHANNEL_FILTER}
             onPress={() => onPress(NO_CHANNEL_FILTER.id)}
           />
@@ -59,7 +71,7 @@ export default function Channels() {
           return (
             <ChannelItem
               key={id}
-              isSelected={id === selectedChannelId}
+              isSelected={id === selectedChannel}
               channel={channel}
               onPress={() => onPress(id)}
             />

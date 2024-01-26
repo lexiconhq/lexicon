@@ -54,7 +54,7 @@ function PostList<T extends ItemType>(props: Props<T>) {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          tintColor={colors.primary}
+          tintColor={colors.loading}
           progressViewOffset={progressViewOffset}
         />
       }

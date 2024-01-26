@@ -596,7 +596,7 @@ export default function MessageDetail() {
           <RefreshControl
             refreshing={refetching || isLoadingOlderPost}
             onRefresh={() => loadMoreMessages(false)}
-            tintColor={colors.primary}
+            tintColor={colors.loading}
           />
         }
         data={data?.contents ?? []}
