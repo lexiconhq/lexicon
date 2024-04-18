@@ -1,0 +1,50 @@
+{
+  "version.label": {
+    "message": "2.0.0",
+    "description": "The label for version 2.0.0"
+  },
+  "sidebar.docs.category.Lexicon": {
+    "message": "Lexicon",
+    "description": "The label for category Lexicon in sidebar docs"
+  },
+  "sidebar.docs.category.Getting Started": {
+    "message": "入门",
+    "description": "The label for category Getting Started in sidebar docs"
+  },
+  "sidebar.docs.category.Configuring the Mobile App": {
+    "message": "配置移动应用",
+    "description": "The label for category Configuring the Mobile App in sidebar docs"
+  },
+  "sidebar.docs.category.White Labeling": {
+    "message": "自定义白标",
+    "description": "The label for category White Labeling in sidebar docs"
+  },
+  "sidebar.docs.category.Deploying Prose": {
+    "message": "部署 Prose",
+    "description": "The label for category Deploying Prose in sidebar docs"
+  },
+  "sidebar.docs.category.Configuring Discourse": {
+    "message": "配置 Discourse",
+    "description": "The label for category Configuring Discourse in sidebar docs"
+  },
+  "sidebar.docs.category.Discourse Plugin": {
+    "message": "Discourse 插件",
+    "description": "The label for category Discourse Plugin in sidebar docs"
+  },
+  "sidebar.docs.category.Push Notifications": {
+    "message": "通知推送",
+    "description": "The label for category Push Notifications in sidebar docs"
+  },
+  "sidebar.docs.category.Email Deep Linking": {
+    "message": "邮件深度链接",
+    "description": "The label for category Email Deep Linking in sidebar docs"
+  },
+  "sidebar.docs.category.Publishing your App": {
+    "message": "发布您的 App",
+    "description": "The label for category Publishing your App in sidebar docs"
+  },
+  "sidebar.tutorial.category.Tutorial": {
+    "message": "教程",
+    "description": "The label for category Tutorial in sidebar tutorial"
+  }
+}

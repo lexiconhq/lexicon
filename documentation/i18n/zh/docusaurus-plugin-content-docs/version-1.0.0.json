@@ -1,0 +1,38 @@
+{
+  "version.label": {
+    "message": "1.0.0",
+    "description": "The label for version 1.0.0"
+  },
+  "sidebar.docs.category.Lexicon": {
+    "message": "Lexicon",
+    "description": "The label for category Lexicon in sidebar docs"
+  },
+  "sidebar.docs.category.Getting Started": {
+    "message": "Getting Started",
+    "description": "The label for category Getting Started in sidebar docs"
+  },
+  "sidebar.docs.category.Configuring the Mobile App": {
+    "message": "Configuring the Mobile App",
+    "description": "The label for category Configuring the Mobile App in sidebar docs"
+  },
+  "sidebar.docs.category.White Labeling": {
+    "message": "White Labeling",
+    "description": "The label for category White Labeling in sidebar docs"
+  },
+  "sidebar.docs.category.Deploying Prose": {
+    "message": "Deploying Prose",
+    "description": "The label for category Deploying Prose in sidebar docs"
+  },
+  "sidebar.docs.category.Configuring Discourse": {
+    "message": "Configuring Discourse",
+    "description": "The label for category Configuring Discourse in sidebar docs"
+  },
+  "sidebar.docs.category.Publishing your App": {
+    "message": "Publishing your App",
+    "description": "The label for category Publishing your App in sidebar docs"
+  },
+  "sidebar.tutorial.category.Tutorial": {
+    "message": "Tutorial",
+    "description": "The label for category Tutorial in sidebar tutorial"
+  }
+}

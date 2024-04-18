@@ -8,6 +8,7 @@
     "docs:install": "yarn --cwd documentation install",
     "docs:build": "yarn --cwd documentation build",
     "docs:start": "yarn --cwd documentation start",
+    "docs:serve": "yarn --cwd documentation serve",
     "postinstall": "yarn --cwd api install && yarn --cwd frontend install"
   },
   "dependencies": {
