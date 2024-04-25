@@ -28,6 +28,10 @@ module.exports = {
           position: 'left',
         },
         {
+          type: 'localeDropdown',
+          position: 'right',
+        },
+        {
           href: 'https://github.com/lexiconhq/lexicon',
           label: 'GitHub',
           position: 'right',
@@ -51,6 +55,20 @@ module.exports = {
       config: {
         margin: 48,
         scrollOffset: 70,
+      },
+    },
+  },
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en', 'zh'],
+    path: 'i18n',
+    localeConfigs: {
+      en: {
+        label: 'English',
+      },
+      zh: {
+        label: '中文',
+        path: 'zh',
       },
     },
   },

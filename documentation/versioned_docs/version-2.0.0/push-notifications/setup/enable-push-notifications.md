@@ -14,18 +14,15 @@ Below, we'll walk you through the necessary steps to activate push notifications
 ## Steps
 
 1. Ensure the [Lexicon Discourse plugin](../../discourse-plugin-installation.md) is installed and activated.
+2. As an admin user, access your Discourse admin dashboard.
+3. Navigate to the Plugins section.
 
-1. As an admin user, access your Discourse admin dashboard.
-
-1. Navigate to the Plugins section.
-
-<img src={useBaseUrl('/img/screenshot/Discourse-Plugin-Settings.png')} />
+    <img src={useBaseUrl('/img/screenshot/Discourse-Plugin-Settings.png')} />
 
 4. Click on the `Settings` button for the `discourse-lexicon-plugin` entry.
-
 5. Check the `enable Push Notifications` box in the Lexicon settings section and save your changes.
 
-<img src={useBaseUrl('/img/screenshot/Discourse-Plugin-PushNotif-Settings.png')} />
+    <img src={useBaseUrl('/img/screenshot/Discourse-Plugin-PushNotif-Settings.png')} />
 
 Once the push notifications setting is enabled, your users will be able to login through the mobile app and start receiving push notifications.
 

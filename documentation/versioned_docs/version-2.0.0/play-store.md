@@ -56,7 +56,7 @@ In the example below, we're providing our app with the ability to read and write
 ```json
     "android": {
       "package": "<your package name>",
-      "permissions": [ "READ_EXTERNAL_STORAGE" , "WRITE_EXTERNAL_STORAGE"  ]
+      "permissions": [ "READ_EXTERNAL_STORAGE" , "WRITE_EXTERNAL_STORAGE"  ],
       "versionCode": 1,
     },
 ```

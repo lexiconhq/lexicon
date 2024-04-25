@@ -204,7 +204,7 @@ The `spacing` theme file defines spacing constants used throughout the Mobile Ap
 
 While the above adjustments are generally fairly simple, you can really customize the Mobile App to your heart's content (based on your skill level).
 
-Here are some additional aexamples.
+Here are some additional examples.
 
 ### Custom Fonts
 

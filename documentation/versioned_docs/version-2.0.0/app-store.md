@@ -54,9 +54,7 @@ You can follow these instructions to get one.
 
   - **Bundle ID**: Select `Explicit`, and then insert then insert your bundle ID in the input field.
 
-- Capabilities
-
-  - You can leave this section empty.
+  - Capabilities: You can leave this section empty.
 
 ## Add a New App in App Store Connect
 

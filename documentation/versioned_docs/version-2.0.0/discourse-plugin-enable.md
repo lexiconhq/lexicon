@@ -10,15 +10,13 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 After you have confirmed the plugin has been installed and your Discourse instance is running again, you can follow these steps to enable the plugin:
 
 1. As an admin user, access your Discourse admin dashboard.
-
 2. Navigate to the `Plugins` tab.
 
-You'll notice that the `discourse-lexicon-plugin` is not enabled yet.
-
-<img loading="eager" alt="Plugin Admin Page" src={useBaseUrl('/img/screenshot/Discourse-Plugin-Settings.png')}/>
+    You'll notice that the `discourse-lexicon-plugin` is not enabled yet.
+    
+    <img loading="eager" alt="Plugin Admin Page" src={useBaseUrl('/img/screenshot/Discourse-Plugin-Settings.png')}/>
 
 3. Click on the `Settings` button for the `discourse-lexicon-plugin` entry.
-
 4. Select the feature you want to enable and turn it on.
 
 ##### Push Notifications
