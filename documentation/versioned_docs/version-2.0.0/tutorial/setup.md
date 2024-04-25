@@ -10,7 +10,7 @@ The tooling needed to setup Lexicon relies heavily on Node and npm.
 
 If you are unsure of how to install NodeJS, you can follow the instructions on the [NodeJS Website](https://nodejs.org/en/download/).
 
-#### Supported Node Versions
+### Supported Node Versions
 
 It is recommended that you perform this tutorial using the latest version of Node that is compatible with the the project's version of Expo.
 

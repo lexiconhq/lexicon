@@ -32,7 +32,7 @@ The assets are located in the `frontend/assets/icons` folder. If you want to add
 
 There are some standards applied to the icons, such as:
 
-#### Uniform Icon Size to Maintain Visual Consistency
+### Uniform Icon Size to Maintain Visual Consistency
 
 The UI is designed around the default base dimensions of 28x28px for icons.
 
@@ -40,7 +40,7 @@ If you adjust this, you may need to modify other aspects of the theme or fonts i
 
 Similarly, if you provide a new icon that does not conform to these dimensions, you may run into visual inconsistencies.
 
-#### SVG Icons have their Fill Color Controlled via `currentColor`
+### SVG Icons have their Fill Color Controlled via `currentColor`
 
 If you are adding a new icon that you expect to interact with theme's colors, ensure that its color is not hard-coded, and is instead set to `currentColor`.
 

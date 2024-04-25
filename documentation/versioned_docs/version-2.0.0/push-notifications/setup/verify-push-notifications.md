@@ -21,12 +21,12 @@ Additionally, **you will need at least one mobile device** for testing purposes.
 To test push notifications within your Lexicon-powered mobile app, follow these steps:
 
 1. Ensure that you have completed the [Getting Started](../../quick-start) steps for Lexicon.
-1. Start the Lexicon Expo app by navigating to `frontend/` and running `yarn start` from your terminal.
-1. Using the Expo link or QR Code, launch the app on a real mobile device.
-1. Login to the app using one of your accounts.
-1. Using that account, create a post within your Discourse site
-1. Using a separate account, reply to the post to trigger a notification for the first account.
-1. You should receive a push notification on your phone with the reply content from the other account.
+2. Start the Lexicon Expo app by navigating to `frontend/` and running `yarn start` from your terminal.
+3. Using the Expo link or QR Code, launch the app on a real mobile device.
+4. Login to the app using one of your accounts.
+5. Using that account, create a post within your Discourse site
+6. Using a separate account, reply to the post to trigger a notification for the first account.
+7. You should receive a push notification on your phone with the reply content from the other account.
 
 <img src={useBaseUrl('/img/screenshot/Mobile-PushNotification.png')} width="360" />
 

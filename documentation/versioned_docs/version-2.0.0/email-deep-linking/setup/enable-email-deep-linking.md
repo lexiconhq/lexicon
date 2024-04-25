@@ -9,20 +9,16 @@ This guide will walk you through the necessary steps to activate email deep link
 ## Steps
 
 1. Ensure the [Lexicon Discourse plugin](../../discourse-plugin-installation.md) is installed and activated.
+2. Access your Discourse admin dashboard.
+3. Navigate to the `Plugins` section.
 
-1. Access your Discourse admin dashboard.
-
-1. Navigate to the `Plugins` section.
-
-<img src={useBaseUrl('/img/screenshot/Discourse-Plugin-Settings.png')} />
+    <img src={useBaseUrl('/img/screenshot/Discourse-Plugin-Settings.png')} />
 
 4. Locate the `discourse-lexicon-plugin` and click on the `Settings` button.
-
 5. Fill in the `lexicon app scheme` setting with your app scheme. The app scheme is required to enable email deep linking.
-
 6. Check the `lexicon email deep linking enabled` box in the Lexicon settings section and save your changes.
 
-<img src={useBaseUrl('/img/screenshot/Discourse-Plugin-EmailDeepLinking-Settings.png')} />
+    <img src={useBaseUrl('/img/screenshot/Discourse-Plugin-EmailDeepLinking-Settings.png')} />
 
 Once the email deep linking feature is enabled, you will be able to utilize its functionality in your Discourse instance.
 

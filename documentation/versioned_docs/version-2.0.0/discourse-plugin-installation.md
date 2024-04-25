@@ -65,8 +65,8 @@ Please be aware that rebuilding your site will result in your site going offline
 #### Precautionary Measures
 
 1. Before installing the plugin or performing any site rebuild, it is highly recommended to create a backup of your Discourse site.
-1. It is advisable to upgrade your Discourse installation and all existing plugins to their latest versions before attempting to install this plugin.
-1. Although rare, there may be situations where the site does not come back online after the rebuilding process, and requires further troubleshooting to revive.
+2. It is advisable to upgrade your Discourse installation and all existing plugins to their latest versions before attempting to install this plugin.
+3. Although rare, there may be situations where the site does not come back online after the rebuilding process, and requires further troubleshooting to revive.
    - This is always a risk when installing a plugin or performing any task that requires rebuilding the app.
    - We recommend that you perform these changes at a time that minimizes the users affected and that you have a well-defined contingency plan in place if something goes wrong.
 

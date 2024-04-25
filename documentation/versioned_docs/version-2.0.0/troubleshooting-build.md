@@ -111,16 +111,16 @@ To resolve this issue, follow these steps:
 2. Look for the `"expo"` section.
 3. If a scheme is not present add this part in `"expo"` section
 
-```json
-"expo":{
-  "name": "<app name>",
-  "slug": "<app-name>",
-  "scheme": "<app-name>",
-  "version": "1.0.0"
-}
-```
+  ```json
+  "expo":{
+    "name": "<app name>",
+    "slug": "<app-name>",
+    "scheme": "<app-name>",
+    "version": "1.0.0"
+  }
+  ```
 
-Replace `"<app-name>"` with the desired scheme name for your app.
+  Replace `"<app-name>"` with the desired scheme name for your app.
 
 4. Save the changes to the `app.json` file.
 5. Rebuild your app and test it again.

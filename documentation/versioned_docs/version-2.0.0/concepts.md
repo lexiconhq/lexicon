@@ -18,7 +18,7 @@ The core team, as well as members of the [support forum](https://meta.discourse.
 
 To help you simplify the process for you, Prose strives to normalize a subset of the API. We have done so with the hope that it will save you some time as you develop against Discourse.
 
-#### GraphiQL
+### GraphiQL
 
 Prose's GraphQL implementation includes an [in-browser GraphQL IDE](https://www.graphql-yoga.com/docs/features/graphiql), known as [GraphiQL](https://github.com/graphql/graphiql), which allows developers to easily reference the entire documentation and schema and make queries against a running Discourse instance.
 
@@ -26,7 +26,7 @@ Prose's GraphQL implementation includes an [in-browser GraphQL IDE](https://www.
 
 This means you can rapidly get a clear understanding of how a method behaves—and what parameters it requires—without digging through support posts or reverse-engineering the REST API.
 
-#### Why GraphQL?
+### Why GraphiQL?
 
 There is no shortage of articles about both the [benefits](https://www.howtographql.com/basics/1-graphql-is-the-better-rest) and [tradeoffs](https://lwhorton.github.io/2019/08/24/graphql-tradeoffs.html) of GraphQL.
 
@@ -38,7 +38,7 @@ Having said that, we chose to build Lexicon with it for two primary reasons.
 
 2. The tooling, libraries, and auto-generated documentation provide out-of-the box benefits which we can pass onto others with no additional effort.
 
-#### Why Expo?
+## Why Expo?
 
 [Expo](https://docs.expo.io/) is both a framework and a platform for building universal React applications. In particular, it provides a superior development experience when building mobile apps with React Native.
 
