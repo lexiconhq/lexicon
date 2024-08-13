@@ -11,5 +11,6 @@ export let LoginOutput = objectType({
     t.field('user', { type: 'UserLite' });
     // Auth
     t.string('token');
+    t.boolean('enableLexiconPushNotifications');
   },
 });

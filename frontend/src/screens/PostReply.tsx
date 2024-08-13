@@ -35,6 +35,7 @@ import {
   useStorage,
   BottomMenuNavigationParams,
   BottomMenuNavigationScreens,
+  onKeyPress,
 } from '../helpers';
 import {
   useKASVWorkaround,
@@ -229,7 +230,14 @@ export default function PostReply() {
     navigate(screen, params);
   };
 
-  const { onInsertImage, onInsertLink, onInsertPoll } = bottomMenu({
+  const {
+    onInsertImage,
+    onInsertLink,
+    onInsertPoll,
+    onFontFormatting,
+    onQuote,
+    onListFormatting,
+  } = bottomMenu({
     isKeyboardShow,
     user,
     navigate: onNavigate,
@@ -310,6 +318,7 @@ export default function PostReply() {
     polls,
     title,
     uploadsInProgress,
+    hyperlinkUrl,
   ]);
 
   const setMentionValue = (text: string) => {
@@ -366,6 +375,56 @@ export default function PostReply() {
               onInsertImage={onInsertImage}
               onInsertLink={onInsertLink}
               onInsertPoll={onInsertPoll}
+              onBold={() => {
+                const { raw } = getValues();
+                onFontFormatting({
+                  content: raw,
+                  cursorPosition,
+                  setCursorPosition,
+                  setValue,
+                  type: 'Bold',
+                });
+              }}
+              onItalic={() => {
+                const { raw } = getValues();
+                onFontFormatting({
+                  content: raw,
+                  cursorPosition,
+                  setCursorPosition,
+                  setValue,
+                  type: 'Italic',
+                });
+              }}
+              onQuote={() => {
+                const { raw: content } = getValues();
+
+                onQuote({
+                  content,
+                  cursorPosition,
+                  setCursorPosition,
+                  setValue,
+                });
+              }}
+              onBulletedList={() => {
+                const { raw } = getValues();
+                onListFormatting({
+                  content: raw,
+                  cursorPosition,
+                  setCursorPosition,
+                  setValue,
+                  type: 'Bullet',
+                });
+              }}
+              onNumberedList={() => {
+                const { raw } = getValues();
+                onListFormatting({
+                  content: raw,
+                  cursorPosition,
+                  setCursorPosition,
+                  setValue,
+                  type: 'Number',
+                });
+              }}
             />
           </View>
         }
@@ -398,6 +457,14 @@ export default function PostReply() {
               isKeyboardShow={isKeyboardShow}
               inputRef={postReplyRef}
               placeholder={t('Share your thoughts')}
+              onKeyPress={(event) => {
+                onKeyPress({
+                  event,
+                  text: value,
+                  cursorPosition,
+                  onChange,
+                });
+              }}
               onChangeValue={(text) => {
                 mentionHelper(
                   text,
@@ -441,6 +508,8 @@ export default function PostReply() {
               }}
               style={styles.markdownContainer}
               mentionToggled={showUserList}
+              selectionCursor={cursorPosition}
+              testID="PostReply:TextArea"
             />
           )}
         />

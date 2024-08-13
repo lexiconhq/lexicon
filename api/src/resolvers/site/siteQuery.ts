@@ -23,6 +23,7 @@ let siteResolver: FieldResolver<'Query', 'site'> = async (
         post_action_types: postActionTypes,
         uncategorized_category_id:
           uncategorizedCategoryId = UNCATEGORIZED_CATEGORY_ID,
+        lexicon,
         ...siteData
       },
     } = await context.client.get(siteUrl);
@@ -90,6 +91,8 @@ let siteResolver: FieldResolver<'Query', 'site'> = async (
       discourseBaseUrl: PROSE_DISCOURSE_HOST || '',
       allowPoll,
       pollCreateMinimumTrustLevel,
+      enableLexiconPushNotifications:
+        lexicon?.settings.lexicon_push_notifications_enabled || false,
       ...camelcaseKey(siteData, { deep: true }),
     };
   } catch (error) {

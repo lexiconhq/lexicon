@@ -44,6 +44,7 @@ export function notificationHandler(
           case NotificationType.GroupMention:
           case NotificationType.WatchingTopic:
           case NotificationType.TopicReminder:
+          case NotificationType.WatchingCategoryOrTag:
           case NotificationType.BookmarkReminder: {
             return navToPostDetail({
               topicId,
@@ -157,7 +158,7 @@ export function notificationHandler(
             break;
           }
           case NotificationType.ReplyMessage: {
-            message = t('Replied to your post on ') + topicTitle;
+            message = t('Replied to post on ') + topicTitle;
             break;
           }
           case NotificationType.MovePost: {
@@ -186,6 +187,10 @@ export function notificationHandler(
             message = t('Bookmark reminder on ') + topicTitle;
             break;
           }
+          case NotificationType.WatchingCategoryOrTag: {
+            message = topicTitle;
+            break;
+          }
         }
 
         const name =
@@ -205,7 +210,6 @@ export function notificationHandler(
           name,
           message,
           createdAt,
-          hasIcon: notificationType === 6 || notificationType === 7,
           seen,
           notificationType,
           onPress,
@@ -223,7 +227,6 @@ export function notificationHandler(
           name: groupName,
           message,
           createdAt,
-          hasIcon: false,
           seen,
           notificationType,
           onPress,
@@ -237,7 +240,6 @@ export function notificationHandler(
           name: data.badgeName,
           message: 'Got a new badge',
           createdAt,
-          hasIcon: false,
           seen,
           notificationType,
           onPress,
@@ -250,7 +252,6 @@ export function notificationHandler(
           name: data.displayUsername,
           message: `${data.displayUsername} accepted your invitation.`,
           createdAt,
-          hasIcon: false,
           seen,
           notificationType,
           onPress,
@@ -274,7 +275,6 @@ export function notificationHandler(
           name,
           message,
           createdAt,
-          hasIcon: false,
           seen,
           notificationType,
           onPress,

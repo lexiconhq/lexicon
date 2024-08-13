@@ -529,6 +529,7 @@ export default function PostDetail() {
         onPressReply={onPressReply}
         onPressMore={onPressMore}
         onPressAuthor={onPressAuthor}
+        testIDStatus={`PostDetail:NestedComment:Author:EmojiStatus`}
       />
     );
   };
@@ -606,10 +607,12 @@ export default function PostDetail() {
           style={styles.scrollViewContainer}
           initialScrollIndex={0}
           onScrollToIndexFailed={onScrollToIndexFailedHandler}
+          testID="PostDetail:List"
         />
         <TouchableOpacity
           style={styles.inputCommentContainer}
           onPress={() => onPressReply()}
+          testID="PostDetail:Button:Reply"
         >
           <Text style={styles.inputComment}>{t('Write your reply here')}</Text>
         </TouchableOpacity>

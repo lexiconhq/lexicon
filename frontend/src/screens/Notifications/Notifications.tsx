@@ -134,7 +134,9 @@ export default function Notifications() {
     if (loading) {
       return <LoadingOrError loading />;
     }
-    return <LoadingOrError message={t('No Notifications available')} />;
+    if (data?.notification.totalRowsNotifications === 0) {
+      return <LoadingOrError message={t('No Notifications available')} />;
+    }
   }
 
   const handleMarkAsRead = async (notificationId: number) => {
@@ -203,15 +205,22 @@ export default function Notifications() {
   const keyExtractor = ({ id }: NotificationDataType) => `notif-${id}`;
 
   function renderItem({ item }: { item: NotificationDataType }) {
-    const { id, topicId, name, message, createdAt, hasIcon, seen, onPress } =
-      item;
-
+    const {
+      id,
+      topicId,
+      name,
+      message,
+      createdAt,
+      seen,
+      onPress,
+      notificationType,
+    } = item;
     return (
       <NotificationItem
         name={name}
         message={message}
         createdAt={createdAt}
-        isMessage={hasIcon}
+        type={notificationType}
         seen={seen}
         onPress={() => {
           onPress(item.badgeId ? item.badgeId : topicId);

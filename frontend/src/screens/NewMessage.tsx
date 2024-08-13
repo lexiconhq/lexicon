@@ -38,6 +38,7 @@ import {
   BottomMenuNavigationParams,
   errorHandlerAlert,
   combineContentWithPollContent,
+  onKeyPress,
 } from '../helpers';
 import {
   useKASVWorkaround,
@@ -218,7 +219,14 @@ export default function NewMessage() {
     navigate(screen, params);
   };
 
-  const { onInsertImage, onInsertLink, onInsertPoll } = bottomMenu({
+  const {
+    onInsertImage,
+    onInsertLink,
+    onInsertPoll,
+    onFontFormatting,
+    onQuote,
+    onListFormatting,
+  } = bottomMenu({
     isKeyboardShow,
     user,
     navigate: onNavigate,
@@ -360,6 +368,56 @@ export default function NewMessage() {
                 onInsertImage={onInsertImage}
                 onInsertLink={onInsertLink}
                 onInsertPoll={onInsertPoll}
+                onBold={() => {
+                  const { raw } = getValues();
+                  onFontFormatting({
+                    content: raw,
+                    cursorPosition,
+                    setCursorPosition,
+                    setValue,
+                    type: 'Bold',
+                  });
+                }}
+                onItalic={() => {
+                  const { raw } = getValues();
+                  onFontFormatting({
+                    content: raw,
+                    cursorPosition,
+                    setCursorPosition,
+                    setValue,
+                    type: 'Italic',
+                  });
+                }}
+                onQuote={() => {
+                  const { raw: content } = getValues();
+
+                  onQuote({
+                    content,
+                    cursorPosition,
+                    setCursorPosition,
+                    setValue,
+                  });
+                }}
+                onBulletedList={() => {
+                  const { raw } = getValues();
+                  onListFormatting({
+                    content: raw,
+                    cursorPosition,
+                    setCursorPosition,
+                    setValue,
+                    type: 'Bullet',
+                  });
+                }}
+                onNumberedList={() => {
+                  const { raw } = getValues();
+                  onListFormatting({
+                    content: raw,
+                    cursorPosition,
+                    setCursorPosition,
+                    setValue,
+                    type: 'Number',
+                  });
+                }}
                 showLeftMenu={showLeftMenu}
               />
             </View>
@@ -384,6 +442,8 @@ export default function NewMessage() {
                     onFocus={() => setShowLeftMenu(false)}
                     placeholder={t('What do you want to talk about?')}
                     placeholderTextColor={colors.darkTextLighter}
+                    testID="NewMessage:TextInput:Title"
+                    autoCorrect
                   />
                 )}
               />
@@ -397,6 +457,7 @@ export default function NewMessage() {
                 style={styles.row}
                 onPress={onPressSelectUser}
                 hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                testID="NewMessage:Button:SelectUser"
               >
                 <Text
                   style={{
@@ -439,6 +500,15 @@ export default function NewMessage() {
                   isKeyboardShow={isKeyboardShow}
                   value={value}
                   inputRef={newMessageRef}
+                  selectionCursor={cursorPosition}
+                  onKeyPress={(event) => {
+                    onKeyPress({
+                      event,
+                      text: value,
+                      cursorPosition,
+                      onChange,
+                    });
+                  }}
                   onChangeValue={(text) => {
                     mentionHelper(
                       text,
@@ -464,6 +534,7 @@ export default function NewMessage() {
                   }}
                   placeholder={t('Type a message')}
                   mentionToggled={showUserList}
+                  testID="NewMessage:TextArea"
                 />
               )}
             />

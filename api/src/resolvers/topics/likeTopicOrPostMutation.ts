@@ -20,7 +20,10 @@ import {
   fetchTopicDetail,
   fetchPost,
 } from '../../helpers';
-import { LikableEntity, likeErrorHandler } from '../../helpers/likeErroHandler';
+import {
+  LikableEntity,
+  likeErrorHandler,
+} from '../../helpers/likeErrorHandler';
 import { ActionsSummary, Context, LikedTopic } from '../../types';
 
 export let likeTopicOrPostResolver: FieldResolver<

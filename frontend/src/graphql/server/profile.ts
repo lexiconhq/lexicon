@@ -1,10 +1,10 @@
 import { gql } from '@apollo/client';
 
-import { USER_ACTIONS_FRAGMENT } from './userActivity';
+import { USER_STATUS_FRAGMENT } from './userStatus';
 
 export const PROFILE = gql`
+  ${USER_STATUS_FRAGMENT}
   query Profile($username: String!) {
-    ${USER_ACTIONS_FRAGMENT}
     userProfile(username: $username) {
       unreadNotification
       user {

@@ -64,9 +64,17 @@ module.exports = {
           editUrl:
             'https://github.com/lexiconhq/lexicon/blob/master/documentation/',
           routeBasePath: '/',
-          onlyIncludeVersions: ['1.0.0', '2.0.0'],
-          lastVersion: '2.0.0',
+          onlyIncludeVersions: ['1.0.0', '2.0.0', '2.1.0', '2.2.0'],
+          lastVersion: '2.2.0',
           versions: {
+            '2.2.0': {
+              path: 'version-2.2.0',
+              banner: 'none',
+            },
+            '2.1.0': {
+              path: 'version-2.1.0',
+              banner: 'none',
+            },
             '2.0.0': {
               path: 'version-2.0.0',
               banner: 'none',
@@ -78,7 +86,10 @@ module.exports = {
           },
         },
         theme: {
-          customCss: require.resolve('./src/css/custom.css'),
+          customCss: [
+            require.resolve('./src/css/custom.css'),
+            require.resolve('./src/css/image.css'),
+          ],
         },
       },
     ],

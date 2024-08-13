@@ -20,13 +20,19 @@ export function HomeNavBar(props: Props) {
 
   return (
     <View style={[styles.container, style]} {...otherProps}>
-      <TouchableOpacity style={styles.title} onPress={() => onPressTitle()}>
+      <TouchableOpacity
+        style={styles.title}
+        onPress={onPressTitle}
+        testID="HomeNavBar:Button:SelectChannel"
+      >
         <Text style={styles.titleText} variant={'bold'} size="xl">
           {title}
         </Text>
         <Icon name="Triangle" color={colors.textNormal} size="m" />
       </TouchableOpacity>
-      {ios && <Icon name="Add" onPress={onPressAdd} />}
+      {ios && (
+        <Icon name="Add" onPress={onPressAdd} testID="HomeNavBar:Icon:Add" />
+      )}
     </View>
   );
 }

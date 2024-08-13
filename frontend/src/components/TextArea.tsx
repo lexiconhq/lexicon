@@ -5,6 +5,7 @@ import {
   Platform,
   TextInput,
   TextInputFocusEventData,
+  TextInputKeyPressEventData,
   View,
   ViewProps,
 } from 'react-native';
@@ -20,12 +21,14 @@ type Props = ViewProps & {
   placeholder?: string;
   large?: boolean;
   onChangeValue: (value: string) => void;
+  onKeyPress?: (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => void;
   onFocus?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void;
   onBlur?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void;
   onSelectedChange: (cursor: CursorPosition) => void;
   inputRef?: RefObject<TextInputType>;
   mentionToggled?: boolean;
   isKeyboardShow: boolean;
+  selectionCursor?: { start: number; end: number };
 };
 
 export function TextArea(props: Props) {
@@ -43,6 +46,9 @@ export function TextArea(props: Props) {
     mentionToggled,
     isKeyboardShow,
     onBlur,
+    selectionCursor,
+    testID,
+    onKeyPress,
     ...otherProps
   } = props;
 
@@ -51,7 +57,7 @@ export function TextArea(props: Props) {
   // Normal variant used in NewPost and NewMessaage
   // Large variant used in PostReply
   const NORMAL_IOS_VIEW_SIZE = screen.height * 0.24;
-  const LARGE_IOS_VIEW_SIZE = screen.height * 0.4;
+  const LARGE_IOS_VIEW_SIZE = screen.height * 0.28;
   const IOS_VIEW_SIZE = large ? LARGE_IOS_VIEW_SIZE : NORMAL_IOS_VIEW_SIZE;
 
   const MENTION_TEXT_AREA_VIEW_SIZE = 200;
@@ -76,7 +82,8 @@ export function TextArea(props: Props) {
           onSelectionChange={(cursor) => {
             onSelectedChange(cursor.nativeEvent.selection);
           }}
-          onChangeText={(value) => onChangeValue(value)}
+          onKeyPress={onKeyPress}
+          onChangeText={onChangeValue}
           style={
             ios
               ? [
@@ -97,12 +104,18 @@ export function TextArea(props: Props) {
                 ]
           }
           multiline
-          autoCorrect={false}
+          autoCorrect
           autoCapitalize="sentences"
           placeholder={placeholder}
           placeholderTextColor={colors.darkTextLighter}
           onFocus={onFocus}
           onBlur={onBlur}
+          /**
+           * Change selection in android is reproduce bug where cursor will always show at the end paragraph or delete all value in text input
+           */
+
+          selection={Platform.OS === 'android' ? undefined : selectionCursor}
+          testID={testID}
         >
           <MentionedText textValue={value} />
         </TextInput>

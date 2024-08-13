@@ -41,6 +41,7 @@ type Props = ViewProps & {
   polls?: Array<Poll>;
   pollsVotes?: Array<PollsVotes>;
   postId?: number;
+  testIDStatus?: string;
 };
 
 function BasePostItem(props: Props) {
@@ -77,6 +78,7 @@ function BasePostItem(props: Props) {
     polls,
     pollsVotes,
     postId,
+    testIDStatus,
     ...otherProps
   } = props;
 
@@ -125,6 +127,7 @@ function BasePostItem(props: Props) {
       onPressEmptySpaceInPost={onPressPost}
       showStatus={showStatus}
       emojiCode={emojiCode}
+      testIDStatus={testIDStatus}
     />
   );
 

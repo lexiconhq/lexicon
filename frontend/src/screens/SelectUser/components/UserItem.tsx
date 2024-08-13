@@ -37,6 +37,7 @@ export default function UserItem(props: Props) {
         children={
           isCheck ? <Icon name="CheckCircle" style={styles.icon} /> : undefined
         }
+        testID="UserItem:Author:SelectUser"
       />
       <Divider style={styles.divider} />
     </>

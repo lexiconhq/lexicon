@@ -60,6 +60,7 @@ function LabelWithIcon(props: LabelWithIcon) {
       onPress={onPressItem}
       {...otherProps}
       style={[!left && styles.right, style]}
+      testID="HeaderItem:IconWithLabel"
     />
   );
 }
@@ -77,6 +78,7 @@ function IconOnly(props: IconOnlyProps) {
       onPress={onPressItem}
       {...otherProps}
       style={[!left && styles.right, style]}
+      testID="HeaderItem:IconOnly"
     />
   );
 }
@@ -91,6 +93,7 @@ function LabelOnly(props: LabelOnlyProps) {
       onPress={onPressItem}
       {...otherProps}
       style={[!left && styles.right, style]}
+      testID="HeaderItem:LabelOnly"
     >
       <Text style={[styles.label, fontStyles]}>{label}</Text>
     </TouchableOpacity>

@@ -10,21 +10,29 @@ type Props = {
   showEditIcon?: boolean;
   onPress?: () => void;
   styleContainer?: StyleProp<ViewStyle>;
+  testID?: string;
 };
 
 export function UserStatus(props: Props) {
   const styles = useStyles();
   const { colors } = useTheme();
 
-  const { emojiCode, status, showEditIcon, onPress, styleContainer } = props;
+  const { emojiCode, status, showEditIcon, onPress, styleContainer, testID } =
+    props;
 
   return (
     <TouchableOpacity
       style={[styles.container, styleContainer]}
       onPress={onPress}
       disabled={!onPress}
+      testID={testID}
     >
-      <Emoji style={styles.emoji} emojiCode={emojiCode} disableOnPress />
+      <Emoji
+        style={styles.emoji}
+        emojiCode={emojiCode}
+        disableOnPress
+        testID="UserStatus:Emoji:Image"
+      />
       <Text style={styles.statusText} color="lightTextDarker">
         {status.length > 15 ? `${status.slice(0, 15)}...` : status}
       </Text>

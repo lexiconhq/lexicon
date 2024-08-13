@@ -43,8 +43,8 @@ export const TOPICS = gql`
           views
           likeCount
           categoryId
-          posters {
-            ... on TopicPoster {
+          posters: postersUnion {
+            ... on TopicPosterNewUnion {
               userId
               description
               user {

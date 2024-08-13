@@ -3,6 +3,10 @@ export * from './auth/useLogout';
 export * from './auth/usePushNotifications';
 export * from './auth/useRefreshToken';
 export * from './auth/useRegister';
+export * from './auth/useLoginWithApple';
+export * from './auth/useActivateAccount';
+export * from './auth/useRequestLoginLink';
+export * from './auth/useAuthenticateLoginLink';
 
 export * from './post/useActivity';
 export * from './post/useEditPost';

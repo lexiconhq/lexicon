@@ -54,7 +54,7 @@ export default function Profile() {
     'HIDE_ALERT',
   );
 
-  const { allowUserStatus } = useSiteSettings({
+  const { allowUserStatus, enableLexiconPushNotifications } = useSiteSettings({
     fetchPolicy: 'network-only',
   });
 
@@ -80,7 +80,10 @@ export default function Profile() {
        * */
     }
 
-    logout({ username });
+    logout({
+      username,
+      enableLexiconPushNotifications: enableLexiconPushNotifications || false,
+    });
   };
 
   useEffect(() => {
@@ -101,7 +104,7 @@ export default function Profile() {
     <>
       <View style={styles.container}>
         <View style={styles.statusBar} />
-        <ScrollView>
+        <ScrollView testID="Profile:ScrollView">
           <View style={styles.headerContainer}>
             <Avatar
               src={userImage}
@@ -139,6 +142,7 @@ export default function Profile() {
                   onPress={() => {
                     navigate('EditUserStatus', {});
                   }}
+                  testID="Profile:IconWithLabel"
                 />
               ) : (
                 <UserStatus
@@ -152,6 +156,7 @@ export default function Profile() {
                       endDate: user.status?.endsAt || '',
                     });
                   }}
+                  testID="Profile:UserStatus"
                 />
               ))}
             <Button
@@ -159,6 +164,7 @@ export default function Profile() {
               style={styles.button}
               disabled={!data}
               onPress={() => navigate('EditProfile', { user })}
+              testID="Profile:Button:EditProfile"
             />
           </View>
           <View style={styles.bodyContainer}>
@@ -174,6 +180,7 @@ export default function Profile() {
                 title={t('Messages')}
                 iconName="Mail"
                 onPress={() => navigate('Messages')}
+                testID="Profile:MenuItem:Messages"
               />
               <Divider style={styles.dividerList} />
               <MenuItem
@@ -208,6 +215,7 @@ export default function Profile() {
                 iconColor={colors.error}
                 onPress={onLogout}
                 loading={logoutLoading}
+                testID="Profile:MenuItem:Logout"
               />
             </View>
           </View>

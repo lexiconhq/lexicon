@@ -195,11 +195,13 @@ export default function Search() {
           placeholder={t('Search for ...')}
           placeholderTextColor={colors.textLighter}
           keyboardType="visible-password" // To remove underline at every words on Android
+          testID="Search:TextInput:Query"
         />
         {searchValue !== '' && (
           <TouchableOpacity
             onPress={onPressCancel}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            testID="Search:Button:Delete"
           >
             <Icon name="Cancel" size="m" color={colors.textLighter} />
           </TouchableOpacity>
@@ -228,6 +230,7 @@ export default function Search() {
           renderItem={({ item }) => {
             return <SearchPostItem topicId={item.topicId} postId={item.id} />;
           }}
+          testID="Search:SearchPostList"
           {...keyboardDismissProp}
         />
       )}
@@ -244,6 +247,7 @@ export default function Search() {
               style={styles.iosCancelContainer}
               hitSlop={{ top: 15, bottom: 15, left: 0, right: 15 }}
               onPress={() => navigate('TabNav', { screen: 'Home' })}
+              testID="Search:Button:Back"
             >
               <Text style={{ color: colors.primary }}>{t('Cancel')}</Text>
             </TouchableOpacity>
@@ -254,6 +258,7 @@ export default function Search() {
               tintColor={colors.primary}
               style={styles.androidBackButton}
               onPress={() => navigate('TabNav', { screen: 'Home' })}
+              testID="Search:Button:HeaderBackButton"
             />
             {search}
           </>

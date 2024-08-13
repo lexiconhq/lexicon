@@ -68,7 +68,7 @@ export function ReplyInputField(props: Props) {
           }}
           style={[styles.textInput, { height: expandedHeight }]}
           editable={!disabled}
-          autoCorrect={false}
+          autoCorrect
           onChangeText={(value) => onChangeValue(value)}
           placeholder={inputPlaceholder}
           placeholderTextColor={colors.textLighter}
@@ -80,6 +80,7 @@ export function ReplyInputField(props: Props) {
           onContentSizeChange={(e) => {
             updateSize(e.nativeEvent.contentSize.height);
           }}
+          testID="ReplyInputField:TextInput"
         >
           <MentionedText textValue={message} />
         </TextInput>
@@ -88,7 +89,12 @@ export function ReplyInputField(props: Props) {
         <ActivityIndicator />
       ) : (
         (message.trim() !== '' || showButton) && (
-          <Icon name="ArrowUpward" size="xl" onPress={onSendReply} />
+          <Icon
+            name="ArrowUpward"
+            size="xl"
+            onPress={onSendReply}
+            testID="ReplyInputField:Icon:Reply"
+          />
         )
       )}
     </View>
@@ -114,7 +120,6 @@ const useStyles = makeStyles(({ colors, fontSizes, spacing }) => {
     textInputContainer: {
       flex: 1,
       justifyContent: 'center',
-      paddingBottom: spacing.s,
       maxHeight: 140,
     },
 

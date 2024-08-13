@@ -2,7 +2,7 @@
   "expo": {
     "name": "<insert your app name>",
     "slug": "<insert your app name>",
-    "scheme": "<your-scheme-here>",
+    "scheme": "your-scheme-here",
     "currentFullName": "@<username>/<slugName>",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -12,6 +12,17 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "plugins": [
+      "expo-localization",
+      [
+        "@config-plugins/detox",
+        {
+          "skipProguard": false,
+          "subdomains": ["localhost", "10.0.2.2"]
+        }
+      ],
+      "./src/plugins/Notification.js"
+    ],
     "userInterfaceStyle": "automatic",
     "updates": {
       "fallbackToCacheTimeout": 0
@@ -33,20 +44,24 @@
         "svg"
       ]
     },
+    "notification":{
+      "icon":"./assets/iconNotifications.png"
+   },
     "ios": {
       "supportsTablet": false,
       "buildNumber": "1.0.0",
       "config": {
         "usesNonExemptEncryption": false
-      }
+      },
+      "bundleIdentifier": "com.kfox.insertyourappname"
     },
     "android": {
       "permissions": [],
-      "versionCode": 1
+      "versionCode": 1,
+      "package": "com.kfox.insertyourappname"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    },
-    "plugins": ["expo-localization"]
+    }
   }
 }

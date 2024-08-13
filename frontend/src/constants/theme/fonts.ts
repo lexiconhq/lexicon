@@ -1,9 +1,11 @@
 import { TextStyle } from 'react-native';
 
-export const FONT_VARIANTS = {
-  normal: { fontWeight: '400' } as TextStyle,
-  semiBold: { fontWeight: '600' } as TextStyle,
-  bold: { fontWeight: '700' } as TextStyle,
+type FontVariants = Record<string, TextStyle>;
+
+export const FONT_VARIANTS: FontVariants = {
+  normal: { fontWeight: '400' },
+  semiBold: { fontWeight: '600' },
+  bold: { fontWeight: '700' },
 };
 
 export const FONT_SIZES = {

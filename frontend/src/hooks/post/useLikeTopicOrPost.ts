@@ -109,7 +109,10 @@ const optimisticResponse: MutationOptimisticResponse = ({
 const refetchQueries: MutationRefetchQueries = ({ data }) => {
   const topicDetailQuery = {
     query: GetTopicDetailDocument,
-    variables: { topicId: data?.likeTopicOrPost.topicId },
+    variables: {
+      topicId: data?.likeTopicOrPost.topicId,
+      includeFirstPost: true,
+    },
   };
   return [TOPICS, topicDetailQuery];
 };

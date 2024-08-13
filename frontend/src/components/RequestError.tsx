@@ -37,7 +37,7 @@ let toastContents: Record<WithRequestFailed<NetworkStatus>, ToastShowParams> = {
     visibilityTime: 5000,
   },
 };
-let networkCheckIntervalId: number | undefined;
+let networkCheckIntervalId: NodeJS.Timer | undefined;
 let shouldShowNetworkOnline = false;
 
 export function RequestError(props: Props) {
@@ -59,7 +59,7 @@ export function RequestError(props: Props) {
           networkCheckIntervalId = undefined;
           networkStatusVar('Online');
         }
-      }, 5000) as unknown as number; // needed as RN and node timer global conflicting https://github.com/microsoft/TypeScript/issues/37053
+      }, 5000); // needed as RN and node timer global conflicting https://github.com/microsoft/TypeScript/issues/37053
     }
     return () => {
       if (networkCheckIntervalId) {

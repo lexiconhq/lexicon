@@ -1,0 +1,9 @@
+.image-container-center-multiple {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+.image-container-center {
+  text-align: center;
+}

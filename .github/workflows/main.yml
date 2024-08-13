@@ -6,33 +6,30 @@ on:
   pull_request:
     branches: [master]
 
+env:
+  LIST_REPO_E2E_TEST: ('lexicon','lexicon-kodefox') # list of repo name which want run e2e test
+
 jobs:
-  build:
+  # get-env job is run to get env using output because we cannot use env context outside steps if: env.LIST_REPO_E2E_TEST
+  # https://github.com/actions/runner/issues/2372#issuecomment-1518528105
+
+  get-env:
     runs-on: ubuntu-latest
+    outputs:
+      LIST_REPO: ${{ env.LIST_REPO_E2E_TEST }}
     steps:
-      - uses: actions/checkout@v3
+      - run: echo "null"
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '16.x'
+  path-filters:
+    needs: [get-env]
+    if: contains(needs.get-env.outputs.LIST_REPO,github.event.repository.name)
+    uses: ./.github/workflows/path-filters.yml
 
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+  test:
+    uses: ./.github/workflows/test.yml
 
-      - uses: actions/cache@v3
-        id: yarn-cache
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
-      - name: Install dependencies
-        run: yarn
-
-      - name: Generate files
-        run: yarn generate
-
-      - name: Run tests
-        run: yarn test
+  e2e-test:
+    needs: [path-filters, test]
+    if: needs.path-filters.outputs.frontendSrc-changes == 'true' && contains(needs.get-env.outputs.LIST_REPO,github.event.repository.name)
+    uses: ./.github/workflows/e2e-test-android.yml
+    secrets: inherit

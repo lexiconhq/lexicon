@@ -3,6 +3,7 @@ import {
   Insets,
   StyleProp,
   TouchableOpacity,
+  TouchableOpacityProps,
   View,
   ViewStyle,
 } from 'react-native';
@@ -18,7 +19,7 @@ type Props = {
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
   hitSlop?: Insets | null | number;
-};
+} & Pick<TouchableOpacityProps, 'testID'>;
 
 export { Props as IconProps };
 
@@ -33,6 +34,7 @@ export function Icon(props: Props) {
     disabled = false,
     style,
     hitSlop,
+    testID,
   } = props;
 
   const Icon = Icons[name];
@@ -47,6 +49,7 @@ export function Icon(props: Props) {
         onPress={onPress}
         disabled={disabled}
         hitSlop={hitSlop}
+        testID={testID}
       >
         {icon}
       </TouchableOpacity>

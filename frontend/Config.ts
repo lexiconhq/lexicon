@@ -38,6 +38,9 @@ const config: Config = {
     production: {
       proseUrl: 'http://PLACEHOLDER.change.this.to.your.prose.url',
     },
+    test: {
+      proseUrl: 'http://localhost:8929',
+    },
   },
 };
 
@@ -58,8 +61,8 @@ function getConfig(): RequiredConfig | LocalConfig {
 }
 
 /* Type definitions for the `config` object */
-type RequiredConfig = { proseUrl: `${'http' | 'https'}://${string}` };
-type LocalConfig = RequiredConfig & {
+export type RequiredConfig = { proseUrl: `${'http' | 'https'}://${string}` };
+export type LocalConfig = RequiredConfig & {
   inferDevelopmentHost?: boolean;
 };
 type Config = {

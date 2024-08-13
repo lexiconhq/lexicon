@@ -13,7 +13,7 @@ type ScrollToInput = KeyboardAwareScrollView['scrollToFocusedInput'];
  * component.
  */
 type KASVRef = JSX.Element & {
-  getScrollResponder: () => {
+  getScrollResponder?: () => {
     props: {
       scrollToFocusedInput: ScrollToInput;
     };
@@ -42,13 +42,13 @@ export function useKASVWorkaround() {
   const scrollRef = React.useRef<JSX.Element>();
   const scrollToInputRef = React.useRef<ScrollToInput>();
 
-  function innerRef(ref: JSX.Element) {
+  function innerRef(ref: KASVRef) {
     scrollRef.current = ref;
     if (!ref) {
       return;
     }
 
-    const refWithWorkAround = ref as unknown as KASVRef;
+    const refWithWorkAround = ref;
 
     const { getScrollResponder } = refWithWorkAround;
     if (!getScrollResponder) {

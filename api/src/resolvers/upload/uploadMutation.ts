@@ -1,6 +1,7 @@
 import camelcaseKeys from 'camelcase-keys';
 import FormData from 'form-data';
 import { FieldResolver, mutationField, arg, intArg, nullable } from 'nexus';
+import sharp from 'sharp';
 
 import { errorHandler } from '../../helpers';
 import { Context } from '../../types';
@@ -17,7 +18,16 @@ export let uploadResolver: FieldResolver<'Mutation', 'upload'> = async (
 
   const fileBuffer = Buffer.from(await file.arrayBuffer());
 
-  form.append('files[]', fileBuffer, file.name);
+  let resizedImageBuffer = fileBuffer;
+
+  /**
+   * This condition to optimize file image if more than 1 Mb to use sharp which will resize file size to be optimal
+   */
+  if (file.size > 1000000 && type === 'avatar') {
+    resizedImageBuffer = await sharp(fileBuffer).toBuffer();
+  }
+
+  form.append('files[]', resizedImageBuffer, file.name);
   form.append('type', type);
   if (userId) {
     form.append('user_id', userId);

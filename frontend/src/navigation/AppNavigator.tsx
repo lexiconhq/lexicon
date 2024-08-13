@@ -9,21 +9,25 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import * as Linking from 'expo-linking';
 import * as Notifications from 'expo-notifications';
+import { View } from 'react-native';
 
-import { useColorScheme } from '../theme';
+import { useColorScheme, makeStyles } from '../theme';
 import { RootStackParamList } from '../types';
 import {
   DEEP_LINK_SCREEN_CONFIG,
   EXPO_PREFIX,
   handleUrl,
-  isPostOrMessageDetail,
   onSubscribe,
+  isEmailLoginOrActivateAccount,
+  isRouteAvailable,
+  DeepRoutes,
 } from '../constants';
 import { isRouteBesidePost, postOrMessageDetailPathToRoutes } from '../helpers';
 import { useRedirect } from '../utils';
 import { useInitialLoad } from '../hooks/useInitialLoad';
 import { LoadingOrErrorView } from '../components';
 import { useAuth } from '../utils/AuthProvider';
+import { useUpdateApp } from '../hooks/useUpdateApp';
 
 import RootStackNavigator from './RootStackNavigator';
 import { navigationRef } from './NavigationService';
@@ -33,26 +37,30 @@ export default function AppNavigator() {
   const useInitialLoadResult = useInitialLoad();
   const { setRedirectPath } = useRedirect();
   const auth = useAuth();
+  const styles = useStyles();
+  const { loading: appUpdateLoading } = useUpdateApp();
 
   const darkMode = colorScheme === 'dark';
 
   return (
     <>
       <StatusBar style={darkMode ? 'light' : 'dark'} />
-      {useInitialLoadResult.loading || auth.isLoading ? (
-        <LoadingOrErrorView loading />
+      {useInitialLoadResult.loading || auth.isLoading || appUpdateLoading ? (
+        <LoadingOrErrorView loading style={styles.background} />
       ) : (
-        <NavigationContainer
-          linking={createLinkingConfig({
-            setRedirectPath,
-            isLoggedIn: useInitialLoadResult.isLoggedIn,
-            isPublicDiscourse: useInitialLoadResult.isPublicDiscourse,
-          })}
-          theme={darkMode ? DarkTheme : DefaultTheme}
-          ref={navigationRef}
-        >
-          <RootStackNavigator authProps={auth} />
-        </NavigationContainer>
+        <View style={styles.background}>
+          <NavigationContainer
+            linking={createLinkingConfig({
+              setRedirectPath,
+              isLoggedIn: useInitialLoadResult.isLoggedIn,
+              isPublicDiscourse: useInitialLoadResult.isPublicDiscourse,
+            })}
+            theme={darkMode ? DarkTheme : DefaultTheme}
+            ref={navigationRef}
+          >
+            <RootStackNavigator authProps={auth} />
+          </NavigationContainer>
+        </View>
       )}
     </>
   );
@@ -97,8 +105,22 @@ const createLinkingConfig = (params: CreateLinkingConfigParams) => {
       const routeToLogin = { routes: [{ name: 'Login' }] };
       // If we're not on a known deep link path, fallback to the default behavior
       // from React Navigation.
-      if (!isPostOrMessageDetail(route)) {
+      if (!isRouteAvailable(route)) {
         return getStateFromPath(fullPath, config);
+      }
+
+      if (isEmailLoginOrActivateAccount(route)) {
+        return {
+          routes: [
+            {
+              name: 'Login',
+              params: {
+                emailToken: pathParams[0],
+                isActivateAccount: route === DeepRoutes['activate-account'],
+              },
+            },
+          ],
+        };
       }
 
       if (!isLoggedIn) {
@@ -125,3 +147,10 @@ const createLinkingConfig = (params: CreateLinkingConfigParams) => {
   };
   return linking;
 };
+
+const useStyles = makeStyles(({ colors }) => ({
+  background: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+}));

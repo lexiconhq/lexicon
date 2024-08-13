@@ -75,6 +75,7 @@ function BaseSearchPostItem(props: Props) {
       username={cacheSearchPost.username}
       isLiked={cachedSearchTopic.liked ?? false}
       numberOfLines={5}
+      testID={`Search:SearchPostItem:${topicId}`}
     />
   );
 }

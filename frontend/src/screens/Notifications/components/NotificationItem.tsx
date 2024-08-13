@@ -15,40 +15,38 @@ type Props = TouchableOpacityProps &
     name: string;
     message: string;
     createdAt: string;
-    isMessage: boolean;
     seen: boolean;
+    type: number;
   };
 
 export default function NotificationItem(props: Props) {
   const styles = useStyles();
   const { colors } = useTheme();
 
-  const {
-    name,
-    message,
-    createdAt,
-    isMessage = false,
-    seen = false,
-    ...otherProps
-  } = props;
+  const { name, message, createdAt, seen = false, type, ...otherProps } = props;
+  const isMessage = type === 6 || type === 7;
+  const isUpdate = type === 36;
+  const hasIcon = isMessage || isUpdate;
 
   const content = (
     <View>
       <View style={styles.header}>
-        {isMessage && (
+        {hasIcon && (
           <Icon
-            name="Mail"
+            name={isMessage ? 'Mail' : 'Notifications'}
             size="xs"
             color={seen ? colors.textLighter : colors.primary}
             style={styles.icon}
           />
         )}
-        {!isMessage && !seen && (
+        {!hasIcon && !seen && (
           <View style={styles.dotIcon}>
             <Dot />
           </View>
         )}
-        <Text variant="semiBold">{name}</Text>
+        <Text variant="semiBold" numberOfLines={1} style={styles.flex}>{`${
+          isUpdate ? 'New Topic by ' : ''
+        }${name}`}</Text>
         <View style={styles.date}>
           <Text size="s" color="textLight">
             {formatRelativeTime(createdAt)}
@@ -97,11 +95,12 @@ const useStyles = makeStyles(({ colors, spacing }) => ({
     paddingRight: spacing.l,
   },
   date: {
-    flex: 1,
     flexDirection: 'row',
     justifyContent: 'flex-end',
+    marginLeft: 4,
   },
   divider: {
     flexGrow: 0,
   },
+  flex: { flex: 1 },
 }));

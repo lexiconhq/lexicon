@@ -54,13 +54,18 @@ import {
 import { makeStyles, useTheme } from '../../theme';
 import {
   CursorPosition,
+  ErrorHandlerAlertSchema,
   Message,
   MessageContent,
   StackNavProp,
   StackRouteProp,
   User,
 } from '../../types';
-import { FIRST_POST_NUMBER, MAX_POST_COUNT_PER_REQUEST } from '../../constants';
+import {
+  ERROR_UNEXPECTED,
+  FIRST_POST_NUMBER,
+  MAX_POST_COUNT_PER_REQUEST,
+} from '../../constants';
 import { MESSAGE } from '../../graphql/server/message';
 import { useInitialLoad } from '../../hooks/useInitialLoad';
 import { IconName } from '../../icons';
@@ -384,8 +389,12 @@ export default function MessageDetail() {
         message,
       });
     } catch (unknownError) {
-      // TODO: Eventually fix this so the type can resolve to ApolloError as well
-      errorHandlerAlert(unknownError as string);
+      const errorResult = ErrorHandlerAlertSchema.safeParse(unknownError);
+      if (errorResult.success) {
+        errorHandlerAlert(errorResult.data);
+      } else {
+        Alert.alert(ERROR_UNEXPECTED);
+      }
     }
     return;
   };
@@ -455,18 +464,21 @@ export default function MessageDetail() {
     text,
     onPress,
     style,
+    testID,
   }: {
     iconName: IconName;
     text: string;
-    onPress: () => void | Promise<void>;
+    onPress: () => void;
     style?: StyleProp<ViewStyle>;
+    testID?: string;
   }) => (
     <TouchableOpacity
       style={[styles.toolTipMenuButton, style]}
-      onPress={async () => {
-        await onPress();
+      onPress={() => {
+        onPress();
         setVisibleToolTip(false);
       }}
+      testID={testID}
     >
       <Icon
         name={iconName}
@@ -478,8 +490,13 @@ export default function MessageDetail() {
   );
   const menuToolTip = () => {
     return (
-      <ScrollView>
-        <MenuItem iconName="Link" text={t('Add Link')} onPress={onPressLink} />
+      <ScrollView keyboardShouldPersistTaps="handled">
+        <MenuItem
+          iconName="Link"
+          text={t('Add Link')}
+          onPress={onPressLink}
+          testID="ToolTip:MenuItem:Link"
+        />
         <MenuItem
           iconName="Photo"
           text={t('Add Image')}
@@ -538,6 +555,7 @@ export default function MessageDetail() {
       hideBorder
       alwaysVisible
       style={styles.keyboardAcc}
+      bumperHeight={2}
     >
       <MentionList
         showUserList={showUserList}

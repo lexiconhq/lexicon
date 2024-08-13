@@ -134,6 +134,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
          */
         await removeToken();
         storage.removeItem('user');
+        storage.removeItem('homeChannelId');
         return;
       }
       /**

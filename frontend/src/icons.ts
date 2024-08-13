@@ -4,6 +4,7 @@ import Admin from '../assets/icons/AdminPanel.svg';
 import AlternateEmail from '../assets/icons/AlternateEmail.svg';
 import ArrowUpward from '../assets/icons/ArrowUpward.svg';
 import Ballot from '../assets/icons/Ballot.svg';
+import BulletList from '../assets/icons/BulletList.svg';
 import Cancel from '../assets/icons/Cancel.svg';
 import Chart from '../assets/icons/Chart.svg';
 import CheckCircle from '../assets/icons/CheckCircle.svg';
@@ -26,6 +27,7 @@ import More from '../assets/icons/More.svg';
 import MoreVert from '../assets/icons/MoreVert.svg';
 import NotificationActive from '../assets/icons/NotificationActive.svg';
 import Notifications from '../assets/icons/Notifications.svg';
+import NumberList from '../assets/icons/NumberList.svg';
 import Person from '../assets/icons/Person.svg';
 import Photo from '../assets/icons/Photo.svg';
 import PoliceBadge from '../assets/icons/PoliceBadge.svg';
@@ -43,6 +45,9 @@ import Unreachable from '../assets/icons/Unreachable.svg';
 import Edit from '../assets/icons/Edit.svg';
 import WarningCircle from '../assets/icons/WarningCircle.svg';
 import Delete from '../assets/icons/Delete.svg';
+import BoldText from '../assets/icons/BoldText.svg';
+import ItalicText from '../assets/icons/ItalicText.svg';
+import QuoteText from '../assets/icons/QuoteText.svg';
 
 export const Icons = {
   Add,
@@ -51,6 +56,7 @@ export const Icons = {
   AlternateEmail,
   ArrowUpward,
   Ballot,
+  BulletList,
   Cancel,
   Chart,
   CheckCircle,
@@ -73,6 +79,7 @@ export const Icons = {
   MoreVert,
   NotificationActive,
   Notifications,
+  NumberList,
   Person,
   Photo,
   PoliceBadge,
@@ -90,6 +97,9 @@ export const Icons = {
   Edit,
   WarningCircle,
   Delete,
+  BoldText,
+  ItalicText,
+  QuoteText,
 };
 
 export type IconName = keyof typeof Icons;

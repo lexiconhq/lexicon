@@ -148,7 +148,7 @@ export default function SelectUser() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} testID="SelectUser:SafeAreaView">
       <Header />
       <View style={styles.searchContainer}>
         <Icon name="Search" color={colors.textLighter} />

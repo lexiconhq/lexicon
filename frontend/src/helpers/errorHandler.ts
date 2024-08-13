@@ -73,7 +73,8 @@ export function errorHandlerAlert(
         { text: t('Close') },
         {
           text: t('Log In'),
-          onPress: () => (navigate ? navigate('Login') : undefined),
+          onPress: () =>
+            navigate ? navigate('Login', { emailToken: undefined }) : undefined,
         },
       ]);
       return;

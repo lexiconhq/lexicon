@@ -14,29 +14,24 @@ type FetchVariables =
   | GetTopicDetailQueryVariables
   | GetMessageDetailQueryVariables;
 
-export type LoadMorePostsParams<
-  TFetchVars extends FetchVariables,
-  TFetchData extends FetchData,
-> = {
+export type LoadMorePostsParams = {
   stream?: Array<number>;
   loadNewerPosts: boolean;
   hasMorePost: boolean;
   lastLoadedPostIndex?: number;
   firstLoadedPostIndex?: number;
-  fetchMoreVariables?: Partial<TFetchVars>;
+  fetchMoreVariables?: Partial<FetchVariables>;
   fetchMore: (
-    fetchMoreOptions: FetchMoreQueryOptions<TFetchVars, TFetchData>,
-  ) => Promise<ApolloQueryResult<TFetchData>>;
+    fetchMoreOptions: FetchMoreQueryOptions<FetchVariables, FetchData>,
+  ) => Promise<ApolloQueryResult<FetchData>>;
 };
 
 export function useLoadMorePost(topicId: number) {
-  const [isLoadingOlderPost, setisLoadingOlderPost] = useState(false);
-  const [isLoadingNewerPost, setisLoadingNewerPost] = useState(false);
+  const [isLoadingOlderPost, setIsLoadingOlderPost] = useState(false);
+  const [isLoadingNewerPost, setIsLoadingNewerPost] = useState(false);
 
   const loadMorePosts = useCallback(
-    async <V extends FetchVariables, D extends FetchData>(
-      params: LoadMorePostsParams<V, D>,
-    ) => {
+    async (params: LoadMorePostsParams) => {
       const {
         stream,
         fetchMore,
@@ -57,9 +52,9 @@ export function useLoadMorePost(topicId: number) {
       }
 
       if (loadNewerPosts) {
-        setisLoadingNewerPost(true);
+        setIsLoadingNewerPost(true);
       } else {
-        setisLoadingOlderPost(true);
+        setIsLoadingOlderPost(true);
       }
 
       const { nextFirstLoadedPostIndex, nextLastLoadedPostIndex, postIds } =
@@ -80,11 +75,11 @@ export function useLoadMorePost(topicId: number) {
           postIds,
           postNumber: undefined,
           ...fetchMoreVariables,
-        } as Partial<V>,
+        },
       });
 
-      setisLoadingNewerPost(false);
-      setisLoadingOlderPost(false);
+      setIsLoadingNewerPost(false);
+      setIsLoadingOlderPost(false);
 
       if (error) {
         return;

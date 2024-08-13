@@ -18,7 +18,7 @@ export function PollChoiceCard(props: Props) {
   const styles = useStyles();
 
   return (
-    <View style={[styles.container, style]}>
+    <View style={[styles.container, style]} testID="PollChoiceCard:View">
       <Icon name="Chart" size="l" style={styles.pollIcon} />
       <View style={styles.titleContainer}>
         <Text numberOfLines={2} style={styles.textChoice}>
@@ -35,12 +35,14 @@ export function PollChoiceCard(props: Props) {
           color={colors.textLighter}
           style={styles.ediIcon}
           onPress={onEdit}
+          testID="PollChoiceCard:Icon:Edit"
         />
         <Icon
           name="Delete"
           size="l"
           color={colors.textLighter}
           onPress={onDelete}
+          testID="PollChoiceCard:Icon:Delete"
         />
       </View>
     </View>

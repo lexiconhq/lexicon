@@ -52,7 +52,7 @@ export const DEFAULT_NOTIFICATION_CHANNEL_INPUT = {
   lightColor: '#FF231F7C',
 };
 
-export const CUSTOM_HEADER_NEW_TOKEN = 'X-Prose-Latest-Token';
+export const CUSTOM_HEADER_NEW_TOKEN = 'x-prose-latest-token';
 
 export const FORM_DEFAULT_VALUES: NewPostForm = {
   title: '',

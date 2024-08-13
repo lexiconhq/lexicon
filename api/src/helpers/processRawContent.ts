@@ -16,6 +16,9 @@ const emojiBBCodeRegex = /(?<=^|\s):\w+:(?:t\d+:)?/g;
 const emojiImageTagRegex = /<img.*?class="emoji.*? alt="(.*?)">/g;
 const emojiTitleRegex = /title="([^"]+)"/g;
 
+const userActivityContentRegex =
+  /(?:<img[^>]*src(?:set)?="(.+?)"(?:[^>]*title="([^"]*)")?(?:[^>]*class="([^"]*)")?[^>]*>)|(?:<a[^>]* href="((https?:)?\/\/[^ ]*\.(?:jpe?g|png|gif|heic|heif|mov|mp4|webm|avi|wmv|flv|webp))"([^>]*?)title="([^"]*)"\s*>(\[.*?\])?<\/a>)|(?:<a[^>]* class="mention" href="\/u\/([^"]+)">@(.*?)<\/a>)|(?:<a[^>]* href="([^"]+)"[^>]*>(.*?)<\/a>)/g;
+
 function handleRegexResult(
   result: RegExpMatchArray,
   host: string,
@@ -182,4 +185,44 @@ export function getMention(
   if (result) {
     return handleRegexResult(result, host, mentionRegex);
   }
+}
+
+export function userActivityMarkdownContent(content: string) {
+  const markdown = content.replace(
+    userActivityContentRegex,
+    (
+      _,
+      imgSrc: string,
+      imgTitle: string,
+      imgClass: string,
+      aHref: string,
+      _https,
+      _dataHref,
+      aTitle: string,
+      _emptyMention,
+      _urlName,
+      nameMention,
+      linkHref,
+      linkText,
+    ) => {
+      let modifiedImageMarkdown = ``;
+
+      if (imgSrc) {
+        modifiedImageMarkdown = `![${
+          imgClass === 'emoji' || imgClass === 'emoji only-emoji'
+            ? 'emoji-'
+            : ''
+        }${imgTitle}](${imgSrc})`;
+      } else if (aHref) {
+        modifiedImageMarkdown = `![${aTitle}](${aHref})`;
+      } else if (nameMention) {
+        modifiedImageMarkdown = `@${nameMention}`;
+      } else if (linkHref && linkText) {
+        modifiedImageMarkdown = `[${linkText}](${linkHref})`;
+      }
+
+      return modifiedImageMarkdown;
+    },
+  );
+  return markdown;
 }

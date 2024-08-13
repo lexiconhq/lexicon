@@ -1,7 +1,7 @@
 import { isValidExperienceId } from '../experienceId';
 
 it('should valid experience id', () => {
-  expect(isValidExperienceId('@kfox/<insert-project-name>')).toBeTruthy();
+  expect(isValidExperienceId('@<kfox>/<insert-project-name>')).toBeTruthy();
   expect(isValidExperienceId('@username/lexicon-project')).toBeTruthy();
   expect(isValidExperienceId('@anonymous/<insert-project-name>')).toBeTruthy();
 });

@@ -17,7 +17,7 @@ export function getDistanceToNow(date: string) {
     return undefined;
   }
 
-  const { years, months, weeks, days, hours, minutes } = addWeeks(
+  const { years, months, weeks, days, hours, minutes, seconds } = addWeeks(
     intervalToDuration({
       start: now,
       end: endDate,
@@ -44,5 +44,9 @@ export function getDistanceToNow(date: string) {
   if (minutes) {
     result.push(`${minutes}m`);
   }
+  if (!hours && !minutes && seconds) {
+    result.push(`${seconds}s`);
+  }
+
   return result.join(' ');
 }

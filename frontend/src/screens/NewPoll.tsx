@@ -51,6 +51,7 @@ import {
   generatePollMarkdown,
   parseInt,
   errorHandlerAlert,
+  DuplicatePollOptionsError,
 } from '../helpers';
 import { useReplyPost, useSiteSettings } from '../hooks';
 import { PollType } from '../generated/server';
@@ -154,6 +155,31 @@ export default function NewPoll() {
   let pollTypeMultiple = pollChoiceState === PollType.Multiple;
   const ios = Platform.OS === 'ios';
   let watchPollOptions = watchPollValues('pollOptions');
+
+  /**
+   * isPollOptionsValid checks the validity of poll options.
+   * If indexParam is provided, it checks if the specified text input matches with any other options.
+   * If indexParam is not provided, it checks if there are any duplicate options in the list.
+   */
+
+  let isPollOptionsValid = useCallback(
+    (indexParam?: number) => {
+      const cleanedPollOptions = watchPollOptions.map((item) =>
+        typeof item === 'string' ? item.trim() : item.option.trim(),
+      );
+
+      const isIndexParamDefined = typeof indexParam === 'number';
+
+      const duplicates = cleanedPollOptions.filter((item, index) =>
+        isIndexParamDefined
+          ? item === cleanedPollOptions[indexParam] && index !== indexParam
+          : cleanedPollOptions.indexOf(item) !== index,
+      );
+      return duplicates.length === 0;
+    },
+    [watchPollOptions],
+  );
+
   let isPollValid = useCallback(() => {
     if (pollTypeNumber) {
       return true;
@@ -173,8 +199,8 @@ export default function NewPoll() {
       isValid = isValid && watchPollOptions[0].option !== '';
     }
 
-    return isValid;
-  }, [pollTypeNumber, watchPollOptions]);
+    return isValid && isPollOptionsValid();
+  }, [isPollOptionsValid, pollTypeNumber, watchPollOptions]);
 
   let filteredPollOptions = () => {
     return watchPollOptions.filter((pollOption) =>
@@ -318,7 +344,7 @@ export default function NewPoll() {
     );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} testID="NewPoll:SafeAreaView">
       <Header />
       <ScrollView
         style={styles.pollTypesContainer}
@@ -360,6 +386,7 @@ export default function NewPoll() {
         contentContainerStyle={styles.contentContainer}
         nestedScrollEnabled
         keyboardShouldPersistTaps="always"
+        testID="NewPoll:ScrollView"
       >
         {(pollTypeMultiple || pollTypeNumber) && (
           <View style={styles.multipleChoiceContainer}>
@@ -503,7 +530,15 @@ export default function NewPoll() {
                     <Controller
                       name={`pollOptions.${index}`}
                       defaultValue={{ option: '' }}
-                      rules={{ required: true }}
+                      rules={{
+                        required: true,
+                        validate: () => {
+                          return (
+                            isPollOptionsValid(index) ||
+                            DuplicatePollOptionsError
+                          );
+                        },
+                      }}
                       control={control}
                       render={({ field: { value, onChange, onBlur } }) => (
                         <TextInput
@@ -517,6 +552,15 @@ export default function NewPoll() {
                           autoCapitalize="none"
                           style={styles.flex}
                           autoFocus
+                          error={
+                            errors.pollOptions && !!errors.pollOptions[index]
+                          }
+                          errorMsg={
+                            errors.pollOptions
+                              ? errors.pollOptions[index]?.message
+                              : ''
+                          }
+                          testID="NewPoll:TextInput:Options"
                         />
                       )}
                     />
@@ -526,6 +570,7 @@ export default function NewPoll() {
                           name="RemoveCircle"
                           onPress={() => {
                             remove(index);
+                            trigger('maxChoice');
                           }}
                         />
                       )}
@@ -536,7 +581,9 @@ export default function NewPoll() {
                   style={styles.addOption}
                   onPress={() => {
                     append({ option: '' });
+                    trigger('maxChoice');
                   }}
+                  testID="NewPoll:Button:AddOption"
                 >
                   <Icon name="Add" />
                   <Text color="primary" style={styles.addOptionText}>
@@ -555,6 +602,7 @@ export default function NewPoll() {
             onPress={() => {
               setShowAdvancedSetting(!showAdvancedSetting);
             }}
+            testID="NewPoll:Button:AdvancedSettings"
           >
             <Icon name="Settings" color={colors.textLighter} />
             <Text color="lightTextDarker" style={styles.dropdownHeaderText}>
@@ -580,6 +628,7 @@ export default function NewPoll() {
                     returnKeyType="next"
                     autoCapitalize="none"
                     style={styles.advacedSettingInput}
+                    testID="NewPoll:TextInput:Title"
                   />
                 )}
               />
@@ -798,7 +847,7 @@ const useStyles = makeStyles(({ colors, spacing, iconSizes }) => ({
     backgroundColor: colors.background,
   },
   contentContainer: {
-    backgroundColor: colors.lightBorder,
+    backgroundColor: colors.border,
   },
   bottomMenu: {
     marginVertical: spacing.xl,

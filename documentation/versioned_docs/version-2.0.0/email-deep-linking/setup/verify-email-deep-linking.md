@@ -45,7 +45,7 @@ To test email deep linking within your **published** Lexicon-powered mobile app,
 1. The link will first open in your mobile web browser. Provided that the Lexicon-powered mobile app is installed and matches the configured app scheme, it should automatically open your app to the relevant topic or message scene.
 
 <div style={{textAlign: 'center'}}>
-    <img width="400"  src={useBaseUrl('/img/screenshot/Discourse-Plugin-Email-notification.png')} />
+    <img width="400"  src={useBaseUrl('/img/screenshot/plugins/Discourse-Plugin-EmailDeepLinking-Settings.png')} />
 </div>
 
 And that's it! You have successfully completed the steps to enable and test email deep linking in your app.

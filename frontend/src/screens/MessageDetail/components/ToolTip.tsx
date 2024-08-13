@@ -77,7 +77,11 @@ export function ToolTip(props: Props) {
 
   return (
     <>
-      <TouchableOpacity onPress={toggleTooltip} ref={menuAnchorRef}>
+      <TouchableOpacity
+        onPress={toggleTooltip}
+        ref={menuAnchorRef}
+        testID="ToolTip:AddIcon"
+      >
         <Icon
           name={anchorIconName}
           color={colors.textLighter}

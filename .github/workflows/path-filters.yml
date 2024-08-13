@@ -1,0 +1,54 @@
+name: Path Filtering
+
+on:
+  workflow_call:
+    outputs:
+      frontend-changes:
+        description: 'this is lexicon app changes status'
+        value: ${{ jobs.path-filters.outputs.frontend-changes }}
+      frontendSrc-changes:
+        description: 'this is lexicon app src only status'
+        value: ${{ jobs.path-filters.outputs.frontendSrc-changes }}
+      backend-changes:
+        description: 'this is Backend Prose changes status'
+        value: ${{ jobs.path-filters.outputs.backend-changes }}
+
+jobs:
+  path-filters:
+    runs-on: ubuntu-latest
+    outputs:
+      frontend-changes: ${{ steps.filter-frontend.outputs.isUpdated }}
+      frontendSrc-changes: ${{ steps.filter-frontendSrc.outputs.isUpdated }}
+      backend-changes: ${{ steps.filter-backend.outputs.isUpdated }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'api/**'
+            frontend:
+              - 'frontend/**'
+            frontendSrc:
+              - 'frontend/src/**'
+
+      # run only if 'backend' files were changed
+      - name: Output filter Backend Prose
+        id: filter-backend
+        if: steps.filter.outputs.backend == 'true'
+        run: echo "isUpdated=true" >> $GITHUB_OUTPUT
+
+      # run only if 'frontend' files were changed
+      - name: Output filter Lexicon
+        id: filter-frontend
+        if: steps.filter.outputs.frontend == 'true'
+        run: echo "isUpdated=true" >> $GITHUB_OUTPUT
+
+      # run only if 'frontend scene and component' files were changed
+      - name: Output filter Lexicon src
+        id: filter-frontendSrc
+        if: steps.filter.outputs.frontendSrc == 'true'
+        run: echo "isUpdated=true" >> $GITHUB_OUTPUT

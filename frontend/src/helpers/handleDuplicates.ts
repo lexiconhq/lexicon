@@ -19,8 +19,8 @@ export function handleDuplicateRef<T extends Reference>(
 }
 
 export function handleDuplicates<T extends Reference>(params: {
-  newArray: Array<T> | null;
-  oldArray: Array<T> | null;
+  newArray: Readonly<Array<T>> | null;
+  oldArray: Readonly<Array<T>> | null;
   newArrayIs: 'prepended' | 'appended';
 }) {
   const { newArray, oldArray, newArrayIs } = params;

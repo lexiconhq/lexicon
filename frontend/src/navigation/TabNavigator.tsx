@@ -7,10 +7,10 @@ import {
 } from '@react-navigation/bottom-tabs';
 
 import { Icon, Text } from '../core-ui';
-import { getToken } from '../helpers';
 import { Home as HomeScene, Profile as ProfileScene } from '../screens';
 import { makeStyles, useTheme } from '../theme';
 import { TabParamList } from '../types';
+import { useAuth } from '../utils/AuthProvider';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
@@ -18,12 +18,13 @@ function TabBar({ state, navigation: { navigate } }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const styles = useStyles();
   const { colors } = useTheme();
+  const useAuthResults = useAuth();
 
   return (
     <View style={styles.tabContainer}>
       {state.routes.map((route: { name: string }, index: number) => {
         const onPress = async () => {
-          const token = await getToken();
+          const token = !useAuthResults.isLoading && useAuthResults.token;
           if (state.index === 0 && state.index === index) {
             navigate(route.name, { backToTop: true });
           } else {
@@ -41,6 +42,7 @@ function TabBar({ state, navigation: { navigate } }: BottomTabBarProps) {
             onPress={onPress}
             style={styles.tab}
             activeOpacity={state.index === index ? 1 : 0.2}
+            testID={route.name === 'Profile' ? 'Tab:Profile' : 'Tab:Home'}
           >
             <View
               style={[

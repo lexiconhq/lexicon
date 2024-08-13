@@ -12,3 +12,4 @@ export * from './privateMessagesMerger';
 export * from './processRawContent';
 export * from './topicDetail';
 export * from './poll';
+export * from './siteSettings';

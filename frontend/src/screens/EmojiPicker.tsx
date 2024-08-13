@@ -72,6 +72,7 @@ export default function EmojiPicker() {
             navigate('EditUserStatus', { emojiCode: name, emojiText: emoji });
           }}
           key={`emoji-${name}`}
+          testID={`EmojiPicker:Button:Emoji:${name}`}
         >
           <Text size="xl">{emoji}</Text>
         </TouchableOpacity>
@@ -91,6 +92,7 @@ export default function EmojiPicker() {
           }}
           placeholder={t('Search for ...')}
           style={styles.textInput}
+          testID="EmojiPicker:TextInput:Search"
         />
         {/* using flash list because it more faster than flatlist in this case to
         render more than 3000 emoji */}

@@ -1,5 +1,10 @@
 import { createUploadLink } from 'apollo-upload-client';
-import { ApolloClient, ApolloLink, InMemoryCache } from '@apollo/client';
+import {
+  ApolloClient,
+  ApolloLink,
+  InMemoryCache,
+  Reference,
+} from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import ExpoConstants from 'expo-constants';
 import { onError } from '@apollo/client/link/error';
@@ -84,7 +89,7 @@ const cache = new InMemoryCache({
             if (!existing || !incoming) {
               return incoming || existing || undefined;
             }
-            let mergedTopics = [];
+            let mergedTopics: Readonly<Array<Reference>> = [];
             if (variables.page > 0) {
               mergedTopics = handleDuplicates({
                 newArray: incoming.topics,

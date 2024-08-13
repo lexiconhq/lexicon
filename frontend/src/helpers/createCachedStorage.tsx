@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, {
   createContext,
   ReactElement,
@@ -16,6 +15,7 @@ type JsonValue =
   | number
   | string
   | Array<JsonValue>
+  | undefined
   | { [key: string]: JsonValue };
 
 type Reviver<T> = (parsed: JsonValue) => T;
@@ -28,13 +28,12 @@ type DataStore<T extends object> = {
 };
 
 export function createCachedStorage<
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  Obj extends object,
+  Obj extends Record<string | number, JsonValue>,
   Schema extends {
-    [K in keyof Obj]: Obj[K] extends Reviver<infer T> ? Reviver<T> : never;
+    [K in keyof Obj]: Reviver<Obj[K]>;
   },
   Data extends {
-    [K in keyof Schema]: Schema[K] extends Reviver<infer T> ? T : never;
+    [K in keyof Schema]: ReturnType<Schema[K]>;
   },
 >(schema: Schema, prefix = '') {
   const Context = createContext<DataStore<Data> | undefined>(undefined);
@@ -46,14 +45,14 @@ export function createCachedStorage<
     useEffect(() => {
       let data = dataRef.current;
       let load = async () => {
-        for (let key of Object.keys(schema) as Array<keyof Schema>) {
+        for (let [key, reviver] of Object.entries(schema)) {
           let value = await AsyncStorage.getItem(prefix + String(key));
           if (value != null) {
-            let reviver = schema[key];
             try {
+              let keySchema: keyof Schema = key;
               // This will throw if the string does not parse or if the parsed
               // value cannot be revived successfully.
-              data[key] = reviver(JSON.parse(value)) as any;
+              data[keySchema] = reviver(JSON.parse(value));
             } catch (e) {}
           }
         }
@@ -66,18 +65,21 @@ export function createCachedStorage<
       let data = dataRef.current;
 
       return {
-        getItem: (key) => data[key] ?? null,
-        setItem: (key, value) => {
+        getItem: <Key extends keyof Data>(key: Key) => data[key] ?? null,
+        setItem: <Key extends keyof Data>(
+          key: Key,
+          value: Data[Key] | undefined,
+        ) => {
           data[key] = value;
           // TODO: Throttle this so if we write in rapid succession (such as
           // onScroll saving scroll position) we won't thrash the disk.
           AsyncStorage.setItem(prefix + String(key), JSON.stringify(value));
         },
-        removeItem: (key) => {
+        removeItem: <Key extends keyof Data>(key: Key) => {
           data[key] = undefined;
           AsyncStorage.removeItem(prefix + String(key));
         },
-      } as DataStore<Data>;
+      };
     }, []);
 
     return isLoading ? null : (

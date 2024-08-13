@@ -1,5 +1,5 @@
 import React from 'react';
-import { Keyboard, Platform, View } from 'react-native';
+import { Keyboard, Platform, ScrollView, View } from 'react-native';
 
 import { Divider, Icon } from '../core-ui';
 import { makeStyles, useTheme } from '../theme';
@@ -9,6 +9,11 @@ type Props = {
   onInsertImage: () => void;
   onInsertLink: () => void;
   onInsertPoll?: () => void;
+  onBold: () => void;
+  onItalic: () => void;
+  onQuote?: () => void;
+  onBulletedList: () => void;
+  onNumberedList: () => void;
   showLeftMenu?: boolean;
 };
 
@@ -24,6 +29,11 @@ export function BottomMenu(props: Props) {
     onInsertImage,
     onInsertLink,
     onInsertPoll,
+    onBold,
+    onItalic,
+    onQuote,
+    onBulletedList,
+    onNumberedList,
     showLeftMenu = true,
   } = props;
 
@@ -36,8 +46,60 @@ export function BottomMenu(props: Props) {
   return (
     <View style={styles.container}>
       {showLeftMenu && (
-        <View style={styles.leftMenu}>
+        <ScrollView
+          horizontal
+          style={[styles.leftMenu, !ios && styles.marginBottom]}
+          showsHorizontalScrollIndicator={false}
+          bounces={false}
+          keyboardShouldPersistTaps="handled"
+          testID="BottomMenu:ScrollView"
+        >
           <View style={styles.row}>
+            <Icon
+              name="BoldText"
+              size="l"
+              color={colors.textLighter}
+              onPress={onBold}
+              style={styles.iconButton}
+              testID="BottomMenu:IconBold"
+            />
+            <Divider vertical />
+            <Icon
+              name="ItalicText"
+              size="l"
+              color={colors.textLighter}
+              onPress={onItalic}
+              style={styles.iconButton}
+              testID="BottomMenu:IconItalic"
+            />
+            <Divider vertical />
+            <Icon
+              name="QuoteText"
+              size="l"
+              color={colors.textLighter}
+              onPress={onQuote}
+              style={styles.iconButton}
+              testID="BottomMenu:IconQuote"
+            />
+            <Divider vertical />
+            <Icon
+              name="BulletList"
+              size="l"
+              color={colors.textLighter}
+              onPress={onBulletedList}
+              style={styles.iconButton}
+              testID="BottomMenu:IconBulletList"
+            />
+            <Divider vertical />
+            <Icon
+              name="NumberList"
+              size="l"
+              color={colors.textLighter}
+              onPress={onNumberedList}
+              style={styles.iconButton}
+              testID="BottomMenu:IconNumberList"
+            />
+            <Divider vertical />
             <Icon
               name="Photo"
               size="l"
@@ -52,6 +114,7 @@ export function BottomMenu(props: Props) {
               color={colors.textLighter}
               onPress={onInsertLink}
               style={styles.iconButton}
+              testID="BottomMenu:Link"
             />
             <Divider vertical />
             {onInsertPoll &&
@@ -64,11 +127,12 @@ export function BottomMenu(props: Props) {
                   color={colors.textLighter}
                   onPress={onInsertPoll}
                   style={styles.iconButton}
+                  testID="BottomMenu:IconPoll"
                 />
               )}
             <Divider vertical />
           </View>
-        </View>
+        </ScrollView>
       )}
 
       <View style={styles.rightMenu}>
@@ -97,15 +161,14 @@ const useStyles = makeStyles(({ colors, shadow, spacing }) => ({
     alignItems: 'stretch',
     ...shadow,
   },
+  marginBottom: { marginBottom: spacing.s },
   row: {
     flexDirection: 'row',
   },
   leftMenu: {
     flex: 1,
-    alignItems: 'flex-start',
   },
   rightMenu: {
-    flex: 1,
     alignItems: 'flex-end',
   },
   iconButton: {

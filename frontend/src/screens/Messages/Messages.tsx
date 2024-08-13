@@ -149,6 +149,7 @@ export default function Messages() {
       postNumber={item.lastReadPostNumber ?? FIRST_POST_NUMBER}
       date={item.lastPostedAt || ''}
       seen={!item.unseen}
+      testID={`MessageList:MessageCard:${item.id}`}
     />
   );
 
@@ -181,6 +182,7 @@ export default function Messages() {
           <FooterLoadingIndicator isHidden={!hasOlderMessages} />
         }
         style={styles.messageContainer}
+        testID="Messages:List"
       />
     );
   }

@@ -12,7 +12,6 @@ import {
   FlatList,
   FlatListProps,
   ListRenderItemInfo,
-  LayoutChangeEvent,
 } from 'react-native';
 
 /**
@@ -26,7 +25,7 @@ declare module 'react' {
 
 export type RenderItemCustomOption = {
   isItemLoading: boolean;
-  onLayout: (params: { event: LayoutChangeEvent }) => void;
+  onLayout: () => void;
 };
 
 type Props<ItemType> = Omit<

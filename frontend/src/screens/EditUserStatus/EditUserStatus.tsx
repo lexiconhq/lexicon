@@ -165,7 +165,10 @@ export default function EditUserStatus() {
         <ScrollView contentContainerStyle={styles.flex}>
           <View style={styles.statusContainer}>
             {emojiText ? (
-              <TouchableOpacity onPress={navEmojiPicker}>
+              <TouchableOpacity
+                onPress={navEmojiPicker}
+                testID="EditUserStatus:Button:Emoji"
+              >
                 <Text size="xxxl" style={styles.emojiStatus}>
                   {emojiText}
                 </Text>
@@ -176,6 +179,7 @@ export default function EditUserStatus() {
                 emojiCode={emojiCode}
                 style={styles.emojiStatus}
                 onPress={navEmojiPicker}
+                testIDButton="EditUserStatus:Button:Emoji"
               />
             )}
             <View style={styles.flex}>
@@ -188,7 +192,11 @@ export default function EditUserStatus() {
                 defaultValue={paramStatus}
                 rules={{ required: true }}
                 render={({ field: { onChange, value } }) => (
-                  <TextInput value={value} onChangeText={onChange} />
+                  <TextInput
+                    value={value}
+                    onChangeText={onChange}
+                    testID="EditUserStatus:TextInput:Status"
+                  />
                 )}
               />
             </View>
@@ -253,6 +261,7 @@ export default function EditUserStatus() {
               }}
               disabled={!paramStatus}
               loading={isLoading}
+              testID="EditUserStatus:Button:DeleteStatus"
             />
           </View>
         </ScrollView>

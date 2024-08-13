@@ -15,6 +15,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated';
+import { useFormContext } from 'react-hook-form';
 
 import {
   FooterLoadingIndicator,
@@ -41,7 +42,6 @@ import {
   clamp,
   errorHandler,
   errorHandlerAlert,
-  isFlatList,
   LoginError,
   transformTopicToPost,
   useStorage,
@@ -99,6 +99,7 @@ type SortOption = typeof sortOptionsArray[number];
 export default function Home() {
   const { refetch: siteRefetch } = useSiteSettings();
   const styles = useStyles();
+  const { setValue } = useFormContext();
 
   const tabNavigation = useNavigation<TabNavProp<'Home'>>();
   const { addListener, navigate } = useNavigation<StackNavProp<'TabNav'>>();
@@ -272,10 +273,7 @@ export default function Home() {
   }, [setData, topicDataList]);
 
   useLayoutEffect(() => {
-    if (!isFlatList(postListRef.current)) {
-      return;
-    }
-    postListRef.current.scrollToIndex({
+    postListRef.current?.scrollToIndex({
       index: 0,
       viewOffset: headerViewHeight,
     });
@@ -335,8 +333,8 @@ export default function Home() {
   ]);
 
   const postListRef = useRef<PostListRef<PostWithoutId>>(null);
-  if (routeParams && isFlatList(postListRef.current)) {
-    postListRef.current.scrollToIndex({
+  if (routeParams) {
+    postListRef.current?.scrollToIndex({
       index: 0,
       viewOffset: headerViewHeight,
     });
@@ -349,6 +347,12 @@ export default function Home() {
   const onPressAdd = () => {
     const currentUserId = storage.getItem('user')?.id;
     if (currentUserId) {
+      /**
+       * Set the channel ID in a new post to use the same channel as the home channel.
+       */
+      setValue('channelId', storage.getItem('homeChannelId'), {
+        shouldDirty: true,
+      });
       navigate('NewPost');
     } else {
       errorHandlerAlert(LoginError, navigate);
@@ -494,39 +498,38 @@ export default function Home() {
       return <LoadingOrError message={t('No Posts available')} />;
     }
     return (
-      <>
-        <PostList
-          postListRef={postListRef}
-          data={topicsData}
-          contentInset={{ top: headerViewHeight }}
-          contentOffset={{
-            x: 0,
-            y: Platform.OS === 'ios' ? -headerViewHeight : 0,
-          }}
-          progressViewOffset={headerViewHeight}
-          automaticallyAdjustContentInsets={false}
-          onRefresh={onRefresh}
-          refreshing={refreshing}
-          style={styles.fill}
-          contentContainerStyle={styles.postListContent}
-          scrollEventThrottle={16}
-          onScroll={scrollHandler}
-          onEndReachedThreshold={0.1}
-          onEndReached={onEndReached}
-          renderItem={({ item }) => {
-            return (
-              <HomePostItem
-                topicId={item.topicId}
-                prevScreen={'Home'}
-                onPressReply={onPressReply}
-              />
-            );
-          }}
-          ListFooterComponent={
-            <FooterLoadingIndicator isHidden={!hasMoreTopics || !topicsData} />
-          }
-        />
-      </>
+      <PostList
+        postListRef={postListRef}
+        data={topicsData}
+        contentInset={{ top: headerViewHeight }}
+        contentOffset={{
+          x: 0,
+          y: Platform.OS === 'ios' ? -headerViewHeight : 0,
+        }}
+        progressViewOffset={headerViewHeight}
+        automaticallyAdjustContentInsets={false}
+        onRefresh={onRefresh}
+        refreshing={refreshing}
+        style={styles.fill}
+        contentContainerStyle={styles.postListContent}
+        scrollEventThrottle={16}
+        onScroll={scrollHandler}
+        onEndReachedThreshold={0.1}
+        onEndReached={onEndReached}
+        renderItem={({ item }) => {
+          return (
+            <HomePostItem
+              topicId={item.topicId}
+              prevScreen={'Home'}
+              onPressReply={onPressReply}
+            />
+          );
+        }}
+        ListFooterComponent={
+          <FooterLoadingIndicator isHidden={!hasMoreTopics || !topicsData} />
+        }
+        testID="Home:PostList"
+      />
     );
   };
 
@@ -549,6 +552,7 @@ export default function Home() {
           <SearchBar
             placeholder={t('Search posts, categories, etc.')}
             onPressSearch={onPressSearch}
+            testID="Home:Button:SearchTopic"
           />
           <SegmentedControl
             values={sortOptionsArray}
