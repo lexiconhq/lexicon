@@ -28,8 +28,11 @@ jobs:
   test:
     uses: ./.github/workflows/test.yml
 
-  e2e-test:
-    needs: [path-filters, test]
-    if: needs.path-filters.outputs.frontendSrc-changes == 'true' && contains(needs.get-env.outputs.LIST_REPO,github.event.repository.name)
-    uses: ./.github/workflows/e2e-test-android.yml
-    secrets: inherit
+  # Disable Detox tests because they require a connection with a Build Jet account.
+  # To enable these tests, ensure your repository is connected to Build Jet: https://buildjet.com/for-github-actions
+
+  # e2e-test:
+  #   needs: [path-filters, test]
+  #   if: needs.path-filters.outputs.frontendSrc-changes == 'true' && contains(needs.get-env.outputs.LIST_REPO,github.event.repository.name)
+  #   uses: ./.github/workflows/e2e-test-android.yml
+  #   secrets: inherit
