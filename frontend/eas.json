@@ -4,10 +4,32 @@
     "appVersionSource": "local"
   },
   "build": {
+    "base": {
+     /**
+      * We need to add an image because starting from April 29, 2024, all apps require iOS 17 SDK, which is included in Xcode 15.
+      * By default, Expo 49 will use Xcode 14.3. For more information, check https://expo.dev/changelog/2023/09-28-new-xcode-ios#added-xcode-15-image-on-eas-build
+      * 
+      * This image config can be deleted after updating to Expo 50.
+      */
+      "ios": {
+        "image":"macos-ventura-13.6-xcode-15.0"
+    },
+    "test": {
+      "channel": "test",
+      "android": {
+        "gradleCommand": ":app:assembleRelease :app:assembleAndroidTest -DtestBuildType=release",
+        "withoutCredentials": true
+      },
+      "ios": {
+        "simulator": true
+      },
+      "extends": "base"
+    },
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "channel": "development"
+      "channel": "development",
+      "extends": "base"
     },
     "preview": {
       "distribution": "internal",
@@ -17,11 +39,13 @@
       },
       "android": {
         "buildType": "apk"
-      }
+      },
+      "extends": "base"
     },
     "production": {
       "autoIncrement": true,
-      "channel": "production"
+      "channel": "production",
+      "extends": "base"
     }
   },
   "submit": {

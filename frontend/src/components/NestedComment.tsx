@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { LayoutChangeEvent, View, ViewProps } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, ViewProps } from 'react-native';
 
 import { ActivityIndicator, Divider, Icon } from '../core-ui';
 import {
@@ -44,11 +44,11 @@ type Props = Omit<ViewProps, 'onLayout' | 'id'> &
     showOptions: boolean;
     hasMetrics?: boolean;
     isLoading?: boolean;
-    onLayout?: (params: { event: LayoutChangeEvent }) => void;
+    onLayout?: () => void;
     onPressReply?: (params: PressReplyParams) => void;
     onPressMore?: (params: PressMoreParams) => void;
     onPressAuthor?: (username: string) => void;
-  } & Post;
+  } & Post & { testIDStatus?: string };
 
 function BaseNestedComment(props: Props) {
   const storage = useStorage();
@@ -82,6 +82,7 @@ function BaseNestedComment(props: Props) {
     emojiStatus,
     polls,
     pollsVotes,
+    testIDStatus,
     ...otherProps
   } = props;
 
@@ -98,6 +99,15 @@ function BaseNestedComment(props: Props) {
       setHidden(false);
     },
   });
+
+  /**
+   * Move onLayout for scroll index using useEffect because onLayout inside FlatList's view sometimes does not get called.
+   * this onLayout use for scroll to Index inside `CustomFlatList`
+   */
+
+  useEffect(() => {
+    onLayout && onLayout();
+  }, [id, onLayout]);
 
   const onPressViewIgnoredContent = () => {
     if (content === '') {
@@ -132,11 +142,7 @@ function BaseNestedComment(props: Props) {
   };
 
   return (
-    <View
-      style={style}
-      onLayout={(event) => onLayout?.({ event })}
-      {...otherProps}
-    >
+    <View style={style} {...otherProps}>
       <View style={{ position: 'relative' }}>
         <View style={styles.authorContainer}>
           <Author
@@ -148,6 +154,7 @@ function BaseNestedComment(props: Props) {
             onPressAuthor={() => onPressAuthor && onPressAuthor(username)}
             showStatus
             emojiCode={emojiStatus}
+            testIDStatus={testIDStatus}
           >
             {showOptions ? (
               <Icon

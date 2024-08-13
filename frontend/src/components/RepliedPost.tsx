@@ -8,7 +8,11 @@ import {
   useRepliedPostQuery,
 } from '../generated/server';
 import { client } from '../graphql/client';
-import { handleUnsupportedMarkdown, RepliedPostLoadFail } from '../helpers';
+import {
+  getImage,
+  handleUnsupportedMarkdown,
+  RepliedPostLoadFail,
+} from '../helpers';
 import { makeStyles } from '../theme';
 
 import { Author } from './Author';
@@ -31,7 +35,7 @@ function BaseRepliedPost(props: BaseRepliedPostProps) {
     <View style={styles.nestedRowContainer}>
       <Divider vertical />
       <View style={styles.nestedCommentContainer}>
-        {!hideAuthor && <Author image={avatar} title={username} />}
+        {!hideAuthor && <Author image={getImage(avatar)} title={username} />}
         <Markdown
           style={styles.nestedContent}
           content={handleUnsupportedMarkdown(markdownContent ?? undefined)}

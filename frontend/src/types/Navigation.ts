@@ -176,6 +176,11 @@ type PollParams = {
   createdAt: string;
 };
 
+type LoginParams = {
+  emailToken?: string;
+  isActivateAccount?: boolean;
+};
+
 export type RootStackParamList = {
   Channels: ChannelsParams;
   DarkMode: undefined;
@@ -198,7 +203,7 @@ export type RootStackParamList = {
   EditProfile: EditProfileParams;
   EmailAddress: undefined;
   ImagePreview: ImagePreviewParams;
-  Login: undefined;
+  Login: LoginParams;
   Messages: undefined;
   MessageDetail: MessageDetailParams;
   Notifications: undefined;

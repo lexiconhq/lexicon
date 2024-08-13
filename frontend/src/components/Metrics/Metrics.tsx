@@ -19,7 +19,7 @@ type Props = {
 
 export { Props as MetricsProp };
 
-const DEBOUNCE_WAIT_TIME = 500;
+const DEBOUNCE_WAIT_TIME = 1000;
 
 export function Metrics(props: Props) {
   const { likedTopics } = useOngoingLikedTopic();
@@ -117,7 +117,6 @@ export function Metrics(props: Props) {
       });
       likeCount = updatedLikeCount;
     }
-
     setLikeData({ likeCount, liked });
   }, [
     isFromHomeScene,
@@ -233,6 +232,7 @@ function BaseMetricsView(props: MetricViewProps) {
             type="Replies"
             count={replyCount}
             onPress={() => onPressReply?.({ postId, topicId })}
+            testID="Metrics:Replies"
           />
         </>
       )}

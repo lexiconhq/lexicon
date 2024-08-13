@@ -19,6 +19,7 @@ type Props = Omit<ImageBackgroundProps, 'source'> & {
   defaultImage?: boolean;
   onPress?: () => void;
   disableOnPress?: boolean;
+  testIDButton?: string;
 };
 
 export function Emoji(props: Props) {
@@ -30,6 +31,7 @@ export function Emoji(props: Props) {
     style,
     onPress,
     disableOnPress,
+    testIDButton,
     ...otherProps
   } = props;
 
@@ -45,7 +47,11 @@ export function Emoji(props: Props) {
   const imgSource = { uri: emojiUrl };
 
   return (
-    <TouchableOpacity onPress={onPress} disabled={disableOnPress}>
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={disableOnPress}
+      testID={testIDButton}
+    >
       <ImageBackground
         source={imgSource}
         style={[{ width: finalSize, height: finalSize }, style]}

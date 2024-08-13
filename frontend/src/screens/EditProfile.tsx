@@ -335,15 +335,7 @@ export default function EditProfile(props: ProfileProps) {
       enabled
       keyboardVerticalOffset={90}
     >
-      <ScrollView
-        ref={scrollViewRef}
-
-        // onContentSizeChange={() => {
-        //   if (scrollViewRef.current && show) {
-        //     scrollViewRef.current.scrollToEnd({ animated: true });
-        //   }
-        // }}
-      >
+      <ScrollView ref={scrollViewRef} testID="EditProlfie:ScrollView">
         <CustomHeader
           title=""
           rightTitle="Save"
@@ -407,6 +399,7 @@ export default function EditProfile(props: ProfileProps) {
                   returnKeyType="next"
                   autoCapitalize="none"
                   style={styles.spacingBottom}
+                  testID="EditProfile:TextInput:Username"
                 />
               )}
             />
@@ -433,6 +426,7 @@ export default function EditProfile(props: ProfileProps) {
                   returnKeyType="next"
                   autoCapitalize="words"
                   style={styles.spacingBottom}
+                  testID="EditProfile:TextInput:Name"
                 />
               )}
             />

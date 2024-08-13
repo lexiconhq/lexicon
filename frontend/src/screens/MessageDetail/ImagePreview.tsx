@@ -18,6 +18,7 @@ import {
 import { useMention, useReplyPost } from '../../hooks';
 import { makeStyles, useTheme } from '../../theme';
 import { CursorPosition, StackNavProp, StackRouteProp } from '../../types';
+import { GET_MESSAGE_DETAIL } from '../../graphql/server/message';
 
 import { ReplyInputField } from './components';
 
@@ -48,13 +49,29 @@ export default function ImagePreview() {
 
   const { reply } = useReplyPost({
     onCompleted: ({ reply: { postNumber } }) => {
-      navigate('MessageDetail', {
-        id: topicId,
-        postNumber,
-        emptied: true,
-        hyperlinkUrl: '',
-        hyperlinkTitle: '',
-      });
+      /**
+       * Add a delay before navigating to the message detail screen because after finishing the upload to Discourse, it takes time for Discourse to process the image and generate a link.
+       * Here's an example of what we get without adding time:
+       * {"uri": "https://uploads/default/original/1X/25d5f4828bf2c3eb2a0eedc0d4b0adca68846d52.jpeg"}
+       */
+
+      setTimeout(() => {
+        navigate('MessageDetail', {
+          id: topicId,
+          postNumber,
+          emptied: true,
+          hyperlinkUrl: '',
+          hyperlinkTitle: '',
+        });
+      }, 4000);
+    },
+    refetchQueries(result) {
+      return [
+        {
+          query: GET_MESSAGE_DETAIL,
+          variables: { topicId, postNumber: result.data?.reply.postNumber },
+        },
+      ];
     },
     onError: (error) => {
       setLoading(false);

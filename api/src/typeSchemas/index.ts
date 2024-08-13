@@ -79,3 +79,4 @@ export * from './UserProfileOutput';
 export * from './UserTopic';
 export * from './HealthCheck';
 export * from './UserStatus';
+export * from './PluginStatus';

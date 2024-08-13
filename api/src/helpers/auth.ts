@@ -5,10 +5,15 @@ import camelcaseKey from 'camelcase-keys';
 import snakecaseKeys from 'snakecase-keys';
 
 import { discourseClient } from '../client';
-import { CONTENT_FORM_URLENCODED } from '../constants';
+import {
+  ACCEPTED_LANGUAGE,
+  CONTENT_FORM_URLENCODED,
+  CONTENT_JSON,
+} from '../constants';
 
 import { cookiesStringify } from './cookiesStringify';
 import { SessionExpiredError } from './customErrors';
+import { getSiteDataLexiconPlugin } from './siteSettings';
 
 async function getCsrfSession(cookies?: string) {
   let {
@@ -30,7 +35,23 @@ type Credentials = {
   secondFactorToken?: string | null;
 };
 type CsrfSession = { csrf: string; initialSessionCookie: string };
+type HpSession = {
+  initialSessionCookie: string;
+  passwordConfirmation: string;
+  challenge: string;
+};
 type AuthRequest = Credentials & CsrfSession & { client: AxiosInstance };
+type AppleAuthRequest = { identityToken: string } & CsrfSession & {
+    client: AxiosInstance;
+  };
+type LoginLinkRequest = { emailToken: string } & CsrfSession & {
+    client: AxiosInstance;
+  };
+
+type ActivateAccountRequest = { emailToken: string } & CsrfSession &
+  HpSession & {
+    client: AxiosInstance;
+  };
 
 function generateToken(cookies: string) {
   const buffer = Buffer.from(cookies);
@@ -96,9 +117,16 @@ async function authenticate(authRequest: AuthRequest) {
   }
   let stringCookie = cookiesStringify(headers['set-cookie']);
   let token = generateToken(stringCookie);
+
+  let siteData = await getSiteDataLexiconPlugin({
+    client,
+    cookies: headers['set-cookie'],
+  });
+
   return {
     ...camelcaseKey(data, { deep: true }),
     token,
+    enableLexiconPushNotifications: siteData.enableLexiconPushNotifications,
   };
 }
 
@@ -119,7 +147,11 @@ async function getHpChallenge(csrfSession: CsrfSession) {
     await discourseClient.get('/users/hp.json', config);
   let { errors: oldVersionErrors, error_type: oldVersionErrorType } =
     oldVersionData;
-  if (oldVersionErrors && oldVersionErrorType === 'not_found') {
+  if (
+    oldVersionErrors &&
+    (oldVersionErrorType === 'not_found' ||
+      oldVersionErrorType === 'not_logged_in')
+  ) {
     let { data: newVersionData, headers: newVersionHeaders } =
       await discourseClient.get('/session/hp.json', config);
     data = newVersionData;
@@ -170,6 +202,145 @@ async function checkSession(authClient: AxiosInstance) {
   }
 }
 
+async function authenticateApple(appleAuthRequest: AppleAuthRequest) {
+  let { csrf, initialSessionCookie, identityToken, client } = appleAuthRequest;
+
+  let config = {
+    headers: {
+      'Accept-Language': ACCEPTED_LANGUAGE,
+      'Content-Type': CONTENT_JSON,
+      'x-csrf-token': csrf,
+    },
+    withCredentials: true,
+    Cookie: initialSessionCookie,
+  };
+
+  let { data, headers } = await client.post(
+    '/lexicon/auth/apple/login.json',
+    {
+      id_token: identityToken,
+    },
+    config,
+  );
+  let { error } = data;
+  if (error) {
+    throw new Error(error);
+  }
+  let stringCookie = cookiesStringify(headers['set-cookie']);
+  let token = generateToken(stringCookie);
+
+  let siteData = await getSiteDataLexiconPlugin({
+    client,
+    cookies: headers['set-cookie'],
+  });
+
+  return {
+    ...camelcaseKey(data, { deep: true }),
+    token,
+    enableLexiconPushNotifications: siteData.enableLexiconPushNotifications,
+  };
+}
+
+async function authenticateActivateAccount(
+  activateAccountRequest: ActivateAccountRequest,
+) {
+  let { csrf, initialSessionCookie, emailToken, client, ...hpValue } =
+    activateAccountRequest;
+
+  let config = {
+    headers: {
+      'Accept-Language': ACCEPTED_LANGUAGE,
+      'Content-Type': CONTENT_FORM_URLENCODED,
+      'x-csrf-token': csrf,
+    },
+    withCredentials: true,
+    Cookie: initialSessionCookie,
+  };
+
+  let snakecaseBody = snakecaseKeys({
+    token: emailToken,
+    ...hpValue,
+  });
+
+  let { data, headers } = await client.post(
+    `/lexicon/auth/activate_account.json`,
+    stringify(snakecaseBody),
+    config,
+  );
+  let { error } = data;
+  if (error) {
+    throw new Error(error);
+  }
+  let stringCookie = cookiesStringify(headers['set-cookie']);
+  let token = generateToken(stringCookie);
+
+  let siteData = await getSiteDataLexiconPlugin({
+    client,
+    cookies: headers['set-cookie'],
+  });
+
+  return {
+    ...camelcaseKey(data, { deep: true }),
+    token,
+    enableLexiconPushNotifications: siteData.enableLexiconPushNotifications,
+  };
+}
+
+async function authenticateLoginLink(authRequest: LoginLinkRequest) {
+  let { csrf, initialSessionCookie, emailToken, client } = authRequest;
+
+  let config = {
+    headers: {
+      'x-csrf-token': csrf,
+      'Content-Type': CONTENT_FORM_URLENCODED,
+    },
+    withCredentials: true,
+    Cookie: initialSessionCookie,
+  };
+  let body = stringify({ token: emailToken });
+
+  let { data, headers } = await client.post(
+    `/session/email-login/${emailToken}.json`,
+    body,
+    config,
+  );
+  let { error, failed } = data;
+  if (failed) {
+    return {
+      ...camelcaseKey(data, { deep: true }),
+    };
+  }
+  if (error) {
+    throw new Error(error);
+  }
+  let stringCookie = cookiesStringify(headers['set-cookie']);
+  let token = generateToken(stringCookie);
+
+  let configUser = {
+    headers: {
+      'x-csrf-token': csrf,
+    },
+    withCredentials: true,
+    Cookie: headers['set-cookie'],
+  };
+  let { data: userData } = await client.get(
+    `/lexicon/auth/user.json`,
+    configUser,
+  );
+
+  let siteUrl = `/site.json`;
+  let {
+    data: { lexicon },
+  } = await client.get(siteUrl, configUser);
+
+  return {
+    ...camelcaseKey(userData, { deep: true }),
+    token,
+    enableLexiconPushNotifications:
+      lexicon?.settings.lexicon_push_notifications_enabled || false,
+  };
+}
+
 export {
   getCsrfSession,
   authenticate,
@@ -177,4 +348,7 @@ export {
   generateToken,
   getHpChallenge,
   checkSession,
+  authenticateApple,
+  authenticateActivateAccount,
+  authenticateLoginLink,
 };

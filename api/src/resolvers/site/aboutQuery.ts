@@ -11,17 +11,28 @@ let aboutResolver: FieldResolver<'Query', 'about'> = async (
   try {
     let siteUrl = `/about.json`;
 
+    /**
+     * In here when use newest version discourse from 3.2.0.beta4-dev the name of field change into topics_count and posts_count
+     *
+     * And for the previous version discourse it use topic_count and post_count
+     */
+
     let {
       data: {
         about: {
-          stats: { topic_count: topicCount, post_count: postCount },
+          stats: {
+            topics_count: topicsCount,
+            topic_count: topicCount,
+            posts_count: postsCount,
+            post_count: postCount,
+          },
         },
       },
     } = await context.client.get(siteUrl);
 
     return {
-      topicCount,
-      postCount,
+      topicCount: topicCount || topicsCount,
+      postCount: postCount || postsCount,
     };
   } catch (error) {
     throw errorHandler(error);

@@ -65,6 +65,7 @@ export function MentionList(props: Props) {
             data={members}
             style={[styles.mentionFlatlist, viewStyle]}
             keyExtractor={(item, index) => index.toString()}
+            keyboardShouldPersistTaps="handled"
             renderItem={({ item }) => {
               return (
                 <Author

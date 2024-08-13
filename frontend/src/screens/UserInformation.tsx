@@ -183,6 +183,7 @@ export default function UserInformation() {
             />
           );
         }}
+        testID="UserInformation:PostList"
       />
     );
   } else {

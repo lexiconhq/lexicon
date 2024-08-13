@@ -25,6 +25,16 @@ const config: CodegenConfig = {
         'typescript-react-apollo',
       ],
     },
+    './e2e/apollo-mock/generated/server.ts': {
+      plugins: [
+        {
+          add: {
+            content: '// THIS FILE IS GENERATED, DO NOT EDIT!',
+          },
+        },
+        'typescript',
+      ],
+    },
   },
   hooks: {
     afterAllFileWrite: [`prettier --write "src/generated/**/*.{ts,tsx}"`],

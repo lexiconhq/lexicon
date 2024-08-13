@@ -5,7 +5,7 @@ config();
 const ACCEPTED_LANGUAGE = 'en-US';
 const CONTENT_FORM_URLENCODED = 'application/x-www-form-urlencoded';
 const CONTENT_JSON = 'application/json';
-const CUSTOM_HEADER_TOKEN = 'X-Prose-Latest-Token';
+const CUSTOM_HEADER_TOKEN = 'x-prose-latest-token';
 
 export {
   ACCEPTED_LANGUAGE,

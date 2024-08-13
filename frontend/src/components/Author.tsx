@@ -26,6 +26,7 @@ type Props = TouchableOpacityProps &
     onPressEmptySpaceInPost?: () => void;
     showStatus?: boolean;
     emojiCode?: string;
+    testIDStatus?: string;
   };
 
 export function Author(props: Props) {
@@ -47,6 +48,7 @@ export function Author(props: Props) {
     onPressEmptySpaceInPost,
     showStatus,
     emojiCode,
+    testIDStatus,
     ...otherProps
   } = props;
 
@@ -59,6 +61,7 @@ export function Author(props: Props) {
           label={avatarLabel}
           style={[styles.image, imageStyle]}
           onPress={() => onPressAuthor && onPressAuthor(title)}
+          testID="Author:Avatar"
         />
         <View>
           <View style={styles.nameContainer}>
@@ -66,7 +69,11 @@ export function Author(props: Props) {
               {title}
             </Text>
             {showStatus && emojiCode && (
-              <Emoji emojiCode={emojiCode} disableOnPress />
+              <Emoji
+                emojiCode={emojiCode}
+                disableOnPress
+                testID={testIDStatus}
+              />
             )}
           </View>
           {subtitle && (

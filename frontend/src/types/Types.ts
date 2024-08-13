@@ -24,6 +24,11 @@ export let ChannelList = runtypes.Array(ChannelRecord);
 
 export type Channel = runtypes.Static<typeof ChannelRecord>;
 
+/**
+ * Check the latest notification type list here
+ * https://github.com/discourse/discourse/blob/main/app/models/notification.rb
+ */
+
 export enum NotificationType {
   Mention = 1,
   ReplyPost = 2,
@@ -54,6 +59,7 @@ export enum NotificationType {
   EventReminder = 27,
   EventInvitation = 28,
   ChatMention = 29,
+  WatchingCategoryOrTag = 36,
 }
 
 export type Notification = {
@@ -64,7 +70,6 @@ export type Notification = {
   name: string;
   message: string;
   createdAt: string;
-  hasIcon: boolean;
   seen: boolean;
   notificationType: number;
   onPress: (

@@ -18,6 +18,7 @@ type Props = {
   allowedUserCount?: number | null;
   date: string;
   seen?: boolean;
+  testID?: string;
 };
 
 export { Props as MessageCardProps };
@@ -34,6 +35,7 @@ export function MessageCard(props: Props) {
     seen: seenProps,
     allowedUserCount,
     postNumber,
+    testID,
   } = props;
 
   const { participantsToShow } = messageParticipants ?? {
@@ -65,6 +67,7 @@ export function MessageCard(props: Props) {
         seen && { backgroundColor: colors.backgroundDarker },
       ]}
       onPress={onPressItem}
+      testID={testID}
     >
       <MessageAvatar
         participants={participantsToShow.map(({ avatar, username }) => ({

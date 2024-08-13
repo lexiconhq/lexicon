@@ -1,7 +1,8 @@
 import React from 'react';
 import * as Font from 'expo-font';
 import { CourierPrime_400Regular as Courier } from '@expo-google-fonts/courier-prime';
-import { CodedError } from 'expo-modules-core';
+
+import { CodedErrorExpoModuleSchema } from '../types';
 
 const loadFonts = async () => {
   return Font.loadAsync({
@@ -13,15 +14,15 @@ const loadFonts = async () => {
 
 export default function useLoadFonts() {
   const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState('');
+  const [error, setError] = React.useState<string | null>('');
 
   React.useEffect(() => {
     const load = async () => {
       try {
         await loadFonts();
       } catch (error: unknown) {
-        let codedError = error as CodedError;
-        setError(codedError.message ?? null);
+        const errorResult = CodedErrorExpoModuleSchema.safeParse(error);
+        setError(errorResult.success ? errorResult.data.message ?? null : null);
       }
 
       setLoading(false);

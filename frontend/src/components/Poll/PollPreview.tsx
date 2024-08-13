@@ -253,7 +253,7 @@ export function PollPreview(props: Props) {
   let loading = loadingVote || loadingToggel || loadingUndoVote;
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID="PollPreview:View">
       {title && (
         <Text variant="semiBold" style={styles.title}>
           {title}

@@ -58,6 +58,7 @@ export default function RootStackNavigator(props: RootStackNavigatorProps) {
         screenOptions={{
           ...navHeader,
           presentation: 'card',
+          headerBackTestID: 'HeaderBackButton',
         }}
       >
         {
@@ -70,6 +71,10 @@ export default function RootStackNavigator(props: RootStackNavigatorProps) {
               name="Login"
               component={Login}
               options={{ title: '' }}
+              initialParams={{
+                emailToken: undefined,
+                isActivateAccount: undefined,
+              }}
             />
           ) : /**
            * second condition is used for public discourse where you can access home scene but not profile scene in tab if not login

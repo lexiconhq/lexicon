@@ -48,6 +48,16 @@ export const SITE = gql`
       discourseBaseUrl
       allowPoll
       pollCreateMinimumTrustLevel
+      enableLexiconPushNotifications
+    }
+  }
+`;
+
+export const PLUGIN_STATUS = gql`
+  query PluginStatus {
+    pluginStatus {
+      appleLoginEnabled
+      loginLinkEnabled
     }
   }
 `;

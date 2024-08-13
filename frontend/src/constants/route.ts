@@ -1,52 +1,25 @@
 import * as Notifications from 'expo-notifications';
 import * as Linking from 'expo-linking';
 
-import { NotificationType } from '../types';
+import { DiscourseNotificationData, NotificationType } from '../types';
 
 // Only for developing in Expo
 export const EXPO_PREFIX = Linking.createURL('/');
 
-type DiscourseNotificationData = {
-  type: string; // This is a numeric string representing `NotificationType`
-  discourse_url: string;
-  is_pm: boolean;
-};
-
-// TODO: #1198: replace this and its related type with proper `zod` types and `safeParse`
-
-function isNotificationFromDiscourse(
-  data: unknown,
-): data is DiscourseNotificationData {
-  if (typeof data !== 'object' || data == null) {
-    return false;
-  }
-
-  if (!('is_pm' in data) || typeof data.is_pm !== 'boolean') {
-    return false;
-  }
-
-  if (!('discourse_url' in data) || typeof data.discourse_url !== 'string') {
-    return false;
-  }
-  if (!('type' in data) || typeof data.type !== 'string') {
-    return false;
-  }
-
-  return true;
-}
-
 export const handleUrl = (response: Notifications.NotificationResponse) => {
   const { data }: { data: unknown } = response.notification.request.content;
 
-  if (!isNotificationFromDiscourse(data)) {
+  const notificationResult = DiscourseNotificationData.safeParse(data);
+
+  if (!notificationResult.success) {
     return EXPO_PREFIX;
   }
 
-  const { type, discourse_url: discourseUrl, is_pm: isPm } = data;
-  const notificationType = Number.parseInt(type, 10);
-  if (Number.isNaN(notificationType)) {
-    return EXPO_PREFIX;
-  }
+  const {
+    type,
+    discourse_url: discourseUrl,
+    is_pm: isPm,
+  } = notificationResult.data;
 
   const sceneUrl = isPm
     ? `message-detail${discourseUrl}`
@@ -54,7 +27,7 @@ export const handleUrl = (response: Notifications.NotificationResponse) => {
 
   let url = '';
 
-  switch (notificationType) {
+  switch (type) {
     case NotificationType.Mention:
     case NotificationType.ReplyPost:
     case NotificationType.LikePost:

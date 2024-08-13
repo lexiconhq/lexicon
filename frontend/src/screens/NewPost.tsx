@@ -46,6 +46,7 @@ import {
   parseInt,
   BottomMenuNavigationParams,
   BottomMenuNavigationScreens,
+  onKeyPress,
 } from '../helpers';
 import {
   useKASVWorkaround,
@@ -300,7 +301,14 @@ export default function NewPost() {
     navigate(screen, params);
   };
 
-  const { onInsertImage, onInsertLink, onInsertPoll } = bottomMenu({
+  const {
+    onInsertImage,
+    onInsertLink,
+    onInsertPoll,
+    onFontFormatting,
+    onQuote,
+    onListFormatting,
+  } = bottomMenu({
     isKeyboardShow,
     user,
     navigate: onNavigate,
@@ -410,7 +418,7 @@ export default function NewPost() {
     );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} testID="NewPost:SafeAreaView">
       <Header />
       <KeyboardTextAreaScrollView
         {...kasv.props}
@@ -429,6 +437,56 @@ export default function NewPost() {
               onInsertImage={onInsertImage}
               onInsertLink={onInsertLink}
               onInsertPoll={onInsertPoll}
+              onBold={() => {
+                const { raw } = getValues();
+                onFontFormatting({
+                  content: raw,
+                  cursorPosition,
+                  setCursorPosition,
+                  setValue,
+                  type: 'Bold',
+                });
+              }}
+              onItalic={() => {
+                const { raw } = getValues();
+                onFontFormatting({
+                  content: raw,
+                  cursorPosition,
+                  setCursorPosition,
+                  setValue,
+                  type: 'Italic',
+                });
+              }}
+              onQuote={() => {
+                const { raw: content } = getValues();
+
+                onQuote({
+                  content,
+                  cursorPosition,
+                  setCursorPosition,
+                  setValue,
+                });
+              }}
+              onBulletedList={() => {
+                const { raw } = getValues();
+                onListFormatting({
+                  content: raw,
+                  cursorPosition,
+                  setCursorPosition,
+                  setValue,
+                  type: 'Bullet',
+                });
+              }}
+              onNumberedList={() => {
+                const { raw } = getValues();
+                onListFormatting({
+                  content: raw,
+                  cursorPosition,
+                  setCursorPosition,
+                  setValue,
+                  type: 'Number',
+                });
+              }}
               showLeftMenu={showLeftMenu}
             />
           </View>
@@ -443,6 +501,7 @@ export default function NewPost() {
               control={control}
               render={({ field: { onChange, value } }) => (
                 <TextInput
+                  autoCorrect
                   value={value}
                   label={t('Title')}
                   placeholder={t("What's on your mind?")}
@@ -475,6 +534,9 @@ export default function NewPost() {
                   }}
                   onFocus={() => setShowLeftMenu(false)}
                   error={errors.title != null}
+                  testID="NewPost:TextInput:Title"
+                  multiline
+                  textAlignVertical="top"
                 />
               )}
             />
@@ -482,7 +544,11 @@ export default function NewPost() {
 
           <View style={[styles.formContainer, styles.row]}>
             <Text style={styles.label}>{t('Channel')}</Text>
-            <TouchableOpacity style={styles.row} onPress={onPressSelectChannel}>
+            <TouchableOpacity
+              style={styles.row}
+              onPress={onPressSelectChannel}
+              testID="NewPost:Button:Channel"
+            >
               <Dot
                 variant="large"
                 color={`#${
@@ -577,6 +643,15 @@ export default function NewPost() {
                 isKeyboardShow={isKeyboardShow}
                 inputRef={newPostRef}
                 placeholder={t('Enter a description')}
+                selectionCursor={cursorPosition}
+                onKeyPress={(event) => {
+                  onKeyPress({
+                    event,
+                    text: value,
+                    cursorPosition,
+                    onChange,
+                  });
+                }}
                 onChangeValue={(text) => {
                   mentionHelper(
                     text,
@@ -585,7 +660,9 @@ export default function NewPost() {
                     setMentionLoading,
                     setMentionKeyword,
                   );
+
                   onChange(text);
+
                   debounced(text, currentUploadToken);
 
                   const { title, polls } = getValues();
@@ -626,6 +703,7 @@ export default function NewPost() {
                 }}
                 style={styles.spacingHorizontal}
                 mentionToggled={showUserList}
+                testID="NewPost:TextArea"
               />
             )}
           />

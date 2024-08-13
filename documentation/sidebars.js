@@ -15,13 +15,45 @@ module.exports = {
     'White Labeling': ['white-labeling', 'assets', 'theming'],
     'Deploying Prose': ['deployment', 'env-prose', 'dedicated'],
     'Configuring Discourse': ['optimal'],
+    'Discourse Plugin': [
+      'discourse-plugin',
+      'discourse-plugin-installation',
+      'discourse-plugin-enable',
+      {
+        'Push Notifications': [
+          'push-notifications/introduction',
+          'push-notifications/plugin-interaction',
+          'push-notifications/setup/enable-push-notifications',
+          'push-notifications/setup/verify-push-notifications',
+        ],
+        'Email Deep Linking': [
+          'email-deep-linking/intro',
+          'email-deep-linking/setup/enable-email-deep-linking',
+          'email-deep-linking/setup/verify-email-deep-linking',
+        ],
+        'Login With Link': [
+          'login-with-link/intro',
+          'login-with-link/setup/enable-login-with-link',
+          'login-with-link/setup/verify-login-with-link',
+        ],
+        'Activation Account With Link': [
+          'activation-with-link/intro',
+          'activation-with-link/setup/enable-activate-with-link',
+          'activation-with-link/setup/verify-activate-with-link',
+        ],
+        'Login with Apple': [
+          'login-with-apple/intro',
+          'login-with-apple/setup/enable-login-with-apple',
+          'login-with-apple/setup/verify-login-with-apple',
+        ],
+      },
+    ],
     'Publishing your App': [
       'app-store',
       'play-store',
       'lexicon-updates',
       'troubleshooting-build',
     ],
-    Plugin: ['push-notifications/introduction'],
   },
   tutorial: {
     Tutorial: [
@@ -37,24 +69,4 @@ module.exports = {
       'tutorial/updating',
     ],
   },
-  plugin: [
-    {
-      type: 'doc',
-      id: 'push-notifications/introduction', // document ID
-      label: 'Introduction', // sidebar label
-    },
-    {
-      type: 'doc',
-      id: 'push-notifications/plugin-interaction', // document ID
-      label: 'How Push Notifications work with Lexicon', // sidebar label
-    },
-    {
-      type: 'category',
-      label: 'Setup',
-      items: [
-        'push-notifications/setup/enable-push-notifications',
-        'push-notifications/setup/verify-push-notifications',
-      ],
-    },
-  ],
 };

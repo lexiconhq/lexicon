@@ -3,11 +3,11 @@ import { unionType } from 'nexus';
 export let PosterOutputUnion = unionType({
   name: 'PosterOutputUnion',
   definition(t) {
-    t.members('TopicPoster', 'SuggestionTopicPoster');
+    t.members('TopicPosterNewUnion', 'SuggestionTopicPoster');
   },
   resolveType: (item) => {
     if (item.hasOwnProperty('userId')) {
-      return 'TopicPoster';
+      return 'TopicPosterNewUnion';
     }
     return 'SuggestionTopicPoster';
   },

@@ -33,12 +33,12 @@ let transformTopicToPost = ({
   channels,
   imageUrl,
 }: Params): PostWithoutId => {
-  const author = posters.find((poster) => {
+  const author = posters?.find((poster) => {
     return 'userId' in poster && poster.userId === authorUserId;
   });
 
   const frequentUserArray: Array<User> = [];
-  posters.forEach((poster) => {
+  posters?.forEach((poster) => {
     if ('user' in poster && poster.user) {
       const { user } = poster;
       frequentUserArray.push({
@@ -56,7 +56,7 @@ let transformTopicToPost = ({
 
   const authorUser =
     // eslint-disable-next-line no-underscore-dangle
-    author?.__typename === 'TopicPoster' ? author.user : undefined;
+    author?.__typename === 'TopicPosterNewUnion' ? author.user : undefined;
 
   return {
     topicId: id,

@@ -29,9 +29,18 @@ export const UserIcon = z.object({
 
 export type UserIcon = z.infer<typeof UserIcon>;
 
-// TODO: #1174: get to the bottom of why we have both `userId` and
-// `user`, and why both can be nullable. Seems we made a mistake somewhere.
+/**
+ * Deprecated TopicPoster type which will use TopicPosterNewUnion type
+ */
+
 export const TopicPoster = z.object({
+  extras: z.optional(z.nullable(z.string())),
+  description: z.string(),
+  userId: z.optional(z.nullable(z.number())),
+  user: z.optional(z.nullable(UserIcon)),
+});
+
+export const TopicPosterNewUnion = z.object({
   extras: z.optional(z.nullable(z.string())),
   description: z.string(),
   userId: z.number(),
@@ -44,8 +53,12 @@ export const SuggestionTopicPoster = z.object({
   user: UserIcon,
 });
 
-export const PosterUnion = z.union([TopicPoster, SuggestionTopicPoster]);
+export const PosterUnion = z.union([
+  TopicPosterNewUnion,
+  SuggestionTopicPoster,
+]);
 
+export type TopicPoster = z.infer<typeof TopicPoster>;
 export type PosterUnion = z.infer<typeof PosterUnion>;
 
 export type Topic = {

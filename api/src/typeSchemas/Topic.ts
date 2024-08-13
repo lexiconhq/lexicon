@@ -50,7 +50,32 @@ export let Topic = objectType({
     t.nullable.boolean('pinnedGlobally');
     t.nullable.boolean('hasSummary');
 
-    t.list.field('posters', { type: 'PosterOutputUnion' });
+    /**
+     * Deprecated posters type which will use postersUnion type for return posters
+     */
+    t.list.field('posters', { type: 'TopicPoster' });
+    t.nullable.list.field('postersUnion', {
+      type: 'PosterOutputUnion',
+      resolve: ({ posters }) => {
+        /**
+         * Which empty data user cannot be happen in here
+         */
+
+        let data = posters.map((poster) => {
+          return {
+            ...poster,
+            user: poster.user || {
+              avatarTemplate: '',
+              id: 0,
+
+              username: '',
+            },
+          };
+        });
+        return data;
+      },
+    });
+
     t.nullable.list.field('participants', {
       type: 'MessageParticipant',
     });

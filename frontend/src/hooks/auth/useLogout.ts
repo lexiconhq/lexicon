@@ -16,12 +16,22 @@ export function useLogout(
     LogoutMutationVariables
   >(LOGOUT, { ...options });
 
-  const logout = async ({ username }: { username: string }) => {
-    const { token } = await getExpoPushTokenHandler();
+  const logout = async ({
+    username,
+    enableLexiconPushNotifications,
+  }: {
+    username: string;
+    enableLexiconPushNotifications: boolean;
+  }) => {
+    let pushNotificationsToken = undefined;
+    if (enableLexiconPushNotifications) {
+      const { token } = await getExpoPushTokenHandler();
+      pushNotificationsToken = token;
+    }
 
     mutate({
       variables: {
-        pushNotificationsToken: token,
+        pushNotificationsToken,
         username,
       },
     });

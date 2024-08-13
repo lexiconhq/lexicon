@@ -3,14 +3,13 @@ import { ServerResponse } from 'http';
 import axios, { AxiosResponse } from 'axios';
 import axiosCookieJarSupport from 'axios-cookiejar-support';
 import { CookieJar } from 'tough-cookie';
-import setCookie from 'set-cookie-parser';
 
 import { CUSTOM_HEADER_TOKEN, PROSE_DISCOURSE_HOST } from './constants';
 import {
-  cookiesStringify,
   generateToken,
   getCsrfSession,
   getModifiedUserAgent,
+  mergeCookies,
 } from './helpers';
 
 export const discourseClient = axios.create({
@@ -62,23 +61,19 @@ export async function getClient(params: GetClientParams) {
         throw new Error('Not found or private.');
       }
 
-      let cookies = response.headers['set-cookie'];
+      let newCookies = response.headers['set-cookie'];
+
+      let resultMerge = mergeCookies({ oldCookies: cookies, newCookies });
 
       /**
-       * This condition is used to check if there is a valid cookie.
-       * For the cookie to be refreshed, it must contain an _t cookie and
-       * it ensures that the cookie format is correct, excluding cookies from the login API,
+       * This condition checks if there is a valid cookie.
+       * To refresh the cookie, it must contain an `_t` cookie in the old cookies, indicating that the user is already logged in.
+       * It also checks for new cookies and ensures the cookie format is correct, excluding cookies from the login API,
        * which uses the `session.json` endpoint.
        */
 
-      if (
-        cookies &&
-        // eslint-disable-next-line no-underscore-dangle
-        setCookie.parse(cookies, { map: true })._t &&
-        !response.request.path.includes('session.json')
-      ) {
-        let stringCookie = cookiesStringify(cookies);
-        let token = generateToken(stringCookie);
+      if (resultMerge && !response.request.path.includes('session.json')) {
+        let token = generateToken(resultMerge);
 
         if (!context.response.headersSent) {
           context.response.setHeader(CUSTOM_HEADER_TOKEN, token);

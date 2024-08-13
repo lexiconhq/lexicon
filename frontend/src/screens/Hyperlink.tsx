@@ -106,6 +106,7 @@ export default function Hyperlink() {
               onSubmitEditing={() => titleInputRef.current?.focus()}
               autoCapitalize="none"
               style={styles.spacingBottom}
+              testID="Hyperlink:TextInput:URL"
             />
           )}
         />
@@ -124,6 +125,7 @@ export default function Hyperlink() {
               onBlur={onBlur}
               autoCapitalize="none"
               style={styles.spacingBottom}
+              testID="Hyperlink:TextInput:Title"
             />
           )}
         />

@@ -1,6 +1,6 @@
 import {
+  DeepRoutes,
   FIRST_POST_NUMBER,
-  deepRoutes,
   PostOrMessageDetailRoute,
 } from '../constants';
 import { reset } from '../navigation/NavigationService';
@@ -93,7 +93,7 @@ export function postOrMessageDetailPathToRoutes({
 }: postOrMessageDetailPathToRoutesParams): Routes {
   const detailParams = getValidDetailParams(pathParams);
   if (!detailParams) {
-    return route === deepRoutes['message-detail']
+    return route === DeepRoutes['message-detail']
       ? [
           { name: 'TabNav', state: { routes: [{ name: 'Profile' }] } },
           { name: 'Messages' },
@@ -101,7 +101,7 @@ export function postOrMessageDetailPathToRoutes({
       : [{ name: 'TabNav', state: { routes: [{ name: 'Home' }] } }];
   }
   const { topicId, postNumber } = detailParams;
-  if (route === deepRoutes['message-detail']) {
+  if (route === DeepRoutes['message-detail']) {
     const messageParams: MessageDetailParams = {
       id: topicId,
       postNumber,
@@ -154,5 +154,5 @@ export function extractPathname(url: string) {
 }
 
 export function isRouteBesidePost(route: string) {
-  return route !== deepRoutes['post-detail'];
+  return route !== DeepRoutes['post-detail'];
 }

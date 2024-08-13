@@ -45,6 +45,6 @@ export function getExperienceId(): ExperienceIdResult {
  */
 
 export function isValidExperienceId(experienceId: string): boolean {
-  const regexExperienceIdFormat = /^@[\w-.]+\/[\w-<>]+$/g;
+  const regexExperienceIdFormat = /^@[\w.<>-]+\/[\w<>-]+$/g;
   return regexExperienceIdFormat.test(experienceId);
 }

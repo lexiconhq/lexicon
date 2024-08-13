@@ -28,8 +28,8 @@ export const TOPIC_FRAGMENT = gql`
     views
     likeCount
     categoryId
-    posters {
-      ... on TopicPoster {
+    posters: postersUnion {
+      ... on TopicPosterNewUnion {
         userId
         description
         user {

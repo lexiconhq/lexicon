@@ -3,6 +3,10 @@ export * from './auth/loginMutation';
 export * from './auth/logoutMutation';
 export * from './auth/refreshTokenQuery';
 export * from './auth/registerMutation';
+export * from './auth/loginWithAppleMutation';
+export * from './auth/activateAccountMutation';
+export * from './auth/requestLoginLinkMutation';
+export * from './auth/authenticateLoginLink';
 
 export * from './email/addEmailMutation';
 export * from './email/changeEmailMutation';
@@ -15,6 +19,7 @@ export * from './notifications/pushNotificationMutation';
 
 export * from './site/aboutQuery';
 export * from './site/siteQuery';
+export * from './site/pluginStatusQuery';
 
 export * from './topics/bookmarkPostMutation';
 export * from './topics/categoryQuery';

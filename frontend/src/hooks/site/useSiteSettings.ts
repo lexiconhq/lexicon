@@ -36,6 +36,7 @@ export function useSiteSettings(options?: QueryHookOptions<SiteQuery>) {
     allowUserStatus,
     allowPoll,
     pollCreateMinimumTrustLevel,
+    enableLexiconPushNotifications,
   } = data?.site || {};
 
   return {
@@ -60,6 +61,7 @@ export function useSiteSettings(options?: QueryHookOptions<SiteQuery>) {
     allowUserStatus,
     allowPoll,
     pollCreateMinimumTrustLevel,
+    enableLexiconPushNotifications,
     loading,
     error,
     refetch,

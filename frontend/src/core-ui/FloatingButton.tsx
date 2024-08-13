@@ -38,6 +38,7 @@ export function FloatingButton(props: Props) {
         { width: size, height: size, backgroundColor },
         style,
       ]}
+      testID="FloatingButton"
     />
   );
 }

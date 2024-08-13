@@ -1,0 +1,111 @@
+name: E2E test android
+
+on: workflow_call
+
+jobs:
+  e2e-test-android:
+    runs-on: ${{matrix.runs-on}}
+    name: Android Test ${{matrix.runs-on}}
+    strategy:
+      fail-fast: false
+      matrix:
+        runs-on: [buildjet-4vcpu-ubuntu-2204]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: buildjet/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Configure JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+
+      - uses: buildjet/cache@v4
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install dependencies
+        run: yarn
+
+      - name: Generate files
+        run: yarn generate
+
+      - name: Cache Detox build
+        id: cache-detox-build
+        uses: buildjet/cache@v4
+        with:
+          path: frontend/android
+          key: ${{ runner.os }}-detox-build
+
+      - name: Expo prebuild android and build detox
+        if: steps.cache-detox-build.outputs.cache-hit != 'true'
+        run: |
+          cd frontend
+          npx expo prebuild --platform android
+          yarn tests:android:build
+
+      - name: Setup Detox
+        run: |
+          cd frontend
+          npm install -g detox-cli
+          detox clean-framework-cache && yarn detox build-framework-cache
+
+      - name: Gradle cache
+        uses: gradle/gradle-build-action@v2
+
+      - name: AVD cache
+        uses: buildjet/cache@v3
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-28
+
+      - name: create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 28
+          target: google_apis
+          arch: x86
+          profile: pixel_5
+          avd-name: Pixel_5_API_28
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
+
+      - name: Run Test
+        timeout-minutes: 25
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 28
+          target: google_apis
+          arch: x86
+          profile: pixel_5
+          avd-name: Pixel_5_API_28
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: bash ${{ github.workspace }}/frontend/scripts/android-E2E.sh
+
+      - name: upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-artifacts-${{matrix.runs-on}}
+          path: frontend/artifacts/

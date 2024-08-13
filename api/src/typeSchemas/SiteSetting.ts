@@ -42,6 +42,12 @@ export let SiteSetting = objectType({
     t.list.field('groups', {
       type: 'GroupSiteSetting',
     });
+
+    /**
+     * This field for check plugin
+     */
+
+    t.boolean('enableLexiconPushNotifications');
   },
 });
 

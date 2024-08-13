@@ -1,5 +1,5 @@
 ---
-name: Bug report
+name: Bug report (lexiconhq)
 about: Create a report to help us improve
 title: ''
 labels: ''
@@ -17,9 +17,9 @@ assignees: ''
 ---
 
 ### Describe the bug
-A clear and concise description of what the bug is.
+_A clear and concise description of what the bug is._
 
-### *REQUIRED:* Include the contents of `api/.env` and `frontend/.env`
+### *REQUIRED:* Include the contents of `api/.env` and `frontend/Config.ts`
 _If you are manually overriding any environment variables when running the package scripts, include those as well._
 
 **api/.env**
@@ -33,22 +33,19 @@ _If you are manually overriding any environment variables when running the packa
 ```
 
 ### _REQUIRED:_ answer the following questions:
-- If this is related to your mobile app:
-  - Are you running it through Expo, or did you build it?
-  - Is it running on your mobile device or on a simulator?
+- _If this is related to your mobile app:_
+  - _Are you running it through Expo, or did you build it?_
+  - _Is it running on your mobile device or on a simulator?_
 
 ### To Reproduce
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+_Steps to reproduce the behavior_
+***Please use a numbered list**
 
 ### Expected behavior
-A clear and concise description of what you expected to happen.
+_A clear and concise description of what you expected to happen._
 
 ### Screenshots
-If applicable, add screenshots to help explain your problem.
+_If applicable, add screenshots to help explain your problem._
 
 ### Environments
 
@@ -64,13 +61,13 @@ If applicable, add screenshots to help explain your problem.
  - Version [e.g. 22]
 
 #### GraphQL API (please complete the following information):
-Please indicate where the Prose GraphQL API is running.
+_Please indicate where the Prose GraphQL API is running._
 
-Are you only running it locally on your development machine?
+- _Are you only running it locally on your development machine?_
 
-Have you deployed it somewhere? If so, what domain or IP address did you deploy it at?
+- _Have you deployed it somewhere? If so, what domain or IP address did you deploy it at?_
 
-How specifically did you configure the mobile app to connect to the API?
+- _How specifically did you configure the mobile app to connect to the API?_
 
 ### Additional context
-Add any other context about the problem here.
+_Add any other context about the problem here._

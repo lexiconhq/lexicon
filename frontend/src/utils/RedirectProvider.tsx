@@ -7,8 +7,13 @@ import React, {
   useState,
 } from 'react';
 
-import { isPostOrMessageDetail } from '../constants';
+import {
+  DeepRoutes,
+  isEmailLoginOrActivateAccount,
+  isPostOrMessageDetail,
+} from '../constants';
 import { navigatePostOrMessageDetail } from '../helpers';
+import { reset } from '../navigation/NavigationService';
 
 type ContextValue = {
   redirectPath: string;
@@ -34,6 +39,19 @@ export function RedirectProvider({ children }: Props) {
 
     if (isPostOrMessageDetail(route)) {
       navigatePostOrMessageDetail(route, pathParams);
+    } else if (isEmailLoginOrActivateAccount(route)) {
+      reset({
+        index: 0,
+        routes: [
+          {
+            name: 'Login',
+            params: {
+              emailToken: pathParams[0],
+              isActivateAccount: route === DeepRoutes['activate-account'],
+            },
+          },
+        ],
+      });
     }
   }, [redirectPath]);
 

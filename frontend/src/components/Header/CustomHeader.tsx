@@ -92,6 +92,7 @@ export function CustomHeader(props: Props) {
               navigation.navigate(prevScreen, { backToTop: false })
             : navigation.goBack();
         }}
+        testID="HeaderBackButton"
       />
     );
   }, [routesLength, isLoading, navigation, prevScreen, colors, fontSizes]);

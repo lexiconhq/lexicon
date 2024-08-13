@@ -8,3 +8,4 @@ export let LeaveMessageError = 'Failed to leave message';
 export let PollVoteFail = 'Failed to vote';
 export let PollValueRequired = 'Value is required';
 export let PollValueOutOfRange = 'Value out of range';
+export let DuplicatePollOptionsError = 'Poll must have different options';

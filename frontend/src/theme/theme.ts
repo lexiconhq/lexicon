@@ -9,6 +9,7 @@ import {
   ICON_SIZES,
   SPACING,
 } from '../constants';
+import { NavHeader } from '../types';
 
 // This is information about the device or system, which the theme might depend
 // on, such as light/dark mode.
@@ -90,6 +91,23 @@ export const getTheme = ({ colorScheme, aesthetic }: Config) => {
   }
   const colors = colorTheme(isDarkMode);
 
+  const navHeader: NavHeader = {
+    headerStyle: {
+      backgroundColor: colors.background,
+    },
+    headerTintColor: colors.primary,
+    headerTitleStyle: {
+      color: colors.textNormal,
+      fontSize: FONT_SIZES.l,
+    },
+    headerTitleAlign: 'center',
+    headerBackTitleStyle: {
+      color: colors.primary,
+      fontSize: FONT_SIZES.m,
+    },
+    headerBackTitle: t('Back'),
+  };
+
   return {
     colors,
     fontSizes: FONT_SIZES,
@@ -99,30 +117,13 @@ export const getTheme = ({ colorScheme, aesthetic }: Config) => {
     fontVariants: FONT_VARIANTS,
     headingFontSizes: HEADING_FONT_SIZES,
     shadow: shadowStyle(isDarkMode),
-    navHeader: {
-      headerStyle: {
-        backgroundColor: colors.background,
-      },
-      headerTintColor: colors.primary,
-      headerTitleStyle: {
-        color: colors.textNormal,
-        fontSize: FONT_SIZES.l,
-      },
-      headerTitleAlign: 'center',
-      headerBackTitleStyle: {
-        color: colors.primary,
-        fontSize: FONT_SIZES.m,
-      },
-      headerBackTitle: t('Back'),
-    } as const,
-    navModal:
-      aesthetic === 'ios' &&
-      ({
-        headerShown: false,
-        gestureEnabled: true,
-        cardOverlayEnabled: true,
-        ...TransitionPresets.ModalPresentationIOS,
-      } as const),
+    navHeader,
+    navModal: aesthetic === 'ios' && {
+      headerShown: false,
+      gestureEnabled: true,
+      cardOverlayEnabled: true,
+      ...TransitionPresets.ModalPresentationIOS,
+    },
     navNoShadow: {
       headerStyle: {
         shadowOpacity: 0,

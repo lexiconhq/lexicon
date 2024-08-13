@@ -22,11 +22,13 @@ export default function useNotificationScroll({
       shouldScroll &&
       virtualizedListRef?.current
     ) {
-      alreadyScrolled.current = true;
-      virtualizedListRef?.current?.scrollToIndex({
-        index,
-        animated: true,
-      });
+      setTimeout(() => {
+        alreadyScrolled.current = true;
+        virtualizedListRef?.current?.scrollToIndex({
+          index,
+          animated: true,
+        });
+      }, 200);
     }
   }, [virtualizedListRef, index, shouldScroll]);
 }

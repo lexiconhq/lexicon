@@ -32,4 +32,9 @@ it('should calculate the difference between an upcoming date and the current dat
   expect(getDistanceToNow(oneHourtenMinutesLater.toISOString())).toEqual(
     '1h 10m',
   );
+
+  const tenSecondLater = new Date();
+  tenSecondLater.setSeconds(tenSecondLater.getSeconds() + 10);
+
+  expect(getDistanceToNow(tenSecondLater.toISOString())).toEqual('10s');
 });

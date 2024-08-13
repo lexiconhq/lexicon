@@ -92,6 +92,7 @@ function BasePostDetailHeaderItem(props: Props) {
       polls={polls}
       pollsVotes={pollsVotes}
       postId={postId}
+      testIDStatus="PostDetailHeaderItem:Author:EmojiStatus"
       footer={
         <PostItemFooter
           postId={postItemFooterProps.postId}
@@ -148,7 +149,7 @@ const resolvePostItemProps = ({
       postItemFooterProps: {
         postId: firstPost.id,
         viewCount: topic.viewCount,
-        likeCount: topic.likeCount,
+        likeCount: firstPost.likeCount,
         replyCount: topic.replyCount,
         isLiked: firstPost.isLiked,
         isCreator: isCreator,

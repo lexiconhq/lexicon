@@ -32,7 +32,11 @@ export function StackedAvatars(props: Props) {
   const shownAvatars = avatars.slice(0, max);
 
   return (
-    <TouchableOpacity onPress={onPress} style={[styles.container, style]}>
+    <TouchableOpacity
+      onPress={onPress}
+      style={[styles.container, style]}
+      testID="StackedAvatars:Button"
+    >
       {shownAvatars.map((avatar, index) => {
         return (
           <ImageBackground

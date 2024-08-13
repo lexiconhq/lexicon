@@ -5,7 +5,7 @@ title: Verify Push Notifications
 import useBaseUrl from '@docusaurus/useBaseUrl';
 
 <head>
-    <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/Mobile-PushNotification.png')}/>
+    <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/plugins/Mobile-PushNotification.png')}/>
 </head>
 
 Below, we'll walk you through how you can validate the functionality of push notifications within your Lexicon-powered mobile app.
@@ -28,6 +28,6 @@ To test push notifications within your Lexicon-powered mobile app, follow these 
 1. Using a separate account, reply to the post to trigger a notification for the first account.
 1. You should receive a push notification on your phone with the reply content from the other account.
 
-<img src={useBaseUrl('/img/screenshot/Mobile-PushNotification.png')} width="360" />
+<img src={useBaseUrl('/img/screenshot/plugins/Mobile-PushNotification.png')} width="360" />
 
 And that's it! The Lexicon Discourse plugin is properly sending push notifications through your Discourse site.

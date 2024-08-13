@@ -6,3 +6,4 @@ export * from './theme';
 export * from './wordings';
 export * from './links';
 export * from './route';
+export * from './alert';

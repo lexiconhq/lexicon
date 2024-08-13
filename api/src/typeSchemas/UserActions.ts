@@ -1,6 +1,7 @@
 import { objectType } from 'nexus';
 
 import { getNormalizedUrlTemplate } from '../resolvers/utils';
+import { userActivityMarkdownContent } from '../helpers';
 
 export let UserActions = objectType({
   name: 'UserActions',
@@ -37,5 +38,10 @@ export let UserActions = objectType({
     t.int('topicId');
     t.int('userId');
     t.string('username');
+    t.nullable.string('markdownContent', {
+      resolve: ({ excerpt }) => {
+        return userActivityMarkdownContent(excerpt);
+      },
+    });
   },
 });

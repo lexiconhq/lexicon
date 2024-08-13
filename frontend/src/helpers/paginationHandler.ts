@@ -1,10 +1,11 @@
 /* eslint-disable no-underscore-dangle */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Alert } from 'react-native';
 import { FieldPolicy } from '@apollo/client';
 import { Reference } from '@apollo/client/utilities';
+import { SafeReadonly } from '@apollo/client/cache/core/types/common';
 
 import { ERROR_PAGINATION } from '../constants';
+import { MessageDetail, SearchPost, Notifications } from '../types';
 
 import { handleDuplicateRef, handleDuplicates } from './handleDuplicates';
 
@@ -56,17 +57,24 @@ export function replaceDataPagination<T = Reference>(
 ): FieldPolicy<Array<T>> {
   return {
     keyArgs,
-    merge: (existing: any, incoming: any) => incoming || existing || null,
+    merge: (
+      existing: Readonly<Array<T>> | undefined,
+      incoming: Readonly<Array<T>>,
+    ) => incoming || existing || null,
   };
 }
 
-export function appendPagination<T = Reference>(
+export function appendPagination<T extends Reference>(
   keyArgs: KeyArgs = [],
   screen: 'HOME' | 'SEARCH' | 'MESSAGE_DETAIL' | 'NOTIFICATIONS',
-): FieldPolicy<Array<T>> {
+): FieldPolicy<T> {
   return {
     keyArgs,
-    merge: (existing: any, incoming: any, { args }) => {
+    merge: (
+      existing: SafeReadonly<T> | undefined,
+      incoming: SafeReadonly<T>,
+      { args },
+    ) => {
       if (!existing || !incoming) {
         return existing || incoming || null;
       }
@@ -76,37 +84,64 @@ export function appendPagination<T = Reference>(
       switch (screen) {
         case 'SEARCH':
           page = args?.page || 1;
-          if (page > 1) {
-            incoming = {
-              ...incoming,
-              posts: handleDuplicateRef(existing.posts, incoming.posts),
-              topics: handleDuplicateRef(existing.topics, incoming.topics),
-            };
+
+          if (page > 1 && existing) {
+            const parsedExisting = SearchPost.safeParse(existing);
+            const parsedIncoming = SearchPost.safeParse(incoming);
+
+            if (parsedExisting.success && parsedIncoming.success) {
+              incoming = {
+                ...incoming,
+                posts: handleDuplicateRef(
+                  parsedExisting.data.posts,
+                  parsedIncoming.data.posts,
+                ),
+                topics: handleDuplicateRef(
+                  parsedExisting.data.topics,
+                  parsedIncoming.data.topics,
+                ),
+              };
+            }
           }
 
           break;
         case 'MESSAGE_DETAIL':
           page = args?.page || 0;
-          if (page >= 0) {
-            incoming = {
-              ...incoming,
-              users: handleDuplicateRef(incoming.users, existing.users),
-              topicList: {
-                ...incoming.topicList,
-                topics: handleDuplicateRef(
-                  incoming.topicList.topics,
-                  existing.topicList.topics,
+          if (page >= 0 && existing) {
+            const parsedExisting = MessageDetail.safeParse(existing);
+            const parsedIncoming = MessageDetail.safeParse(incoming);
+
+            if (parsedExisting.success && parsedIncoming.success) {
+              incoming = {
+                ...incoming,
+                users: handleDuplicateRef(
+                  parsedIncoming.data.users,
+                  parsedExisting.data.users,
                 ),
-              },
-            };
+                topicList: {
+                  ...parsedIncoming.data.topicList,
+                  topics: handleDuplicateRef(
+                    parsedExisting.data.topicList.topics,
+                    parsedIncoming.data.topicList.topics,
+                  ),
+                },
+              };
+            }
           }
           break;
         case 'NOTIFICATIONS':
-          let newData = handleDuplicateRef(
-            existing.notifications,
-            incoming.notifications,
-          );
-          incoming = { ...incoming, notifications: newData };
+          if (existing) {
+            const parsedExisting = Notifications.safeParse(existing);
+            const parsedIncoming = Notifications.safeParse(incoming);
+
+            if (parsedExisting.success && parsedIncoming.success) {
+              let newData = handleDuplicateRef(
+                parsedExisting.data.notifications,
+                parsedIncoming.data.notifications,
+              );
+              incoming = { ...incoming, notifications: newData };
+            }
+          }
           break;
       }
 
@@ -115,12 +150,15 @@ export function appendPagination<T = Reference>(
   };
 }
 
-export function prependAppendPagination<T = Reference>(
+export function prependAppendPagination<T extends Reference>(
   keyArgs: KeyArgs = [],
 ): FieldPolicy<Array<T>> {
   return {
     keyArgs,
-    merge: (existing: any, incoming: any) => {
+    merge: (
+      existing: Readonly<Array<T>> | undefined,
+      incoming: Readonly<Array<T>>,
+    ) => {
       if (
         !existing ||
         !incoming ||
@@ -158,7 +196,7 @@ export function prependAppendPagination<T = Reference>(
  * @returns It will return a number if the format is correct, and it will return undefined if the format is incorrect.
  */
 
-export function getLatestApolloId<T extends Reference>(
+export function getLatestApolloId<T>(
   items: Readonly<Array<T>>,
 ): number | undefined {
   if (!Array.isArray(items)) {
@@ -188,8 +226,8 @@ export function getLatestApolloId<T extends Reference>(
 }
 
 type MergeReferenceDataParam<T extends Reference> = {
-  existing: Array<T>;
-  incoming: Array<T>;
+  existing: Readonly<Array<T>>;
+  incoming: Readonly<Array<T>>;
   lastExisting?: number;
   lastIncoming?: number;
   mockAlert?: (error: string) => void;
@@ -201,7 +239,7 @@ export function mergeReferenceData<T extends Reference>({
   lastIncoming,
   mockAlert,
 }: MergeReferenceDataParam<T>) {
-  let mergedTopics = [];
+  let mergedTopics: Readonly<Array<T>> = [];
 
   /**
    * In this condition is check is format not PostId:number

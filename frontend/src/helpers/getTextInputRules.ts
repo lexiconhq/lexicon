@@ -32,6 +32,19 @@ export function getTextInputRules({
         maxLength: maxUsernameLength,
       }),
     },
+    validate: {
+      startsWith: (value: string) =>
+        /^[a-zA-Z0-9_]/.test(value) ||
+        t('Username must begin with a letter, a number or an underscore'),
+      endsWith: (value: string) =>
+        /[a-zA-Z0-9]$/.test(value) ||
+        t('Username must end with a letter or a number'),
+      contains: (value: string) =>
+        /^[a-zA-Z0-9_][a-zA-Z0-9-_.]*[a-zA-Z0-9]?$/.test(value) ||
+        t(
+          'Username must must only include numbers, letters, dashes, dots, and underscores',
+        ),
+    },
   };
 
   const nameInputRules = { required: fullNameRequired };
