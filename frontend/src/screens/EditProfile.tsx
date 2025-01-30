@@ -14,8 +14,8 @@ import {
 //   AndroidEvent,
 // } from '@react-native-community/datetimepicker';
 import { useRoute } from '@react-navigation/native';
-import { Controller, useForm } from 'react-hook-form';
 import * as ImagePicker from 'expo-image-picker';
+import { Controller, useForm } from 'react-hook-form';
 
 import { CustomHeader, ShowImageModal } from '../components';
 import {
@@ -26,7 +26,7 @@ import {
   TextInput,
   TextInputType,
 } from '../core-ui';
-import { UploadTypeEnum } from '../generated/server';
+import { ProfileDocument, UploadTypeEnum } from '../generatedAPI/server';
 // import { formatDateTime } from '../helpers/formatDateTime';
 import {
   createReactNativeFile,
@@ -46,6 +46,7 @@ import {
 } from '../hooks';
 import { makeStyles } from '../theme';
 import { StackRouteProp } from '../types';
+import { useDevice } from '../utils';
 
 type ProfileProps = Pick<AvatarProps, 'size'> & {
   image: string;
@@ -63,6 +64,7 @@ type ProfileForm = {
 
 export default function EditProfile(props: ProfileProps) {
   const styles = useStyles();
+  const { isTablet, isTabletLandscape } = useDevice();
 
   const { imageStyle } = props;
 
@@ -208,6 +210,14 @@ export default function EditProfile(props: ProfileProps) {
     onError: (error) => {
       errorHandlerAlert(error);
     },
+    refetchQueries: isTabletLandscape
+      ? [
+          {
+            query: ProfileDocument,
+            variables: { username },
+          },
+        ]
+      : undefined,
   });
 
   const { upload, loading: uploadLoading } = useStatelessUpload({
@@ -277,13 +287,23 @@ export default function EditProfile(props: ProfileProps) {
         let format = getFormat(result.assets[0].uri);
         if (normalizedExtensions.includes(format)) {
           const reactNativeFile = createReactNativeFile(result.assets[0].uri);
-          upload({
-            variables: {
-              file: reactNativeFile,
-              userId: user?.id,
-              type: UploadTypeEnum.Avatar,
-            },
-          });
+
+          if (reactNativeFile) {
+            upload({
+              variables: {
+                input: {
+                  file: reactNativeFile,
+                  userId: user?.id,
+                  type: UploadTypeEnum.Avatar,
+                },
+              },
+            });
+          } else {
+            Alert.alert(t('Failed Upload!'), t(`Please Try Again`), [
+              { text: t('Got it') },
+            ]);
+          }
+
           setNoChanges(false);
         } else {
           Alert.alert(
@@ -329,22 +349,27 @@ export default function EditProfile(props: ProfileProps) {
   const scrollViewRef = useRef<ScrollView>(null);
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={[styles.flex, isTablet && styles.tabletContainer]}
       contentContainerStyle={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      enabled
       keyboardVerticalOffset={90}
     >
-      <ScrollView ref={scrollViewRef} testID="EditProlfie:ScrollView">
+      <ScrollView ref={scrollViewRef} testID="EditProfile:ScrollView">
         <CustomHeader
-          title=""
+          title={isTablet ? t('Edit Profile') : ''}
           rightTitle="Save"
           onPressRight={onPressRight}
-          noShadow
+          noShadow={!isTablet}
           isLoading={editProfileLoading}
           disabled={noChanges || uploadLoading}
+          hideHeaderLeft={isTabletLandscape}
         />
-        <View style={styles.pictureContainer}>
+        <View
+          style={[
+            styles.pictureContainer,
+            isTablet && styles.tabletPictureContainer,
+          ]}
+        >
           {!uploadLoading ? (
             <Avatar
               src={userImage}
@@ -556,11 +581,13 @@ export default function EditProfile(props: ProfileProps) {
 }
 
 const useStyles = makeStyles(({ colors, spacing }) => ({
+  flex: { flex: 1 },
   container: {
     flexGrow: 1,
     backgroundColor: colors.backgroundDarker,
     flex: 1,
   },
+  tabletContainer: { backgroundColor: colors.background },
   inputContainer: {
     paddingHorizontal: spacing.xxl,
     backgroundColor: colors.background,
@@ -579,6 +606,7 @@ const useStyles = makeStyles(({ colors, spacing }) => ({
     backgroundColor: colors.background,
     paddingBottom: spacing.xl,
   },
+  tabletPictureContainer: { paddingVertical: spacing.xl + spacing.s },
   changePictureContainer: {
     paddingVertical: spacing.xl,
   },

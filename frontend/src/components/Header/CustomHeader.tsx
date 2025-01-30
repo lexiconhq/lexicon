@@ -21,6 +21,7 @@ type Props = {
   disabled?: boolean;
   isLoading?: boolean;
   prevScreen?: string;
+  hideHeaderLeft?: boolean;
 };
 
 export function CustomHeader(props: Props) {
@@ -39,6 +40,7 @@ export function CustomHeader(props: Props) {
     disabled = false,
     isLoading = false,
     prevScreen,
+    hideHeaderLeft = false,
   } = props;
 
   const statusBarStyle: StatusBarStyle =
@@ -105,7 +107,7 @@ export function CustomHeader(props: Props) {
         backgroundColor: colors[color],
         ...(noShadow && { shadowOpacity: 0, elevation: 0 }),
       },
-      headerLeft: () => headerLeft,
+      headerLeft: () => (!hideHeaderLeft ? headerLeft : undefined),
       headerRight: () => headerRight,
     });
   }, [
@@ -113,6 +115,7 @@ export function CustomHeader(props: Props) {
     colors,
     headerLeft,
     headerRight,
+    hideHeaderLeft,
     navHeader,
     navigation,
     noShadow,

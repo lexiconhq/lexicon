@@ -1,4 +1,5 @@
 export const SPACING = {
+  xxxxxl: 60,
   xxxxl: 48,
   xxxl: 36,
   xxl: 24,

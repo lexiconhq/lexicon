@@ -1,4 +1,5 @@
 import Constants from 'expo-constants';
+import { ExpoConfig } from 'expo/config';
 
 type ExperienceIdSource =
   | 'manifest2.extra.scopeKey'
@@ -9,7 +10,11 @@ export type ExperienceIdResult =
   | { success: false; error: 'ExperienceIdMissing' };
 
 export function getExperienceId(): ExperienceIdResult {
-  const expoConfigKey = Constants.expoConfig?.currentFullName ?? '';
+  const expoConfigKey =
+    Constants.expoConfig?.currentFullName ||
+    getExtraExperienceId(Constants.expoConfig?.extra) ||
+    '';
+
   if (expoConfigKey) {
     if (!isValidExperienceId(expoConfigKey)) {
       // eslint-disable-next-line no-console
@@ -47,4 +52,18 @@ export function getExperienceId(): ExperienceIdResult {
 export function isValidExperienceId(experienceId: string): boolean {
   const regexExperienceIdFormat = /^@[\w.<>-]+\/[\w<>-]+$/g;
   return regexExperienceIdFormat.test(experienceId);
+}
+
+/**
+ * This function is used to get value of experienceId from extra app.json
+ * @param extra data from expo-constant Constants.expoConfig?.extra
+ * @returns string
+ */
+
+export function getExtraExperienceId(extra: ExpoConfig['extra']): string {
+  return extra &&
+    'experienceId' in extra &&
+    typeof extra.experienceId === 'string'
+    ? extra.experienceId
+    : '';
 }

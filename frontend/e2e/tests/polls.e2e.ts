@@ -1,23 +1,25 @@
-import { by, expect, element, device } from 'detox';
+import { by, device, element, expect } from 'detox';
 
 import { createPost, waitTabProfile } from '../helpers';
-import { mockNewTopicWithPoll } from '../apollo-mock/data';
+import { mockNewTopicWithPoll } from '../rest-mock/data';
 
 async function createPoll() {
   await expect(element(by.id('NewPoll:SafeAreaView'))).toBeVisible();
   await element(by.id('NewPoll:TextInput:Options'))
     .atIndex(0)
     .replaceText('Apple');
-  await element(by.id('NewPoll:Button:AddOption')).tap();
+  await element(by.id('NewPoll:Button:AddOption')).multiTap(2);
   await element(by.id('NewPoll:TextInput:Options'))
     .atIndex(1)
     .replaceText('Banana');
-  await element(by.id('NewPoll:Button:AddOption')).tap();
+  await element(by.id('NewPoll:Button:AddOption')).multiTap(2);
   await element(by.id('NewPoll:TextInput:Options'))
     .atIndex(2)
-    .replaceText('Mango\n');
+    .typeText('Mango\n');
 
-  await element(by.id('NewPoll:Button:AdvancedSettings')).tap();
+  const buttonSetting = element(by.id('NewPoll:Button:AdvancedSettings'));
+  await waitFor(buttonSetting).toBeVisible().withTimeout(1000);
+  await buttonSetting.tap();
   await element(by.id('NewPoll:ScrollView')).scrollTo('bottom');
 
   await expect(element(by.id('NewPoll:TextInput:Title'))).toBeVisible();
@@ -50,11 +52,8 @@ describe('Polls', () => {
     await expect(element(by.id('NewPost:TextArea'))).toBeVisible();
     await element(by.id('NewPost:TextArea')).tap();
 
-    if (device.getPlatform() === 'android') {
-      await element(by.id('BottomMenu:ScrollView')).scrollToIndex(7);
-    } else {
-      await element(by.id('BottomMenu:ScrollView')).scrollTo('right');
-    }
+    await element(by.id('BottomMenu:ScrollView')).scrollTo('right');
+
     await element(by.id('BottomMenu:IconPoll')).atIndex(0).tap();
 
     await createPoll();
@@ -95,7 +94,7 @@ describe('Polls', () => {
     await element(by.id('PollChoiceCard:Icon:Edit')).tap();
     await expect(element(by.id('NewPoll:SafeAreaView'))).toBeVisible();
 
-    await element(by.id('NewPoll:Button:AddOption')).tap();
+    await element(by.id('NewPoll:Button:AddOption')).multiTap(2);
     await element(by.id('NewPoll:TextInput:Options'))
       .atIndex(3)
       .replaceText('Grape');

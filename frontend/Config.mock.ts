@@ -8,12 +8,12 @@
 
 import { Platform } from 'react-native';
 
-import { RequiredConfig, LocalConfig } from './Config';
+import { LocalConfig, RequiredConfig } from './Config';
 import { MOCK_SERVER_PORT } from './e2e/global';
 
 function getConfig(): RequiredConfig | LocalConfig {
   return {
-    proseUrl:
+    discourseUrl:
       Platform.OS === 'android'
         ? /**
            * note 10.0.2.2 is ip localhost for android emulator. which we enable traffic in detox configuration for more detail information

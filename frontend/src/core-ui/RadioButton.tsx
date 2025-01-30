@@ -57,7 +57,6 @@ export function RadioButton(props: Props) {
                 disabled
                   ? styles.innerCircleInactive
                   : styles.innerCircleActive,
-                ,
               ]}
             />
           </View>

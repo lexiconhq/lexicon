@@ -10,9 +10,11 @@ import { Text } from '../core-ui';
 import { errorHandler, useStorage } from '../helpers';
 import { useActivity } from '../hooks';
 import { makeStyles } from '../theme';
+import { useDevice } from '../utils';
 
 export default function Activity() {
   const styles = useStyles();
+  const { isTablet } = useDevice();
 
   const storage = useStorage();
   const user = storage.getItem('user');
@@ -22,7 +24,7 @@ export default function Activity() {
     variables: { username, offset: 0 },
   });
 
-  const activities = data?.userActivity ?? [];
+  const activities = data?.activity ?? [];
 
   const onEndReached = (distanceFromEnd: number) => {
     if (distanceFromEnd === 0) {
@@ -49,7 +51,11 @@ export default function Activity() {
         data={activities}
         scrollEventThrottle={16}
         alwaysBounceVertical={true}
-        contentContainerStyle={styles.contentContainer}
+        contentContainerStyle={
+          isTablet
+            ? [styles.tabletContentContainer, styles.tabletBackground]
+            : styles.contentContainer
+        }
         style={styles.fill}
         onEndReachedThreshold={0.1}
         onEndReached={({ distanceFromEnd }) => onEndReached(distanceFromEnd)}
@@ -62,6 +68,7 @@ export default function Activity() {
               postId={item.postId}
               actionType={item.actionType}
               currentUser={username}
+              style={isTablet && styles.tabletPostItem}
             />
           );
         }}
@@ -77,13 +84,26 @@ export default function Activity() {
     );
   }
 
-  return <View style={styles.container}>{content}</View>;
+  return (
+    <View style={[styles.container, isTablet && styles.tabletBackground]}>
+      {content}
+    </View>
+  );
 }
 
 const useStyles = makeStyles(({ spacing, colors }) => ({
   contentContainer: {
     paddingTop: spacing.m,
   },
+  tabletContentContainer: {
+    paddingHorizontal: spacing.xxxxxl,
+    paddingTop: spacing.l,
+  },
+  tabletPostItem: {
+    marginBottom: spacing.l,
+    borderRadius: 8,
+  },
+  tabletBackground: { backgroundColor: colors.backgroundDarker },
   fill: {
     width: '100%',
     flexGrow: 1,

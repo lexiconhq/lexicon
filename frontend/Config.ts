@@ -1,7 +1,7 @@
 /**
  * This configuration file allows you to specify the configuration for developing against,
  * as well as building and releasing the Lexicon Mobile App.
- * Currently, there is only one important config value, which is `proseUrl`.
+ * Currently, there is only one important config value, which is `discourseUrl`.
  */
 
 import * as Updates from 'expo-updates';
@@ -17,7 +17,7 @@ const config: Config = {
    * to EAS Build.
    */
   localDevelopment: {
-    proseUrl: 'http://localhost:8929',
+    discourseUrl: 'https://kflounge-staging.kfox.io',
     inferDevelopmentHost: true, // Specific to local development with Expo Go & the Android simulator. See docs.
   },
   /**
@@ -25,7 +25,7 @@ const config: Config = {
    * `eas.json`. These can be named anything you'd like, but the conventional channel names are
    * `preview` and `production`.
    *
-   * Make sure you specify the valid, reachable URL of your Prose server before running `eas build`
+   * Make sure you specify the valid, reachable URL of your discourse server before running `eas build`
    * for a particular build channel.
    * By default, running `eas build` will attempt to use the values in `buildChannels.production`.
    *
@@ -33,13 +33,13 @@ const config: Config = {
    */
   buildChannels: {
     preview: {
-      proseUrl: 'http://PLACEHOLDER.change.this.to.your.prose.url',
+      discourseUrl: 'http://PLACEHOLDER.change.this.to.your.discourse.url',
     },
     production: {
-      proseUrl: 'http://PLACEHOLDER.change.this.to.your.prose.url',
+      discourseUrl: 'http://PLACEHOLDER.change.this.to.your.discourse.url',
     },
     test: {
-      proseUrl: 'http://localhost:8929',
+      discourseUrl: 'http://localhost:4200',
     },
   },
 };
@@ -61,7 +61,9 @@ function getConfig(): RequiredConfig | LocalConfig {
 }
 
 /* Type definitions for the `config` object */
-export type RequiredConfig = { proseUrl: `${'http' | 'https'}://${string}` };
+export type RequiredConfig = {
+  discourseUrl: `${'http' | 'https'}://${string}`;
+};
 export type LocalConfig = RequiredConfig & {
   inferDevelopmentHost?: boolean;
 };

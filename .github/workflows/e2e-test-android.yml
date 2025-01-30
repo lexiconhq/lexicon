@@ -1,6 +1,12 @@
 name: E2E test android
 
-on: workflow_call
+on:
+  workflow_call:
+    inputs:
+      expo_version:
+        description: 'expo version which used'
+        type: string
+        default: '51' # Change value based on expo version at package json
 
 jobs:
   e2e-test-android:
@@ -23,7 +29,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '11'
+          java-version: '17'
 
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
@@ -48,7 +54,7 @@ jobs:
         uses: buildjet/cache@v4
         with:
           path: frontend/android
-          key: ${{ runner.os }}-detox-build
+          key: ${{ runner.os }}-detox-build-${{ inputs.expo_version }}
 
       - name: Expo prebuild android and build detox
         if: steps.cache-detox-build.outputs.cache-hit != 'true'
@@ -64,10 +70,10 @@ jobs:
           detox clean-framework-cache && yarn detox build-framework-cache
 
       - name: Gradle cache
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v3
 
       - name: AVD cache
-        uses: buildjet/cache@v3
+        uses: buildjet/cache@v4
         id: avd-cache
         with:
           path: |
@@ -90,7 +96,7 @@ jobs:
           script: echo "Generated AVD snapshot for caching."
 
       - name: Run Test
-        timeout-minutes: 25
+        timeout-minutes: 30
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 28

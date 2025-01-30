@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, memo } from 'react';
+import React, { memo, useCallback, useEffect, useState } from 'react';
 import { View, ViewProps } from 'react-native';
 import { useDebouncedCallback } from 'use-debounce';
 

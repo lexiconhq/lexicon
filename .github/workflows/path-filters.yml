@@ -9,9 +9,6 @@ on:
       frontendSrc-changes:
         description: 'this is lexicon app src only status'
         value: ${{ jobs.path-filters.outputs.frontendSrc-changes }}
-      backend-changes:
-        description: 'this is Backend Prose changes status'
-        value: ${{ jobs.path-filters.outputs.backend-changes }}
 
 jobs:
   path-filters:
@@ -19,7 +16,6 @@ jobs:
     outputs:
       frontend-changes: ${{ steps.filter-frontend.outputs.isUpdated }}
       frontendSrc-changes: ${{ steps.filter-frontendSrc.outputs.isUpdated }}
-      backend-changes: ${{ steps.filter-backend.outputs.isUpdated }}
 
     steps:
       - uses: actions/checkout@v4
@@ -28,18 +24,10 @@ jobs:
         id: filter
         with:
           filters: |
-            backend:
-              - 'api/**'
             frontend:
               - 'frontend/**'
             frontendSrc:
               - 'frontend/src/**'
-
-      # run only if 'backend' files were changed
-      - name: Output filter Backend Prose
-        id: filter-backend
-        if: steps.filter.outputs.backend == 'true'
-        run: echo "isUpdated=true" >> $GITHUB_OUTPUT
 
       # run only if 'frontend' files were changed
       - name: Output filter Lexicon

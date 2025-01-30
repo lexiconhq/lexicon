@@ -1,5 +1,5 @@
 import { DEFAULT_CHANNEL } from '../constants';
-import { ActionSummary as ActionsSummaryServer } from '../generated/server';
+import { ActionSummary as ActionsSummaryServer } from '../generatedAPI/server';
 import { Channel, Post, Topic, TopicDetail, User } from '../types';
 
 import { getImage } from './getUserImage';

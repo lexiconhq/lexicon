@@ -1,11 +1,10 @@
 {
   "expo": {
     "name": "<insert your app name>",
-    "slug": "<insert your app name>",
+    "slug": "insert-your-app-name",
     "scheme": "your-scheme-here",
-    "currentFullName": "@<username>/<slugName>",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/images/splash.png",
@@ -15,45 +14,61 @@
     "plugins": [
       "expo-localization",
       [
+        "expo-screen-orientation",
+        {
+          "initialOrientation": "DEFAULT"
+        }
+      ],
+      [
         "@config-plugins/detox",
         {
           "skipProguard": false,
           "subdomains": ["localhost", "10.0.2.2"]
         }
       ],
-      "./src/plugins/Notification.js"
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": "Allow $(PRODUCT_NAME) to access your Face ID biometric data."
+        }
+      ]
     ],
     "userInterfaceStyle": "automatic",
     "updates": {
       "fallbackToCacheTimeout": 0
     },
     "assetBundlePatterns": ["**/*"],
-    "packagerOpts": {
-      "config": "metro.config.js",
-      "sourceExts": [
-        "expo.ts",
-        "expo.tsx",
-        "expo.js",
-        "expo.jsx",
-        "ts",
-        "tsx",
-        "js",
-        "jsx",
-        "json",
-        "wasm",
-        "svg"
-      ]
+    "extra": {
+      "experienceId": "@<username>/<slugName>"
     },
-    "notification":{
-      "icon":"./assets/iconNotifications.png"
-   },
+
     "ios": {
-      "supportsTablet": false,
+      "supportsTablet": true,
       "buildNumber": "1.0.0",
       "config": {
         "usesNonExemptEncryption": false
       },
-      "bundleIdentifier": "com.kfox.insertyourappname"
+      "bundleIdentifier": "com.kfox.insertyourappname",
+      "privacyManifests": {
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryDiskSpace",
+            "NSPrivacyAccessedAPITypeReasons": ["E174.1"]
+          },
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryFileTimestamp",
+            "NSPrivacyAccessedAPITypeReasons": ["DDA9.1"]
+          },
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+          },
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategorySystemBootTime",
+            "NSPrivacyAccessedAPITypeReasons": ["8FFB.1"]
+          }
+        ]
+      }
     },
     "android": {
       "permissions": [],

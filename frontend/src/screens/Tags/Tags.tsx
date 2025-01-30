@@ -1,10 +1,11 @@
+import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useRef, useState } from 'react';
+import { useFormContext } from 'react-hook-form';
 import { Platform, SafeAreaView } from 'react-native';
 import { KeyboardAccessoryView } from 'react-native-keyboard-accessory';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { useNavigation } from '@react-navigation/native';
-import { useFormContext } from 'react-hook-form';
 
+import { client } from '../../api/client';
 import {
   AlertBanner,
   CustomHeader,
@@ -16,8 +17,7 @@ import {
   SearchTagsDocument,
   SearchTagsQuery,
   SearchTagsQueryVariables,
-} from '../../generated/server';
-import { client } from '../../graphql/client';
+} from '../../generatedAPI/server';
 import { formatTag } from '../../helpers';
 import { useSiteSettings, useTags } from '../../hooks';
 import { makeStyles } from '../../theme';
@@ -85,7 +85,7 @@ export default function Tags() {
         refetch && refetch();
       }
     }
-  }, [setTags, getTags, refetch, searchValue, currentTagsIds, tags]);
+  }, [setTags, searchValue, currentTagsIds, getTags, refetch, tags]);
 
   const availableTags = tags.filter((tag) => !currentTagsIds.includes(tag.id));
 

@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
-import { Alert, Platform, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { Alert, Platform, View } from 'react-native';
 
 import { CustomHeader } from '../components';
 import { Button, Text, TextInput } from '../core-ui';
-import { PROFILE } from '../graphql/server/profile';
+import { ProfileDocument } from '../generatedAPI/server';
 import { useStorage } from '../helpers';
 import { useAddEmail } from '../hooks';
 import { makeStyles } from '../theme';
 import { StackNavProp } from '../types';
+import { useDevice } from '../utils';
 
 type Form = {
   email: string;
@@ -17,6 +18,7 @@ type Form = {
 
 export default function AddEmail() {
   const styles = useStyles();
+  const { isTabletLandscape } = useDevice();
 
   const {
     control,
@@ -24,6 +26,7 @@ export default function AddEmail() {
     formState: { errors },
     getValues,
     formState,
+    reset,
   } = useForm<Form>({
     mode: 'onChange',
   });
@@ -33,9 +36,18 @@ export default function AddEmail() {
   const storage = useStorage();
   const username = storage.getItem('user')?.username || '';
 
-  const { reset } = useNavigation<StackNavProp<'AddEmail'>>();
+  const navigation = useNavigation<StackNavProp<'AddEmail'>>();
+  const { goBack, navigate } = navigation;
 
   const ios = Platform.OS === 'ios';
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('blur', () => {
+      reset();
+    });
+
+    return unsubscribe;
+  }, [navigation, reset]);
 
   const {
     addEmailAddress,
@@ -52,21 +64,13 @@ export default function AddEmail() {
         [
           {
             text: t('Got it'),
-            onPress: () =>
-              reset({
-                index: 0,
-                routes: [
-                  {
-                    name: 'TabNav',
-                    params: {
-                      screen: 'Profile',
-                    },
-                  },
-                  {
-                    name: 'EmailAddress',
-                  },
-                ],
-              }),
+            onPress: () => {
+              if (isTabletLandscape) {
+                navigate('EmailAddress');
+              } else {
+                goBack();
+              }
+            },
           },
         ],
       );
@@ -74,7 +78,7 @@ export default function AddEmail() {
     onError: () => {},
     refetchQueries: [
       {
-        query: PROFILE,
+        query: ProfileDocument,
         variables: { username },
       },
     ],
@@ -85,7 +89,9 @@ export default function AddEmail() {
     if (email.trim() !== '') {
       addEmailAddress({
         variables: {
-          email,
+          addEmailInput: {
+            email,
+          },
           username,
         },
       });
@@ -95,7 +101,10 @@ export default function AddEmail() {
   return (
     <View style={styles.container}>
       {success || !ios ? (
-        <CustomHeader title={t('New Email Address')} />
+        <CustomHeader
+          title={t('New Email Address')}
+          prevScreen="EmailAddress"
+        />
       ) : (
         <CustomHeader
           title={t('New Email Address')}
@@ -103,6 +112,7 @@ export default function AddEmail() {
           onPressRight={onPressSend}
           disabled={!formState.isValid}
           isLoading={addEmailAddressLoading}
+          prevScreen="EmailAddress"
         />
       )}
       <View style={styles.inputContainer}>

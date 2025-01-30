@@ -6,12 +6,14 @@ import { FIXED_COLOR_SCHEME } from '../../constants';
 import MenuItem from '../Profile/components/MenuItem';
 import { makeStyles } from '../../theme';
 import { StackNavProp } from '../../types';
+import { useDevice } from '../../utils';
 
 export default function Preferences() {
   const styles = useStyles();
 
-  const navigation = useNavigation<StackNavProp<'Profile'>>();
+  const navigation = useNavigation<StackNavProp<'Preferences'>>();
   const { navigate } = navigation;
+  const { isTablet } = useDevice();
 
   const hasFixedColorScheme = FIXED_COLOR_SCHEME !== 'no-preference';
 
@@ -19,7 +21,7 @@ export default function Preferences() {
     <View style={styles.container}>
       <ScrollView>
         <View style={styles.bodyContainer}>
-          <View style={styles.menuContainer}>
+          <View style={[styles.menuContainer, !isTablet && styles.marginTop]}>
             {!hasFixedColorScheme && (
               <MenuItem
                 title={t('Dark Mode')}
@@ -47,8 +49,6 @@ const useStyles = makeStyles(({ colors, spacing }) => ({
   bodyContainer: {
     backgroundColor: colors.backgroundDarker,
   },
-  menuContainer: {
-    backgroundColor: colors.background,
-    marginTop: spacing.m,
-  },
+  menuContainer: { backgroundColor: colors.background },
+  marginTop: { marginTop: spacing.m },
 }));

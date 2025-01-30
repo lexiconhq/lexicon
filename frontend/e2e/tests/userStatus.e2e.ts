@@ -1,4 +1,4 @@
-import { by, expect, element } from 'detox';
+import { by, element, expect } from 'detox';
 
 import { redirectPostDetail, waitTabProfile } from '../helpers';
 

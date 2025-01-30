@@ -1,4 +1,6 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Controller, useFormContext } from 'react-hook-form';
 import {
   Alert,
   Platform,
@@ -7,8 +9,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { Controller, useFormContext } from 'react-hook-form';
 import { useDebouncedCallback } from 'use-debounce';
 
 import {
@@ -22,6 +22,11 @@ import {
   TextArea,
 } from '../components';
 import {
+  FORM_DEFAULT_VALUES,
+  NO_CHANNEL_FILTER,
+  isNoChannelFilter,
+} from '../constants';
+import {
   Chip,
   Divider,
   Dot,
@@ -30,23 +35,23 @@ import {
   TextInput,
   TextInputType,
 } from '../core-ui';
-import { UploadTypeEnum } from '../generated/server';
+import { UploadTypeEnum } from '../generatedAPI/server';
 import {
+  BottomMenuNavigationParams,
+  BottomMenuNavigationScreens,
   bottomMenu,
   createReactNativeFile,
   existingPostIsValid,
   formatExtensions,
   getHyperlink,
+  getReplacedImageUploadStatus,
   insertHyperlink,
   insertImageUploadStatus,
   mentionHelper,
   newPostIsValid,
-  getReplacedImageUploadStatus,
-  useStorage,
-  parseInt,
-  BottomMenuNavigationParams,
-  BottomMenuNavigationScreens,
   onKeyPress,
+  parseInt,
+  useStorage,
 } from '../helpers';
 import {
   useKASVWorkaround,
@@ -62,11 +67,6 @@ import {
   RootStackRouteProp,
 } from '../types';
 import { useModal } from '../utils';
-import {
-  FORM_DEFAULT_VALUES,
-  NO_CHANNEL_FILTER,
-  isNoChannelFilter,
-} from '../constants';
 
 export default function NewPost() {
   const { modal, setModal } = useModal();
@@ -82,9 +82,8 @@ export default function NewPost() {
   const { canCreateTag, canTagTopics, authorizedExtensions } = useSiteSettings({
     onCompleted: ({
       site: {
-        defaultComposerCategory,
-        allowUncategorizedTopics,
         uncategorizedCategoryId,
+        siteSettings: { defaultComposerCategory, allowUncategorizedTopics },
       },
     }) => {
       if (isNoChannelFilter(selectedChannel)) {
@@ -266,6 +265,10 @@ export default function NewPost() {
     setImagesArray([...imagesArray, { link: '', done: false }]);
     setCurrentUploadToken(currentUploadToken + 1);
     const reactNativeFile = createReactNativeFile(uri);
+
+    if (!reactNativeFile) {
+      return;
+    }
     const { raw } = getValues();
     let result = insertImageUploadStatus(
       raw,
@@ -275,10 +278,12 @@ export default function NewPost() {
     setValue('raw', result);
     upload({
       variables: {
-        file: reactNativeFile,
-        userId: user.id || 0,
-        type: UploadTypeEnum.Composer,
-        token: currentUploadToken,
+        input: {
+          file: reactNativeFile,
+          userId: user.id || 0,
+          type: UploadTypeEnum.Composer,
+          token: currentUploadToken,
+        },
       },
     });
     setUri('');

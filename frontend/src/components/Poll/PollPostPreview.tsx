@@ -1,10 +1,10 @@
 import React from 'react';
 import { View } from 'react-native';
 
-import { makeStyles } from '../../theme';
 import { Text } from '../../core-ui';
-import { PollChartType } from '../../generated/server';
+import { PollChartType } from '../../generatedAPI/server';
 import { PollOption } from '../../helpers';
+import { makeStyles } from '../../theme';
 
 import { PollOptionItem } from './PollOptionItem';
 
@@ -41,7 +41,7 @@ export function PollPostPreview(props: Props) {
           {t(`Total: {number} voter`, { number: 0 })}
         </Text>
         <Text size="xs" color="lightTextDarker">
-          {t('Poll Open')}
+          {t('Poll open')}
         </Text>
       </View>
     </View>

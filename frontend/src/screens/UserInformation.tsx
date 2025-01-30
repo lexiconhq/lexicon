@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import React, { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
+import { View } from 'react-native';
 
 import {
   CustomHeader,
@@ -45,19 +45,16 @@ export default function UserInformation() {
     'HIDE_ALERT',
   );
 
-  const name = profileData?.userProfile.user.name || '';
-  const userImage = getImage(profileData?.userProfile.user.avatar || '', 'xl');
-  const bio = profileData?.userProfile.user.bioRaw;
+  const name = profileData?.profile.user.name || '';
+  const userImage = getImage(profileData?.profile.user.avatar || '', 'xl');
+  const bio = profileData?.profile.user.bioRaw;
   const splittedBio = bio ? bio.split(/\r\n|\r|\n/) : [''];
-  const statusUser =
-    // eslint-disable-next-line no-underscore-dangle
-    profileData?.userProfile.user.__typename === 'UserDetail' &&
-    profileData.userProfile.user.status;
+  const statusUser = profileData && profileData.profile?.user.status;
 
   const { data, loading, error, networkStatus, refetch, fetchMore } =
     useActivity({ variables: { username: username, offset: 0 } }, 'HIDE_ALERT');
 
-  const activities = data?.userActivity ?? [];
+  const activities = data?.activity ?? [];
 
   const onEndReached = (distanceFromEnd: number) => {
     if (distanceFromEnd === 0) {
@@ -94,7 +91,7 @@ export default function UserInformation() {
   }
 
   if (
-    (loading || profileLoading || (data && data.userActivity.length !== 0)) &&
+    (loading || profileLoading || (data && data.activity?.length !== 0)) &&
     activities.length < 1
   ) {
     return <LoadingOrError loading />;

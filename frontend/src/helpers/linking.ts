@@ -72,8 +72,15 @@ export function getValidDetailParams(params: Array<string>):
 export function navigatePostOrMessageDetail(
   route: PostOrMessageDetailRoute,
   pathParams: Array<string>,
+  isTablet?: boolean,
+  isTabletLandscape?: boolean,
 ) {
-  let navigationRoutes = postOrMessageDetailPathToRoutes({ route, pathParams });
+  let navigationRoutes = postOrMessageDetailPathToRoutes({
+    route,
+    pathParams,
+    isTablet,
+    isTabletLandscape,
+  });
 
   reset({
     index: navigationRoutes.length - 1,
@@ -86,18 +93,19 @@ export function navigatePostOrMessageDetail(
 type postOrMessageDetailPathToRoutesParams = {
   route: PostOrMessageDetailRoute;
   pathParams: Array<string>;
+  isTablet?: boolean;
+  isTabletLandscape?: boolean;
 };
 export function postOrMessageDetailPathToRoutes({
   route,
   pathParams,
+  isTablet,
+  isTabletLandscape,
 }: postOrMessageDetailPathToRoutesParams): Routes {
   const detailParams = getValidDetailParams(pathParams);
   if (!detailParams) {
     return route === DeepRoutes['message-detail']
-      ? [
-          { name: 'TabNav', state: { routes: [{ name: 'Profile' }] } },
-          { name: 'Messages' },
-        ]
+      ? generateRouteMessage({ isTablet, isTabletLandscape })
       : [{ name: 'TabNav', state: { routes: [{ name: 'Home' }] } }];
   }
   const { topicId, postNumber } = detailParams;
@@ -111,8 +119,7 @@ export function postOrMessageDetailPathToRoutes({
     };
 
     return [
-      { name: 'TabNav', state: { routes: [{ name: 'Profile' }] } },
-      { name: 'Messages' },
+      ...generateRouteMessage({ isTablet, isTabletLandscape }),
       { name: 'MessageDetail', params: messageParams },
     ];
   } else {
@@ -155,4 +162,59 @@ export function extractPathname(url: string) {
 
 export function isRouteBesidePost(route: string) {
   return route !== DeepRoutes['post-detail'];
+}
+
+/**
+ * Generates the appropriate navigation route based on the device type.
+ * On tablets, the navigation route differs between portrait and landscape modes:
+ * - In portrait mode, it navigates to the Profile stack navigator first, then to the Messages scene.
+ * - In landscape mode, it navigates to the Profile drawer navigator first, then to the Messages scene.
+ *
+ * On phones, the navigation remains within the rootStackNavigator after tap the Profile tab.
+ *
+ * @param {boolean} isTablet - Indicates whether the device is a tablet.
+ * @param {boolean} isTabletLandscape - Indicates whether the device is a tablet and orientation landscape.
+ * @returns {Routes} The generated navigation route.
+ */
+export function generateRouteMessage({
+  isTablet,
+  isTabletLandscape,
+}: {
+  isTablet?: boolean;
+  isTabletLandscape?: boolean;
+}): Routes {
+  if (!isTablet) {
+    return [
+      { name: 'TabNav', state: { routes: [{ name: 'Profile' }] } },
+      { name: 'Messages' },
+    ];
+  } else if (isTabletLandscape) {
+    return [
+      { name: 'TabNav', state: { routes: [{ name: 'Profile' }] } },
+      {
+        name: 'TabNav',
+        state: {
+          routes: [
+            { name: 'Profile', state: { routes: [{ name: 'Messages' }] } },
+          ],
+        },
+      },
+    ];
+  } else {
+    return [
+      {
+        name: 'TabNav',
+        state: {
+          routes: [
+            {
+              name: 'Profile',
+              state: {
+                routes: [{ name: 'ProfileScreen' }, { name: 'Messages' }],
+              },
+            },
+          ],
+        },
+      },
+    ];
+  }
 }

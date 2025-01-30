@@ -1,39 +1,38 @@
 import Activity from './Activity';
 import AddEmail from './AddEmail';
 import ChangePassword from './ChangePassword';
-import Channels from './Channels/Channels';
-import DarkMode from './Preferences/DarkMode';
+import { Channels } from './Channels';
 import EditProfile from './EditProfile';
+import EditUSerStatus from './EditUserStatus/EditUserStatus';
 import EmailAddress from './EmailAddress/EmailAddress';
+import EmojiPicker from './EmojiPicker';
 import FlagPost from './FlagPost';
 import Home from './Home/Home';
 import Hyperlink from './Hyperlink';
 import ImagePreview from './MessageDetail/ImagePreview';
-import Login from './Login';
 import MessageDetail from './MessageDetail/MessageDetail';
+import Poll from './MessageDetail/Poll';
 import Messages from './Messages/Messages';
 import NewMessage from './NewMessage';
+import NewPoll from './NewPoll';
 import NewPost from './NewPost';
 import Notifications from './Notifications/Notifications';
-import NewPoll from './NewPoll';
 import PostDetail from './PostDetail';
 import PostImagePreview from './PostImagePreview';
 import PostPreview from './PostPreview';
 import PostReply from './PostReply';
+import DarkMode from './Preferences/DarkMode';
 import Preferences from './Preferences/Preferences';
-import Profile from './Profile/Profile';
 import PushNotifications from './Preferences/PushNotifications';
-import Register from './Register';
+import Profile from './Profile/Profile';
 import Search from './Search';
 import SelectUser from './SelectUser/SelectUser';
-import Tags from './Tags/Tags';
-import TwoFactorAuth from './TwoFactorAuth';
-import UserInformation from './UserInformation';
-import Troubleshoot from './Troubleshoot';
-import EditUSerStatus from './EditUserStatus/EditUserStatus';
-import EmojiPicker from './EmojiPicker';
 import StackAvatarModal from './StackAvatarModal';
-import Poll from './MessageDetail/Poll';
+import Tags from './Tags/Tags';
+import Troubleshoot from './Troubleshoot';
+import UserInformation from './UserInformation';
+import AuthenticationWebView from './AuthenticationWebView';
+import Welcome from './Welcome';
 
 export {
   Activity,
@@ -42,17 +41,20 @@ export {
   Channels,
   DarkMode,
   EditProfile,
+  EditUSerStatus,
   EmailAddress,
+  EmojiPicker,
   FlagPost,
   Home,
   Hyperlink,
   ImagePreview,
-  Login,
   MessageDetail,
   Messages,
   NewMessage,
+  NewPoll,
   NewPost,
   Notifications,
+  Poll,
   PostDetail,
   PostImagePreview,
   PostPreview,
@@ -60,16 +62,12 @@ export {
   Preferences,
   Profile,
   PushNotifications,
-  Register,
   Search,
   SelectUser,
-  Tags,
-  TwoFactorAuth,
-  UserInformation,
-  Troubleshoot,
-  NewPoll,
-  EditUSerStatus,
-  EmojiPicker,
   StackAvatarModal,
-  Poll,
+  Tags,
+  Troubleshoot,
+  UserInformation,
+  AuthenticationWebView,
+  Welcome,
 };

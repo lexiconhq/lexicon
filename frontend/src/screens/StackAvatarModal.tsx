@@ -6,6 +6,7 @@ import { CustomHeader, HeaderItem, ModalHeader } from '../components';
 import { makeStyles } from '../theme';
 import { Avatar, Divider, Text } from '../core-ui';
 import { RootStackNavProp, StackAvatarUser, StackRouteProp } from '../types';
+import { isMultipleVoters } from '../helpers';
 
 export default function StackAvatarModal() {
   const ios = Platform.OS === 'ios';
@@ -58,7 +59,7 @@ export default function StackAvatarModal() {
       <View style={styles.headerContainer}>
         <Header />
         <Text size="s" color="lightTextDarker">
-          {amountVote > 1
+          {isMultipleVoters(amountVote)
             ? t(`{number} voters`, { number: amountVote })
             : t(`{number} voter`, { number: amountVote })}
         </Text>

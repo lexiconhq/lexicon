@@ -1,5 +1,5 @@
 import { POLL_CHOICE_TYPES } from '../constants';
-import { PollType } from '../generated/server';
+import { PollType } from '../generatedAPI/server';
 import { PollFormContextValues } from '../types';
 
 import { capitalizeAllWords } from './capitalizeFirstLetter';
@@ -58,4 +58,15 @@ export function combineContentWithPollContent({
   }
 
   return updatedContentWithPoll;
+}
+
+/**
+ * this function to check is there multiple voter
+ *
+ * @param voters number of voters
+ * @returns
+ */
+export function isMultipleVoters(voters: number) {
+  const convertNumber = Math.abs(voters);
+  return convertNumber > 1;
 }

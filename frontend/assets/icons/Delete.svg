@@ -1,4 +1,4 @@
 <svg id="delete" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
   <path id="Path_22872" data-name="Path 22872" d="M0,0H24V24H0Z" fill="none"/>
-  <path id="Path_22873" data-name="Path 22873" d="M6,19a2.006,2.006,0,0,0,2,2h8a2.006,2.006,0,0,0,2-2V7H6ZM19,4H15.5l-1-1h-5l-1,1H5V6H19Z" fill="#d1d1d1"/>
+  <path id="Path_22873" data-name="Path 22873" d="M6,19a2.006,2.006,0,0,0,2,2h8a2.006,2.006,0,0,0,2-2V7H6ZM19,4H15.5l-1-1h-5l-1,1H5V6H19Z" fill="currentColor"/>
 </svg>

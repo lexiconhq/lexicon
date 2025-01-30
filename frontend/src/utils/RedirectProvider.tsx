@@ -7,13 +7,10 @@ import React, {
   useState,
 } from 'react';
 
-import {
-  DeepRoutes,
-  isEmailLoginOrActivateAccount,
-  isPostOrMessageDetail,
-} from '../constants';
+import { isPostOrMessageDetail } from '../constants';
 import { navigatePostOrMessageDetail } from '../helpers';
-import { reset } from '../navigation/NavigationService';
+
+import { useDevice } from './DeviceProvider';
 
 type ContextValue = {
   redirectPath: string;
@@ -28,6 +25,7 @@ type Props = {
 };
 
 export function RedirectProvider({ children }: Props) {
+  const { isTablet, isTabletLandscape } = useDevice();
   const [redirectPath, setRedirect] = useState<string>('');
 
   const setRedirectPath = useCallback((path: string) => {
@@ -38,22 +36,14 @@ export function RedirectProvider({ children }: Props) {
     const [route, ...pathParams] = redirectPath.split('/');
 
     if (isPostOrMessageDetail(route)) {
-      navigatePostOrMessageDetail(route, pathParams);
-    } else if (isEmailLoginOrActivateAccount(route)) {
-      reset({
-        index: 0,
-        routes: [
-          {
-            name: 'Login',
-            params: {
-              emailToken: pathParams[0],
-              isActivateAccount: route === DeepRoutes['activate-account'],
-            },
-          },
-        ],
-      });
+      navigatePostOrMessageDetail(
+        route,
+        pathParams,
+        isTablet,
+        isTabletLandscape,
+      );
     }
-  }, [redirectPath]);
+  }, [isTablet, isTabletLandscape, redirectPath]);
 
   const value = useMemo(
     () => ({ redirectPath, setRedirectPath, handleRedirect }),

@@ -1,0 +1,24 @@
+diff --git a/node_modules/react-native-modal-datetime-picker/src/DateTimePickerModal.android.js b/node_modules/react-native-modal-datetime-picker/src/DateTimePickerModal.android.js
+index 3495d1b..65f35e1 100644
+--- a/node_modules/react-native-modal-datetime-picker/src/DateTimePickerModal.android.js
++++ b/node_modules/react-native-modal-datetime-picker/src/DateTimePickerModal.android.js
+@@ -11,7 +11,7 @@ const areEqual = (prevProps, nextProps) => {
+ };
+ 
+ const DateTimePickerModal = memo(
+-  ({ date, mode, isVisible, onCancel, onConfirm, onHide, ...otherProps }) => {
++  ({ date = new Date(), mode, isVisible = false, onCancel, onConfirm, onHide = () => {}, ...otherProps }) => {
+     const currentDateRef = useRef(date);
+     const [currentMode, setCurrentMode] = useState(null);
+ 
+@@ -72,10 +72,4 @@ DateTimePickerModal.propTypes = {
+   minimumDate: PropTypes.instanceOf(Date),
+ };
+ 
+-DateTimePickerModal.defaultProps = {
+-  date: new Date(),
+-  isVisible: false,
+-  onHide: () => {},
+-};
+-
+ export { DateTimePickerModal };

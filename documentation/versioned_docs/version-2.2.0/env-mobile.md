@@ -93,7 +93,7 @@ If you are interested in more details about this, the implementation of this beh
 
 This behavior of automatically overriding those values can be disabled, with `inferDevelopmentHost`, which is covered below.
 
-## `inferDevelopmentHost`
+## `inferDevelopmentHost` {#infer_development_host}
 
 :::info
 This flag is only valid under `localDevelopment`. It has no effect when used as part of `buildChannels`.

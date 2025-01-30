@@ -90,7 +90,11 @@ export function MessageItem(props: Props) {
             onPress={onPressAvatar}
           />
           {poll ? (
-            <PollChatBubble poll={poll} onPress={() => navToPoll(poll)} />
+            <PollChatBubble
+              poll={poll}
+              onPress={() => navToPoll(poll)}
+              postCreatedAt={time}
+            />
           ) : (
             <ChatBubble
               message={handleUnsupportedMarkdown(filteredMessage)}
@@ -117,7 +121,11 @@ export function MessageItem(props: Props) {
       }
       return (
         <View key={`message-${id}-poll-${index}`} style={chatBubbleStyle}>
-          <PollChatBubble poll={poll} onPress={() => navToPoll(poll)} />
+          <PollChatBubble
+            poll={poll}
+            onPress={() => navToPoll(poll)}
+            postCreatedAt={time}
+          />
         </View>
       );
     });
@@ -138,6 +146,7 @@ export function MessageItem(props: Props) {
           })}
           bgColor={isMe || noUsername ? 'primary' : undefined}
           mentions={mentionedUsers}
+          style={styles.chatBubble}
         />
       </View>
     );
@@ -199,11 +208,13 @@ const useStyles = makeStyles(({ spacing }) => {
     },
     myMessage: {
       flexDirection: 'row-reverse',
-      paddingRight: 88,
     },
     otherUserMessage: {
       flexDirection: 'row',
       marginLeft: 52,
+    },
+    chatBubble: {
+      maxWidth: '80%',
     },
   };
 });

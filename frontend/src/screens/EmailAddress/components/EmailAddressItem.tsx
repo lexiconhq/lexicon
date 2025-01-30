@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 
 import { ActivityIndicator, Divider, Icon, Text } from '../../../core-ui';
-import { PROFILE } from '../../../graphql/server/profile';
+import { ProfileDocument } from '../../../generatedAPI/server';
 import { errorHandlerAlert, useStorage } from '../../../helpers';
 import { useDeleteEmail, useSetPrimaryEmail } from '../../../hooks';
 import { makeStyles, useTheme } from '../../../theme';
@@ -41,7 +41,9 @@ export default function EmailAddressItem(props: Props) {
   const { setPrimaryEmail, loading: setPrimaryEmailLoading } =
     useSetPrimaryEmail({
       variables: {
-        selectedEmail: emailAddress,
+        input: {
+          email: emailAddress,
+        },
         username,
       },
       onError: (error) => {
@@ -50,17 +52,13 @@ export default function EmailAddressItem(props: Props) {
       },
       refetchQueries: [
         {
-          query: PROFILE,
+          query: ProfileDocument,
           variables: { username },
         },
       ],
     });
 
   const { deleteEmail, loading: deleteEmailLoading } = useDeleteEmail({
-    variables: {
-      selectedEmail: emailAddress,
-      username,
-    },
     onCompleted: () => {
       Alert.alert(
         'Success!',
@@ -74,7 +72,7 @@ export default function EmailAddressItem(props: Props) {
     },
     refetchQueries: [
       {
-        query: PROFILE,
+        query: ProfileDocument,
         variables: { username },
       },
     ],
@@ -97,7 +95,7 @@ export default function EmailAddressItem(props: Props) {
     if (!ios) {
       setShowOptions(false);
     }
-    deleteEmail();
+    deleteEmail({ variables: { email: emailAddress, username } });
   };
 
   const showAlert = () =>

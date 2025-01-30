@@ -1,17 +1,20 @@
-import React from 'react';
-import { useNavigation } from '@react-navigation/native';
 import { OperationVariables, useFragment_experimental } from '@apollo/client';
+import { useNavigation } from '@react-navigation/native';
+import React from 'react';
 
+import { TopicFragment, TopicFragmentDoc } from '../../generatedAPI/server';
 import { transformTopicToPost, useStorage } from '../../helpers';
 import { makeStyles } from '../../theme';
 import { StackNavProp } from '../../types';
-import { TopicFragment, TopicFragmentDoc } from '../../generated/server';
 import { MetricsProp } from '../Metrics/Metrics';
 
-import { PostItemFooter } from './PostItemFooter';
 import { PostItem, PostItemProps } from './PostItem';
+import { PostItemFooter } from './PostItemFooter';
 
-type Props = Pick<PostItemProps, 'prevScreen' | 'isHidden' | 'topicId'> &
+type Props = Pick<
+  PostItemProps,
+  'prevScreen' | 'isHidden' | 'topicId' | 'style'
+> &
   Pick<MetricsProp, 'onPressReply'>;
 
 function BaseHomePostItem(props: Props) {
@@ -19,7 +22,7 @@ function BaseHomePostItem(props: Props) {
   const storage = useStorage();
   const styles = useStyles();
 
-  const { topicId, prevScreen, isHidden = false, onPressReply } = props;
+  const { topicId, prevScreen, isHidden = false, onPressReply, style } = props;
 
   const cacheTopicResult = useFragment_experimental<
     TopicFragment,
@@ -88,6 +91,7 @@ function BaseHomePostItem(props: Props) {
       isLiked={isLiked}
       numberOfLines={5}
       showImageRow
+      style={style}
       footer={
         <PostItemFooter
           topicId={topicId}
@@ -115,4 +119,4 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
 }));
 let HomePostItem = React.memo(BaseHomePostItem);
-export { Props as HomePostItemProps, HomePostItem };
+export { HomePostItem, Props as HomePostItemProps };

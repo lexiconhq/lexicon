@@ -1,7 +1,7 @@
-import { by, expect, element, waitFor } from 'detox';
+import { by, element, expect } from 'detox';
 
 import { hyperLinkScene, waitTabProfile } from '../helpers';
-import { mockMessageReplies, mockNewMessageTopic } from '../apollo-mock/data';
+import { mockMessageReplies, mockNewMessageTopic } from '../rest-mock/data';
 
 const redirectToMessageDetail = async () => {
   const message = element(by.text('Testing new message')).atIndex(0);
@@ -33,7 +33,7 @@ describe('Message Screen', () => {
   });
 
   it('should reply to a message', async () => {
-    const replyMessage = mockMessageReplies[1].markdownContent;
+    const replyMessage = mockMessageReplies[1].raw;
     await expect(element(by.id('ReplyInputField:TextInput'))).toBeVisible();
     await element(by.id('ReplyInputField:TextInput')).typeText(replyMessage);
 
@@ -48,7 +48,7 @@ describe('Message Screen', () => {
     await linkButtonBarMessage();
 
     await expect(element(by.id('ReplyInputField:TextInput'))).toHaveText(
-      mockMessageReplies[2].markdownContent,
+      mockMessageReplies[2].raw,
     );
 
     await expect(element(by.id('ReplyInputField:Icon:Reply'))).toBeVisible();
@@ -71,7 +71,7 @@ describe('Message Screen', () => {
 
     await expect(element(by.id('NewMessage:TextArea'))).toBeVisible();
     await element(by.id('NewMessage:TextArea')).typeText(
-      mockNewMessageTopic.excerpt,
+      mockNewMessageTopic.raw,
     );
 
     await expect(element(by.id('NewMessage:TextInput:Title'))).toBeVisible();

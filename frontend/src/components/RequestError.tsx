@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
 import { makeVar, useReactiveVar } from '@apollo/client';
 import { getNetworkStateAsync } from 'expo-network';
+import React, { useEffect } from 'react';
 import Toast, { ToastShowParams } from 'react-native-toast-message';
 
 import { navigate, navigationRef } from '../navigation/NavigationService';
@@ -9,7 +9,7 @@ type Props = {
   children?: JSX.Element;
 };
 
-export type NetworkStatus = 'Online' | 'NoConnection' | 'ProseUnreachable';
+export type NetworkStatus = 'Online' | 'NoConnection' | 'DiscourseUnreachable';
 export type WithRequestFailed<T extends string> = T | 'REQUEST_FAILED';
 
 export let networkStatusVar = makeVar<NetworkStatus>('Online');
@@ -21,9 +21,9 @@ let toastContents: Record<WithRequestFailed<NetworkStatus>, ToastShowParams> = {
     text1: 'No internet connection',
     visibilityTime: 5000,
   },
-  ProseUnreachable: {
+  DiscourseUnreachable: {
     type: 'unreachableToast',
-    text1: 'Server unreachable',
+    text1: 'Discourse unreachable',
     visibilityTime: 5000,
   },
   Online: {

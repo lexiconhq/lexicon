@@ -119,6 +119,9 @@ const useStyles = makeStyles(({ spacing, colors }) => ({
   },
   itemContainer: {
     padding: spacing.m,
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   bodyContainer: {
     flex: 1,

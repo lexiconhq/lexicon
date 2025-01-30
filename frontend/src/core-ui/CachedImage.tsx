@@ -14,6 +14,8 @@ import * as Crypto from 'expo-crypto';
 import * as FileSystem from 'expo-file-system';
 import ImageView from 'react-native-image-viewing';
 
+import { getFormat } from '../helpers';
+
 type Interaction = {
   then: (
     onfulfilled?: (() => unknown) | undefined,
@@ -82,7 +84,9 @@ export default class CachedImage extends Component<Props> {
           await FileSystem.deleteAsync(t.fileUri);
         }
       }
-    } catch (error) {}
+    } catch (error) {
+      //empty
+    }
   }
 
   async getImageFilesystemKey(remoteURI: string) {
@@ -90,7 +94,15 @@ export default class CachedImage extends Component<Props> {
       Crypto.CryptoDigestAlgorithm.SHA256,
       remoteURI,
     );
-    return `${FileSystem.documentDirectory}${hashed}`;
+    /**
+     * we need to add an extension to the file when saving it into the file system to be able to load the image using react-native at ios when updating expo into 50
+     *
+     * Note it works fine without extension when using Image from expo-image at ios
+     *
+     * And it works well on Android without or with an extension using react-native image
+     */
+
+    return `${FileSystem.documentDirectory}${hashed}.${getFormat(remoteURI)}`;
   }
 
   async loadImage(filesystemURI: string, remoteURI: string) {
@@ -135,7 +147,9 @@ export default class CachedImage extends Component<Props> {
       if (metadata.exists) {
         try {
           await FileSystem.deleteAsync(filesystemURI);
-        } catch (err) {}
+        } catch (err) {
+          //empty
+        }
       }
     }
   }
@@ -161,7 +175,9 @@ export default class CachedImage extends Component<Props> {
 
   render() {
     let source = this.state.imgURI
-      ? { uri: this.state.imgURI }
+      ? {
+          uri: this.state.imgURI,
+        }
       : this.props.source;
     if (!source && this.props.source) {
       source = { ...this.props.source, cache: 'force-cache' };

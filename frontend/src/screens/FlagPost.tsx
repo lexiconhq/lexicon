@@ -1,6 +1,6 @@
+import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { Alert, Platform, ScrollView, View } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
 
 import {
   CustomHeader,
@@ -65,9 +65,11 @@ export default function FlagPost() {
     if (checked) {
       flag({
         variables: {
-          postId: postId,
-          postAction: checked,
-          message: flagMessage,
+          flagPostInput: {
+            id: postId,
+            postActionTypeId: checked,
+            message: flagMessage,
+          },
         },
       });
     }

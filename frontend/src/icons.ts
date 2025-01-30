@@ -48,6 +48,8 @@ import Delete from '../assets/icons/Delete.svg';
 import BoldText from '../assets/icons/BoldText.svg';
 import ItalicText from '../assets/icons/ItalicText.svg';
 import QuoteText from '../assets/icons/QuoteText.svg';
+import SideBar from '../assets/icons/SideBar.svg';
+import SideBarAndroid from '../assets/icons/SideBarAndroid.svg';
 
 export const Icons = {
   Add,
@@ -100,6 +102,8 @@ export const Icons = {
   BoldText,
   ItalicText,
   QuoteText,
+  SideBar,
+  SideBarAndroid,
 };
 
 export type IconName = keyof typeof Icons;

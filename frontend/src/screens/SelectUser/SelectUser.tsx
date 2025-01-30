@@ -1,4 +1,6 @@
+import { EventArg, useNavigation } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
+import { useFormContext } from 'react-hook-form';
 import {
   Alert,
   Dimensions,
@@ -8,8 +10,6 @@ import {
   View,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { EventArg, useNavigation } from '@react-navigation/native';
-import { useFormContext } from 'react-hook-form';
 
 import { CustomHeader, HeaderItem, ModalHeader } from '../../components';
 import { Button, Divider, Icon, Text } from '../../core-ui';
@@ -27,7 +27,8 @@ export default function SelectUser() {
   const { colors, navHeader, navNoShadow, spacing } = useTheme();
 
   const storage = useStorage();
-  const ownerName = storage.getItem('user')?.name ?? '';
+  // use username because name can be empty
+  const ownerUsername = storage.getItem('user')?.username ?? '';
 
   const navigation = useNavigation<RootStackNavProp<'SelectUser'>>();
   const { navigate, setOptions, goBack } = navigation;
@@ -184,13 +185,16 @@ export default function SelectUser() {
                     .includes(searchValue.toLowerCase()) &&
                   !selectedUsers.some(
                     (selectedUser) =>
-                      selectedUser.name === user.name &&
+                      // This condition checks if `selectedUser.name` is not null or empty.
+                      // If it's not empty, it will also check the name condition.
+                      // If `selectedUser.name` is empty, only the other conditions are applied.
+                      (!selectedUser.name || selectedUser.name === user.name) &&
                       selectedUser.username === user.username &&
                       user.avatar === selectedUser.avatar,
                   ),
               )
               .map((user) => {
-                if (user.name && user.name !== ownerName) {
+                if (user.username !== ownerUsername) {
                   const isCheck = currentUsers.includes(user.username);
                   let userImage = getImage(user.avatar || '');
 
@@ -198,7 +202,7 @@ export default function SelectUser() {
                     <UserItem
                       key={user.username}
                       avatar={userImage}
-                      name={user.name}
+                      name={user.name || ''}
                       username={user.username}
                       isCheck={isCheck}
                       onSelectedUser={onSelectedUser}
@@ -214,26 +218,21 @@ export default function SelectUser() {
 
           {selectedUsers.length > 0 &&
             selectedUsers.map((user) => {
-              if (user.name) {
+              if (user.username) {
                 const isCheck = currentUsers.includes(user.username);
                 let userImage = getImage(user.avatar || '');
                 return (
                   <UserItem
                     key={user.username}
                     avatar={userImage}
-                    name={user.name}
+                    name={user.name || ''}
                     username={user.username}
                     isCheck={isCheck}
                     onSelectedUser={onSelectedUser}
                   />
                 );
-              } else {
-                return (
-                  <Text style={styles.noUser}>
-                    {t('Find Users with the Search Bar above.')}
-                  </Text>
-                );
               }
+              return null;
             })}
           {!ios && (
             <Button

@@ -20,7 +20,6 @@ type JsonValue =
 
 type Reviver<T> = (parsed: JsonValue) => T;
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 type DataStore<T extends object> = {
   getItem: <Key extends keyof T>(key: Key) => T[Key] | null;
   setItem: <Key extends keyof T>(key: Key, value: T[Key]) => void;
@@ -53,7 +52,9 @@ export function createCachedStorage<
               // This will throw if the string does not parse or if the parsed
               // value cannot be revived successfully.
               data[keySchema] = reviver(JSON.parse(value));
-            } catch (e) {}
+            } catch (e) {
+              //empty
+            }
           }
         }
         setLoading(false);

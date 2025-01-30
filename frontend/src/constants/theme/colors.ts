@@ -4,6 +4,7 @@ export const FIXED_COLOR_SCHEME: ColorScheme = 'no-preference';
 
 export const BASE_COLORS = {
   pureBlack: '#000000',
+  pureBlack40Opacity: '#00000066',
   black100: '#1A1A1A',
   black60: '#757575',
   black20: '#D1D1D1',
@@ -34,6 +35,7 @@ export const BASE_COLORS = {
   lightRed: '#FFEBEB',
   pinkRed: '#FD6565',
   lightBlue: '#E8EFFF',
+  azureBlue10: '#2B6AFF1A',
 
   squidInk: '#262A31',
   approxBlackRussian: '#1C1F24',
@@ -88,11 +90,15 @@ export const FUNCTIONAL_COLORS = {
   error: BASE_COLORS.bittersweet,
   liked: BASE_COLORS.bittersweet,
 
+  activeSideBarAndroid: BASE_COLORS.azureBlue10,
+
   primary: BASE_COLORS.royalBlue,
 
   grey: BASE_COLORS.grey,
   pureWhite: BASE_COLORS.pureWhite,
   pureBlack: BASE_COLORS.pureBlack,
+
+  backDrop: BASE_COLORS.pureBlack40Opacity,
 
   skeletonLoadingLightBackGround: BASE_COLORS.grey,
   skeletonLoadingLightHighlight: BASE_COLORS.lightSilver,

@@ -1,4 +1,4 @@
-import { GetMessageDetailQuery } from '../generated/server';
+import { GetMessageDetailQuery } from '../generatedAPI/server';
 import {
   Message,
   MessageContent,
@@ -9,7 +9,7 @@ import { formatRelativeTime } from './formatRelativeTime';
 import { getImage } from './getUserImage';
 
 type MessagePostStream =
-  GetMessageDetailQuery['privateMessageDetail']['postStream'];
+  GetMessageDetailQuery['privateMessageDetailQuery']['postStream'];
 
 type MessageDetailContent = {
   postStream: MessagePostStream;

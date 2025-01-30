@@ -1,44 +1,44 @@
-import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
+import React from 'react';
 
 import {
   Activity,
   AddEmail,
+  AuthenticationWebView,
   ChangePassword,
   Channels,
   DarkMode,
   EditProfile,
+  EditUSerStatus,
   EmailAddress,
+  EmojiPicker,
   FlagPost,
   Hyperlink,
   ImagePreview,
-  Login,
   MessageDetail,
   Messages,
   NewMessage,
+  NewPoll,
   NewPost,
   Notifications,
-  NewPoll,
+  Poll,
   PostDetail,
   PostImagePreview,
   PostPreview,
   PostReply,
   Preferences,
   PushNotifications,
-  Register,
   Search,
   SelectUser,
+  StackAvatarModal,
   Tags,
   Troubleshoot,
-  TwoFactorAuth,
   UserInformation,
-  EditUSerStatus,
-  EmojiPicker,
-  StackAvatarModal,
-  Poll,
+  Welcome,
 } from '../screens';
 import { useTheme } from '../theme';
 import { RootStackParamList } from '../types';
+import { useDevice } from '../utils';
 import { AuthContextProps } from '../utils/AuthProvider';
 
 import TabNavigator from './TabNavigator';
@@ -49,8 +49,11 @@ type RootStackNavigatorProps = {
   authProps: Exclude<AuthContextProps, { isLoading: true }>;
 };
 export default function RootStackNavigator(props: RootStackNavigatorProps) {
-  const { authProps } = props;
+  const {
+    authProps: { loginRequired, token },
+  } = props;
   const { navHeader, navModal, navNoShadow, shadow } = useTheme();
+  const { isTablet } = useDevice();
 
   return (
     <RootStack.Navigator>
@@ -63,24 +66,24 @@ export default function RootStackNavigator(props: RootStackNavigatorProps) {
       >
         {
           /**
-           *  First condition for private discourse where you need login
-           * */
+           * Condition to handle private Discourse instances that require login.
+           *
+           * One common case for the undefined `loginRequired` is a site setting error where the API cannot be accessed because login is required.
+           */
 
-          !authProps.token && !authProps.canSignUp ? (
-            <RootStack.Screen
-              name="Login"
-              component={Login}
-              options={{ title: '' }}
-              initialParams={{
-                emailToken: undefined,
-                isActivateAccount: undefined,
-              }}
-            />
+          !token && (loginRequired || loginRequired === undefined) ? (
+            <>
+              <RootStack.Screen
+                name="Welcome"
+                component={Welcome}
+                options={{ title: '', ...navNoShadow }}
+              />
+            </>
           ) : /**
            * second condition is used for public discourse where you can access home scene but not profile scene in tab if not login
            */
 
-          !authProps.token && authProps.canSignUp ? (
+          !token && !loginRequired ? (
             <>
               <RootStack.Screen
                 name="TabNav"
@@ -89,9 +92,9 @@ export default function RootStackNavigator(props: RootStackNavigatorProps) {
               />
               {/* this one require for tab in profile  */}
               <RootStack.Screen
-                name="Login"
-                component={Login}
-                options={{ title: '' }}
+                name="Welcome"
+                component={Welcome}
+                options={{ title: '', ...navNoShadow }}
               />
             </>
           ) : (
@@ -99,7 +102,7 @@ export default function RootStackNavigator(props: RootStackNavigatorProps) {
              * The last condition applies when the user is already logged in.
              * */
 
-            authProps.token && (
+            token && (
               <>
                 <RootStack.Screen
                   name="TabNav"
@@ -107,66 +110,68 @@ export default function RootStackNavigator(props: RootStackNavigatorProps) {
                   options={{ title: '', headerShown: false }}
                 />
                 <RootStack.Screen
-                  name="Messages"
-                  component={Messages}
-                  options={{ title: t('Messages') }}
-                />
-                <RootStack.Screen
                   name="MessageDetail"
                   component={MessageDetail}
                   options={{ title: t('Message') }}
                 />
-                <RootStack.Screen
-                  name="AddEmail"
-                  component={AddEmail}
-                  options={{ title: t('New Email Address') }}
-                />
-                <RootStack.Screen
-                  name="ChangePassword"
-                  component={ChangePassword}
-                  options={{ title: t('Change Password') }}
-                />
-                <RootStack.Screen
-                  name="EditProfile"
-                  component={EditProfile}
-                  options={{ title: '' }}
-                />
-                <RootStack.Screen
-                  name="EmailAddress"
-                  component={EmailAddress}
-                  options={{ title: t('Email Address') }}
-                />
-                <RootStack.Screen
-                  name="EditUserStatus"
-                  component={EditUSerStatus}
-                  options={{ title: '' }}
-                />
-                <RootStack.Screen
-                  name="Preferences"
-                  component={Preferences}
-                  options={{ title: t('Preferences') }}
-                />
+                {!isTablet && (
+                  <>
+                    <RootStack.Screen
+                      name="Messages"
+                      component={Messages}
+                      options={{ title: t('Messages') }}
+                    />
+                    <RootStack.Screen
+                      name="AddEmail"
+                      component={AddEmail}
+                      options={{ title: t('New Email Address') }}
+                    />
+                    <RootStack.Screen
+                      name="ChangePassword"
+                      component={ChangePassword}
+                      options={{ title: t('Change Password') }}
+                    />
+                    <RootStack.Screen
+                      name="EditProfile"
+                      component={EditProfile}
+                      options={{ title: '' }}
+                    />
+                    <RootStack.Screen
+                      name="EmailAddress"
+                      component={EmailAddress}
+                      options={{ title: t('Email Address') }}
+                    />
+                    <RootStack.Screen
+                      name="EditUserStatus"
+                      component={EditUSerStatus}
+                      options={{ title: '' }}
+                    />
+                    <RootStack.Screen
+                      name="Preferences"
+                      component={Preferences}
+                      options={{ title: t('Preferences') }}
+                    />
+                    <RootStack.Screen
+                      name="Notifications"
+                      component={Notifications}
+                      options={{ title: t('Notifications') }}
+                    />
+                    <RootStack.Screen
+                      name="Activity"
+                      component={Activity}
+                      options={{ title: t('Activity') }}
+                    />
+                  </>
+                )}
               </>
             )
           )
         }
 
         <RootStack.Screen
-          name="Activity"
-          component={Activity}
-          options={{ title: t('Activity') }}
-        />
-
-        <RootStack.Screen
           name="ImagePreview"
           component={ImagePreview}
           options={{ headerShown: false }}
-        />
-
-        <RootStack.Screen
-          name="Notifications"
-          component={Notifications}
-          options={{ title: t('Notifications') }}
         />
         <RootStack.Screen
           name="PostDetail"
@@ -174,20 +179,9 @@ export default function RootStackNavigator(props: RootStackNavigatorProps) {
           options={{ title: '' }}
         />
         <RootStack.Screen
-          name="Register"
-          component={Register}
-          options={{ title: t('Register') }}
-        />
-        <RootStack.Screen
           name="Search"
           component={Search}
           options={{ headerShown: false }}
-        />
-
-        <RootStack.Screen
-          name="TwoFactorAuth"
-          component={TwoFactorAuth}
-          options={{ title: '' }}
         />
         <RootStack.Screen
           name="UserInformation"
@@ -198,7 +192,7 @@ export default function RootStackNavigator(props: RootStackNavigatorProps) {
       <RootStack.Group
         screenOptions={{ ...navHeader, ...navModal, presentation: 'modal' }}
       >
-        {authProps.token && (
+        {token && (
           <>
             <RootStack.Screen
               name="FlagPost"
@@ -268,7 +262,6 @@ export default function RootStackNavigator(props: RootStackNavigatorProps) {
           options={{ title: t('Channels'), ...navNoShadow, ...navModal }}
           initialParams={{ prevScreen: 'Home' }}
         />
-
         <RootStack.Screen
           name="HyperLink"
           component={Hyperlink}
@@ -287,6 +280,11 @@ export default function RootStackNavigator(props: RootStackNavigatorProps) {
         <RootStack.Screen
           name="StackAvatar"
           component={StackAvatarModal}
+          options={{ ...navModal }}
+        />
+        <RootStack.Screen
+          name="AuthenticationWebView"
+          component={AuthenticationWebView}
           options={{ ...navModal }}
         />
       </RootStack.Group>

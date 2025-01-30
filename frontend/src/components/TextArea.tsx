@@ -13,6 +13,7 @@ import {
 import { MentionedText, TextInputType } from '../core-ui';
 import { makeStyles, useTheme } from '../theme';
 import { CursorPosition } from '../types';
+import { useDevice } from '../utils';
 
 const screen = Dimensions.get('screen');
 
@@ -34,6 +35,7 @@ type Props = ViewProps & {
 export function TextArea(props: Props) {
   const styles = useStyles();
   const { colors } = useTheme();
+  const { isTabletLandscape } = useDevice();
 
   const {
     value,
@@ -56,8 +58,12 @@ export function TextArea(props: Props) {
 
   // Normal variant used in NewPost and NewMessaage
   // Large variant used in PostReply
-  const NORMAL_IOS_VIEW_SIZE = screen.height * 0.24;
-  const LARGE_IOS_VIEW_SIZE = screen.height * 0.28;
+  const NORMAL_IOS_VIEW_SIZE =
+    screen.height *
+    (isTabletLandscape ? (screen.height > 1200 ? 0.15 : 0.19) : 0.24);
+  const LARGE_IOS_VIEW_SIZE =
+    screen.height *
+    (isTabletLandscape ? (screen.height > 1200 ? 0.22 : 0.19) : 0.28);
   const IOS_VIEW_SIZE = large ? LARGE_IOS_VIEW_SIZE : NORMAL_IOS_VIEW_SIZE;
 
   const MENTION_TEXT_AREA_VIEW_SIZE = 200;

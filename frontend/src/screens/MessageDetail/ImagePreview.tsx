@@ -1,13 +1,16 @@
-import React, { useRef, useState } from 'react';
-import { ImageBackground, Platform, SafeAreaView, View } from 'react-native';
-import { KeyboardAccessoryView } from 'react-native-keyboard-accessory';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Constants from 'expo-constants';
 import { StatusBar } from 'expo-status-bar';
+import React, { useRef, useState } from 'react';
+import { ImageBackground, Platform, SafeAreaView, View } from 'react-native';
+import { KeyboardAccessoryView } from 'react-native-keyboard-accessory';
 
 import { MentionList } from '../../components';
 import { Icon, TextInputType } from '../../core-ui';
-import { UploadTypeEnum } from '../../generated/server';
+import {
+  GetMessageDetailDocument,
+  UploadTypeEnum,
+} from '../../generatedAPI/server';
 import {
   convertUrl,
   createReactNativeFile,
@@ -15,10 +18,9 @@ import {
   mentionHelper,
   useStorage,
 } from '../../helpers';
-import { useMention, useReplyPost } from '../../hooks';
+import { useMention, useReplyPrivateMessage } from '../../hooks';
 import { makeStyles, useTheme } from '../../theme';
 import { CursorPosition, StackNavProp, StackRouteProp } from '../../types';
-import { GET_MESSAGE_DETAIL } from '../../graphql/server/message';
 
 import { ReplyInputField } from './components';
 
@@ -47,8 +49,8 @@ export default function ImagePreview() {
 
   const user = useStorage().getItem('user');
 
-  const { reply } = useReplyPost({
-    onCompleted: ({ reply: { postNumber } }) => {
+  const { reply } = useReplyPrivateMessage({
+    onCompleted: ({ replyPrivateMessage: { postNumber } }) => {
       /**
        * Add a delay before navigating to the message detail screen because after finishing the upload to Discourse, it takes time for Discourse to process the image and generate a link.
        * Here's an example of what we get without adding time:
@@ -68,8 +70,11 @@ export default function ImagePreview() {
     refetchQueries(result) {
       return [
         {
-          query: GET_MESSAGE_DETAIL,
-          variables: { topicId, postNumber: result.data?.reply.postNumber },
+          query: GetMessageDetailDocument,
+          variables: {
+            topicId,
+            postNumber: result.data?.replyPrivateMessage.postNumber,
+          },
         },
       ];
     },

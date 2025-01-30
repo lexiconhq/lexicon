@@ -1,4 +1,6 @@
+import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useMemo, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -7,17 +9,22 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { Controller, useForm } from 'react-hook-form';
 
-import { Button, Emoji, RadioButton, Text, TextInput } from '../../core-ui';
-import { makeStyles } from '../../theme';
 import { CustomHeader, DateTimePicker } from '../../components';
-import { StackNavProp, StackRouteProp } from '../../types';
-import { errorHandlerAlert, formatDateTime, formatTime } from '../../helpers';
+import { DEFAULT_EMOJI_STATUS } from '../../constants';
+import { Button, Emoji, RadioButton, Text, TextInput } from '../../core-ui';
+import { ProfileDocument } from '../../generatedAPI/server';
+import {
+  errorHandlerAlert,
+  formatDateTime,
+  formatTime,
+  useStorage,
+} from '../../helpers';
 import { addHour } from '../../helpers/addHour';
 import { useDeleteUserStatus, useEditUserStatus } from '../../hooks';
-import { DEFAULT_EMOJI_STATUS } from '../../constants';
+import { makeStyles } from '../../theme';
+import { StackNavProp, StackRouteProp } from '../../types';
+import { useDevice } from '../../utils';
 
 import DateTimeButton from './components/DateTimeButton';
 
@@ -29,6 +36,10 @@ type FormValues = {
 
 export default function EditUserStatus() {
   const styles = useStyles();
+  const { isTablet, isTabletLandscape, isPortrait } = useDevice();
+
+  const storage = useStorage();
+  const username = storage.getItem('user')?.username || '';
 
   const SelectionList = useMemo(
     () => [
@@ -77,8 +88,17 @@ export default function EditUserStatus() {
   const [showTimePicker, setShowTimePicker] = useState(false);
 
   const selectedCheck = watch('checked');
-  const status = getValues('status');
+  const status = watch('status');
   const isCustomDate = selectedCheck === 5;
+
+  const refetchQueries = isTabletLandscape
+    ? [
+        {
+          query: ProfileDocument,
+          variables: { username },
+        },
+      ]
+    : undefined;
 
   const { deleteUserStatus, loading: deleteUserStatusLoading } =
     useDeleteUserStatus({
@@ -86,16 +106,26 @@ export default function EditUserStatus() {
         errorHandlerAlert(error);
       },
       onCompleted: () => {
-        navigate('Profile');
+        if (isTablet && isPortrait) {
+          navigate('ProfileScreen');
+        } else {
+          navigate('TabNav', { screen: 'Profile' });
+        }
       },
+      refetchQueries,
     });
   const { editUserStatus, loading: editUserStatusLoading } = useEditUserStatus({
     onError: (error) => {
       errorHandlerAlert(error);
     },
     onCompleted: () => {
-      navigate('Profile');
+      if (isTablet && isPortrait) {
+        navigate('ProfileScreen');
+      } else {
+        navigate('TabNav', { screen: 'Profile' });
+      }
     },
+    refetchQueries,
   });
 
   const isLoading = deleteUserStatusLoading || editUserStatusLoading;
@@ -121,9 +151,11 @@ export default function EditUserStatus() {
 
     await editUserStatus({
       variables: {
-        endsAt: endDate,
-        emoji: emojiCode,
-        description: data.status,
+        editUserStatusInput: {
+          endsAt: endDate,
+          emoji: emojiCode,
+          description: data.status,
+        },
       },
     });
   });
@@ -149,14 +181,15 @@ export default function EditUserStatus() {
     );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, !isTablet && styles.marginTop]}>
       <CustomHeader
         title="Status"
         rightTitle="Done"
         onPressRight={onDone}
         isLoading={isLoading}
-        noShadow
+        noShadow={!isTablet}
         disabled={!status}
+        hideHeaderLeft={isTabletLandscape}
       />
       <KeyboardAvoidingView
         style={styles.flex}
@@ -312,17 +345,15 @@ export default function EditUserStatus() {
 }
 
 const useStyles = makeStyles(({ colors, spacing }) => ({
-  flex: {
-    flex: 1,
-  },
+  flex: { flex: 1 },
   container: {
     flexGrow: 1,
     backgroundColor: colors.background,
     flex: 1,
     paddingHorizontal: spacing.xxl,
     paddingVertical: spacing.xxl,
-    marginTop: spacing.s,
   },
+  marginTop: { marginTop: spacing.s },
   statusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -333,7 +364,6 @@ const useStyles = makeStyles(({ colors, spacing }) => ({
   yourStatusText: {
     marginBottom: spacing.m,
   },
-
   removeStatusContainer: {
     paddingTop: spacing.xxl,
   },

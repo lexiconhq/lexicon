@@ -1,4 +1,7 @@
 /* eslint-disable styles/style-maker-no-unused */
+import { useNavigation } from '@react-navigation/core';
+import * as Linking from 'expo-linking';
+import mentionFlowDock from 'markdown-it-flowdock';
 import React from 'react';
 import { Platform, StyleProp, View, ViewStyle } from 'react-native';
 import BaseMarkdown, {
@@ -6,23 +9,19 @@ import BaseMarkdown, {
   MarkdownIt,
   MarkdownProps,
 } from 'react-native-markdown-display';
-import { useNavigation } from '@react-navigation/core';
-import mentionFlowDock from 'markdown-it-flowdock';
-import * as Linking from 'expo-linking';
-import { useReactiveVar } from '@apollo/client';
 
+import { discourseHost } from '../constants';
+import CachedImage from '../core-ui/CachedImage';
 import { CustomImage } from '../core-ui/CustomImage';
 import { Text } from '../core-ui/Text';
-import { makeStyles } from '../theme';
-import { StackNavProp } from '../types';
-import CachedImage from '../core-ui/CachedImage';
-import { isEmojiImage } from '../helpers/emojiHandler';
 import {
   extractPathname,
   filterMarkdownContent,
   getValidDetailParams,
 } from '../helpers';
-import { discourseHostVar } from '../constants';
+import { isEmojiImage } from '../helpers/emojiHandler';
+import { makeStyles } from '../theme';
+import { StackNavProp } from '../types';
 
 type Props = Omit<MarkdownProps, 'rules' | 'style'> & {
   content: string;
@@ -38,7 +37,6 @@ const ios = Platform.OS === 'ios';
 export function Markdown(props: Props) {
   const { navigate, push } = useNavigation<StackNavProp<'UserInformation'>>();
   let styles = useStyles();
-  let discourseHost = useReactiveVar(discourseHostVar);
 
   let {
     content,

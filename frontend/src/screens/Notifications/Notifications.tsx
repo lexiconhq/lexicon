@@ -1,3 +1,4 @@
+import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {
   ActionSheetIOS,
@@ -10,30 +11,31 @@ import {
   View,
   VirtualizedList,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 
+import { client } from '../../api/client';
 import {
   CustomHeader,
   FooterLoadingIndicator,
   LoadingOrError,
 } from '../../components';
 import { Text } from '../../core-ui';
+import { NotificationDocument } from '../../generatedAPI/server';
 import { errorHandler, notificationHandler } from '../../helpers';
 import { useMarkRead, useNotification } from '../../hooks';
 import { makeStyles, useTheme } from '../../theme';
 import {
   Notification as NotificationDataType,
-  StackNavProp,
   RootStackParamList,
+  StackNavProp,
 } from '../../types';
-import { client } from '../../graphql/client';
-import { NotificationDocument } from '../../generated/server';
+import { useDevice } from '../../utils';
 
 import NotificationItem from './components/NotificationItem';
 
 export default function Notifications() {
   const styles = useStyles();
   const { colors } = useTheme();
+  const { isTabletLandscape } = useDevice();
 
   const ios = Platform.OS === 'ios';
 
@@ -108,7 +110,7 @@ export default function Notifications() {
     }
   };
 
-  let rawNotifications = data?.notification.notifications ?? [];
+  let rawNotifications = data?.notificationQuery.notifications ?? [];
   let handledNotifications = notificationHandler(
     rawNotifications,
     navToPostDetail,
@@ -118,7 +120,8 @@ export default function Notifications() {
 
   useEffect(() => {
     if (
-      data?.notification.totalRowsNotifications === handledNotifications.length
+      data?.notificationQuery.totalRowsNotifications ===
+      handledNotifications.length
     ) {
       setIsLoadMore(false);
     } else {
@@ -134,20 +137,22 @@ export default function Notifications() {
     if (loading) {
       return <LoadingOrError loading />;
     }
-    if (data?.notification.totalRowsNotifications === 0) {
+    if (data?.notificationQuery.totalRowsNotifications === 0) {
       return <LoadingOrError message={t('No Notifications available')} />;
     }
   }
 
   const handleMarkAsRead = async (notificationId: number) => {
     try {
-      await markAsRead({ variables: { notificationId } });
+      await markAsRead({
+        variables: { markReadInput: { id: notificationId } },
+      });
 
       /**
        * change value notification seen to true
        */
 
-      const newDataNotification = data?.notification?.notifications?.map(
+      const newDataNotification = data?.notificationQuery?.notifications?.map(
         (data) => {
           if (data.id === notificationId && !data.seen) {
             return { ...data, seen: true };
@@ -166,9 +171,11 @@ export default function Notifications() {
         data: {
           notification: {
             notifications: newDataNotification,
-            totalRowsNotifications: data?.notification.totalRowsNotifications,
-            seenNotificationId: data?.notification.seenNotificationId,
-            loadMoreNotifications: data?.notification.loadMoreNotifications,
+            totalRowsNotifications:
+              data?.notificationQuery.totalRowsNotifications,
+            seenNotificationId: data?.notificationQuery.seenNotificationId,
+            loadMoreNotifications:
+              data?.notificationQuery.loadMoreNotifications,
           },
         },
       });
@@ -238,6 +245,7 @@ export default function Notifications() {
           rightIcon="More"
           onPressRight={onPressMore}
           isLoading={markAsReadLoading}
+          hideHeaderLeft={isTabletLandscape}
         />
         <VirtualizedList
           data={handledNotifications}

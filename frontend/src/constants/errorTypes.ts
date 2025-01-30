@@ -3,8 +3,12 @@ export const errorTypes = {
   sessionExpired: 'Session Expired',
   unauthorizedAccess: 'Authorization Failed',
   incorrectCredentials: 'incorrect username, email or password',
+  invalidAccess: 'Invalid Access',
+  invalidAccessApi: 'invalid_access',
 };
 
+export const ERROR_413 =
+  'The file size of your image exceeds the maximum allowed file size.';
 /**
  * Below are the error messages that are displayed to the user.
  */

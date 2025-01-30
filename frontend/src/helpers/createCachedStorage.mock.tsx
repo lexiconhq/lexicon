@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {
   createContext,
   ReactElement,
@@ -7,10 +8,8 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import mockData from '../__mocks__/mockData';
-import Config from '../../Config';
 
 type JsonValue =
   | null
@@ -23,7 +22,6 @@ type JsonValue =
 
 type Reviver<T> = (parsed: JsonValue) => T;
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 type DataStore<T extends object> = {
   getItem: <Key extends keyof T>(key: Key) => T[Key] | null;
   setItem: <Key extends keyof T>(key: Key, value: T[Key]) => void;
@@ -57,14 +55,6 @@ export function createCachedStorage<
           JSON.stringify(mockData.users[0]),
         );
 
-        await AsyncStorage.setItem(
-          prefix + String('userStatus'),
-          JSON.stringify({
-            emoji_set: 'twitter',
-            base_path: Config.proseUrl,
-          }),
-        );
-
         for (let [key, reviver] of Object.entries(schema)) {
           let value = await AsyncStorage.getItem(prefix + String(key));
           if (value != null) {
@@ -73,7 +63,9 @@ export function createCachedStorage<
               // This will throw if the string does not parse or if the parsed
               // value cannot be revived successfully.
               data[keySchema] = reviver(JSON.parse(value));
-            } catch (e) {}
+            } catch (e) {
+              //empty
+            }
           }
         }
         setLoading(false);

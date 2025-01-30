@@ -1,3 +1,4 @@
+import { useNavigation, useRoute } from '@react-navigation/native';
 import React, {
   useCallback,
   useEffect,
@@ -5,24 +6,23 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Platform, SafeAreaView, TouchableOpacity } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
 import { useFormContext } from 'react-hook-form';
+import { Platform, SafeAreaView, TouchableOpacity } from 'react-native';
 
 import {
   ActionSheet,
   ActionSheetProps,
+  CustomFlatList,
+  CustomFlatlistRefType,
   CustomHeader,
   FooterLoadingIndicator,
   LoadingOrError,
   NestedComment,
-  CustomFlatList,
-  CustomFlatlistRefType,
-  RenderItemCustomOption,
+  PostDetailHeaderItem,
+  PostDetailHeaderItemProps,
   PressMoreParams,
   PressReplyParams,
-  PostDetailHeaderItemProps,
-  PostDetailHeaderItem,
+  RenderItemCustomOption,
 } from '../../components';
 import {
   MAX_POST_COUNT_PER_REQUEST,
@@ -45,9 +45,9 @@ import {
   useTopicDetail,
   useTopicTiming,
 } from '../../hooks';
+import { useInitialLoad } from '../../hooks/useInitialLoad';
 import { makeStyles, useTheme } from '../../theme';
 import { Post, StackNavProp, StackRouteProp } from '../../types';
-import { useInitialLoad } from '../../hooks/useInitialLoad';
 
 import { useNotificationScroll } from './hooks';
 import PostDetailSkeletonLoading from './PostDetailSkeletonLoading';
@@ -143,9 +143,7 @@ export default function PostDetail() {
               index: 1,
               routes: [
                 { name: 'TabNav', state: { routes: [{ name: 'Home' }] } },
-                {
-                  name: 'Login',
-                },
+                { name: 'Welcome' },
               ],
             });
           } else {
@@ -159,9 +157,9 @@ export default function PostDetail() {
   );
 
   const { postRaw } = usePostRaw({
-    onCompleted: ({ postRaw: { markdownContent, mentions } }) => {
-      setContent(markdownContent);
-      setMentionedUsers(mentions);
+    onCompleted: ({ postRaw: { cooked } }) => {
+      setContent(cooked.markdownContent);
+      setMentionedUsers(cooked.mentions);
     },
   });
 

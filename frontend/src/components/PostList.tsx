@@ -1,8 +1,8 @@
 import React, { MutableRefObject } from 'react';
-import { FlatListProps, RefreshControl, ListRenderItem } from 'react-native';
+import { FlatListProps, ListRenderItem, RefreshControl } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { UserActionFragment } from '../generated/server';
+import { UserActionFragment } from '../generatedAPI/server';
 import { makeStyles, useTheme } from '../theme';
 import { Post, PostWithoutId } from '../types';
 

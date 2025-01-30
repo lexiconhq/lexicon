@@ -1,4 +1,3 @@
-/* eslint no-underscore-dangle: 0 */
 import { Alert } from 'react-native';
 
 import { FIRST_POST_NUMBER } from '../constants';
@@ -8,6 +7,33 @@ import {
   RawNotificationsType,
   RootStackParamList,
 } from '../types';
+
+type NotificationTypename =
+  | 'BadgeNotification'
+  | 'ActionPostNotification'
+  | 'AdminMessageNotification'
+  | 'AdminMessageInvitation'
+  | 'InviteeAccept'
+  | 'UnknownNotification';
+
+function getNotificationTypename(
+  item: Record<string, string | number | boolean | null>,
+): NotificationTypename {
+  switch (true) {
+    case item.badgeId != null:
+      return 'BadgeNotification';
+    case item.originalPostId != null:
+      return 'ActionPostNotification';
+    case item.groupId != null:
+      return 'AdminMessageNotification';
+    case item.topicTitle != null:
+      return 'AdminMessageInvitation';
+    case item.displayUsername != null:
+      return 'InviteeAccept';
+    default:
+      return 'UnknownNotification';
+  }
+}
 
 export function notificationHandler(
   data: Array<RawNotificationsType>,
@@ -20,6 +46,7 @@ export function notificationHandler(
   data.forEach((item) => {
     const { data, notificationType: notifType } = item;
     const notificationType = notifType ?? 0;
+    const typename = getNotificationTypename(data);
 
     const onPress = (
       topicId: number | undefined,
@@ -27,8 +54,8 @@ export function notificationHandler(
       // badgeId: number | undefined,
     ) => {
       if (
-        (data.__typename === 'ActionPostNotification' ||
-          data.__typename === 'AdminMessageInvitation') &&
+        (typename === 'ActionPostNotification' ||
+          typename === 'AdminMessageInvitation') &&
         topicId
       ) {
         switch (notificationType) {
@@ -64,9 +91,9 @@ export function notificationHandler(
             return;
           }
         }
-      } else if (data.__typename === 'InviteeAccept') {
+      } else if (typename === 'InviteeAccept') {
         return navToUserInformation({
-          username: data.displayUsername,
+          username: data.displayUsername || '',
         });
       } else if (
         notificationType === NotificationType.PostApproved &&
@@ -119,9 +146,10 @@ export function notificationHandler(
       }
     }
 
-    switch (data.__typename) {
+    switch (typename) {
       case 'ActionPostNotification':
         count = data.count || 0;
+      // eslint-disable-next-line no-fallthrough
       case 'AdminMessageInvitation': {
         const { topicTitle } = data;
         switch (notificationType) {
@@ -188,26 +216,26 @@ export function notificationHandler(
             break;
           }
           case NotificationType.WatchingCategoryOrTag: {
-            message = topicTitle;
+            message = topicTitle || '';
             break;
           }
         }
 
         const name =
-          data.__typename === 'ActionPostNotification'
+          typename === 'ActionPostNotification'
             ? data.originalUsername
             : data.displayUsername;
 
         const postId =
-          data.__typename === 'ActionPostNotification'
-            ? data.originalPostId
+          typename === 'ActionPostNotification'
+            ? data.originalPostId || undefined
             : undefined;
 
         tempNotification.push({
           id,
           topicId: item.topicId ?? undefined,
           postId,
-          name,
+          name: name || '',
           message,
           createdAt,
           seen,
@@ -224,7 +252,7 @@ export function notificationHandler(
 
         tempNotification.push({
           id,
-          name: groupName,
+          name: groupName || '',
           message,
           createdAt,
           seen,
@@ -236,8 +264,8 @@ export function notificationHandler(
       case 'BadgeNotification': {
         tempNotification.push({
           id,
-          badgeId: data.badgeId,
-          name: data.badgeName,
+          badgeId: data.badgeId || undefined,
+          name: data.badgeName || '',
           message: 'Got a new badge',
           createdAt,
           seen,
@@ -249,7 +277,7 @@ export function notificationHandler(
       case 'InviteeAccept': {
         tempNotification.push({
           id,
-          name: data.displayUsername,
+          name: data.displayUsername || '',
           message: `${data.displayUsername} accepted your invitation.`,
           createdAt,
           seen,
@@ -279,6 +307,7 @@ export function notificationHandler(
           notificationType,
           onPress,
         });
+        break;
       }
     }
   });

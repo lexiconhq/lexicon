@@ -5,33 +5,33 @@ slug: /
 ---
 
 <head>
-    --- iOS Auth
+    <!-- --- iOS Auth -->
     <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/IOS_Login.png')}/>
     <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/IOS_SignUp.png')}/>
     <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/IOS_Home.png')}/>
-    --- iOS Dark Mode
+    <!-- --- iOS Dark Mode -->
     <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/IOS_DarkMode.png')}/>
     <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/IOS_NewPost.png')}/>
     <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/IOS_PostDetail.png')}/>
-    --- iOS Comment
+    <!-- --- iOS Comment -->
     <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/IOS_Comment.png')}/>
     <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/IOS_Profile.png')}/>
     <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/IOS_Notification.png')}/>
-    --- iOS Message
+    <!-- --- iOS Message -->
     <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/IOS_Message.png')}/>
-    --- Android Auth
+    <!-- --- Android Auth -->
     <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/Android_Login.png')}/>
     <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/Android_SignUp.png')}/>
     <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/Android_Home.png')}/>
-    --- Android Dark Mode
+    <!-- --- Android Dark Mode -->
     <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/Android_DarkMode.png')}/>
     <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/Android_NewPost.png')}/>
     <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/Android_PostDetail.png')}/>
-    --- Android Comment
+    <!-- --- Android Comment -->
     <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/Android_Comment.png')}/>
     <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/Android_Profile.png')}/>
     <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/Android_Notifications.png')}/>
-    --- Android Message
+    <!-- --- Android Message -->
     <link rel="preload" as="image" href={useBaseUrl('/img/screenshot/Android_Message.png')}/>
 </head>
 

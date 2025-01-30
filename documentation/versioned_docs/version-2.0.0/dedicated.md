@@ -111,7 +111,7 @@ Then, it uses `api/` as the context for the build, which allows the references i
 
 By passing the `-t prose:latest` tag, it tags the locally built image as the latest build. This can be useful for identifying and managing the images in a Docker environment over time.
 
-#### Pull the Prose Docker Image
+#### Pull the Prose Docker Image {#pulling-the-prose-docker-image}
 
 If you'd rather just use the latest release of the Prose image, you can simply run:
 

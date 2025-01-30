@@ -1,18 +1,18 @@
-import React from 'react';
 import { OperationVariables, useFragment_experimental } from '@apollo/client';
+import React from 'react';
 
+import { TopicFragment, TopicFragmentDoc } from '../../generatedAPI/server';
 import {
   postDetailContentHandler,
   transformTopicToPost,
   useStorage,
 } from '../../helpers';
 import { makeStyles } from '../../theme';
-import { MetricsProp } from '../Metrics/Metrics';
-import { TopicFragment, TopicFragmentDoc } from '../../generated/server';
 import { Channel } from '../../types';
+import { MetricsProp } from '../Metrics/Metrics';
 
-import { PostItemFooter, PostItemFooterProps } from './PostItemFooter';
 import { PostItem, PostItemProps } from './PostItem';
+import { PostItemFooter, PostItemFooterProps } from './PostItemFooter';
 
 type Props = Required<
   Pick<
@@ -182,4 +182,4 @@ const useStyles = makeStyles(({ spacing }) => ({
 }));
 let PostDetailHeaderItem = React.memo(BasePostDetailHeaderItem);
 
-export { Props as PostDetailHeaderItemProps, PostDetailHeaderItem };
+export { PostDetailHeaderItem, Props as PostDetailHeaderItemProps };

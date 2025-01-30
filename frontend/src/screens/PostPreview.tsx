@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { Platform, SafeAreaView } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
 import {
+  CommonActions,
   useNavigation,
   useRoute,
-  CommonActions,
 } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
+import { Platform, SafeAreaView } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
 
 import mock from '../__mocks__/mockData';
 import {
@@ -18,14 +18,17 @@ import {
   ModalHeader,
   PostGroupings,
 } from '../components';
+import { PollPostPreview } from '../components/Poll';
+import { FORM_DEFAULT_VALUES } from '../constants';
 import { CustomImage, Divider, IconWithLabel, Text } from '../core-ui';
 import {
+  combineContentWithPollContent,
   errorHandlerAlert,
+  generateMarkdownContent,
+  getImage,
   getPostShortUrl,
   sortImageUrl,
   useStorage,
-  generateMarkdownContent,
-  combineContentWithPollContent,
 } from '../helpers';
 import {
   useEditPost,
@@ -42,8 +45,6 @@ import {
   StackRouteProp,
 } from '../types';
 import { useModal } from '../utils';
-import { FORM_DEFAULT_VALUES } from '../constants';
-import { PollPostPreview } from '../components/Poll';
 
 const ios = Platform.OS === 'ios';
 
@@ -54,7 +55,7 @@ export default function PostPreview() {
 
   const navigation = useNavigation<RootStackNavProp<'PostPreview'>>();
 
-  const { reset, goBack, dispatch } = navigation;
+  const { goBack, dispatch } = navigation;
 
   const {
     params: {
@@ -117,7 +118,7 @@ export default function PostPreview() {
   };
 
   const { getImageUrls } = useLookupUrls({
-    variables: { shortUrls },
+    variables: { lookupUrlInput: { shortUrls } },
     onCompleted: ({ lookupUrls }) => {
       setImageUrls(sortImageUrl(shortUrls, lookupUrls));
     },
@@ -126,21 +127,12 @@ export default function PostPreview() {
   const { newTopic, loading: newTopicLoading } = useNewTopic({
     onCompleted: ({ newTopic: result }) => {
       resetForm(FORM_DEFAULT_VALUES);
-      reset({
-        index: 1,
-        routes: [
-          { name: 'TabNav', state: { routes: [{ name: 'Home' }] } },
-          {
-            name: 'PostDetail',
-            params: { topicId: result.topicId, focusedPostNumber },
-          },
-        ],
-      });
+      navToPostDetail({ topicId: result.topicId, focusedPostNumber });
     },
   });
 
   const { reply: replyTopic, loading: replyLoading } = useReplyTopic({
-    onCompleted: ({ reply: { postNumber } }) => {
+    onCompleted: ({ replyPost: { postNumber } }) => {
       resetForm(FORM_DEFAULT_VALUES);
       navToPostDetail({
         topicId: postData.topicId || 0,
@@ -213,8 +205,10 @@ export default function PostPreview() {
         editPost({
           variables: {
             postId: editPostId,
-            postInput: {
-              raw: updatedContentWithPoll,
+            editPostInput: {
+              post: {
+                raw: updatedContentWithPoll,
+              },
             },
           },
         });
@@ -236,9 +230,11 @@ export default function PostPreview() {
     if (reply) {
       replyTopic({
         variables: {
-          content: updatedContentWithPoll,
-          topicId: postData.topicId || 0,
-          replyToPostNumber: postData.postNumber,
+          replyInput: {
+            raw: updatedContentWithPoll,
+            topicId: postData.topicId || 0,
+            replyToPostNumber: postData.postNumber,
+          },
         },
       });
     } else {
@@ -320,7 +316,7 @@ export default function PostPreview() {
           image={
             editedUser
               ? editedUser.avatar
-              : storage.getItem('user')?.avatar || ''
+              : getImage(storage.getItem('user')?.avatar || '')
           }
           title={
             editedUser

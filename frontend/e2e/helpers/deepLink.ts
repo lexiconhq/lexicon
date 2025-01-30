@@ -6,7 +6,7 @@ import { device } from 'detox';
 const appJsonPath = path.join(__dirname, '../../../frontend/app.json');
 
 type RedirectArgs = {
-  type: 'post' | 'message' | 'login' | 'activate';
+  type: 'post' | 'message';
   content: string;
 };
 
@@ -23,12 +23,6 @@ export async function redirectToApp({ type, content }: RedirectArgs) {
       break;
     case 'message':
       link += `message-detail/${content}`;
-      break;
-    case 'activate':
-      link += `activate-account/${content}`;
-      break;
-    case 'login':
-      link += `email-login/${content}`;
       break;
   }
 

@@ -1,3 +1,5 @@
+/* eslint-disable no-useless-escape */
+
 import { DEFAULT_IMAGE } from '../../assets/images';
 import { NO_EXCERPT_WORDING } from '../constants';
 

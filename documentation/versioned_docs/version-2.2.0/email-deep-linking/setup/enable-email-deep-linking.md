@@ -20,6 +20,6 @@ This guide will walk you through the necessary steps to activate email deep link
 
 5. Check the `lexicon email deep linking enabled` box in the Lexicon settings section and save your changes.
 
-<img src={useBaseUrl('/img/screenshot/version-2.2.0/Discourse-Plugin-EmailDeepLinking-Settings.png')} />
+<img src={useBaseUrl('/img/screenshot/plugins/version-2.2.0/Discourse-Plugin-EmailDeepLinking-Settings.png')} />
 
 Once the email deep linking feature is enabled, you will be able to utilize its functionality in your Discourse instance.

@@ -15,7 +15,7 @@ export default function PushNotifications() {
 
   const styles = useStyles();
 
-  const { goBack } = useNavigation<StackNavProp<'Profile'>>();
+  const { goBack } = useNavigation<StackNavProp<'Preferences'>>();
 
   const { shouldShowAlert, shouldPlaySound, shouldSetBadge } =
     pushNotificationsPreferences;

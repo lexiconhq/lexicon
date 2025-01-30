@@ -1,13 +1,13 @@
 import React from 'react';
 import { View } from 'react-native';
 
+import { client } from '../api/client';
 import { Divider } from '../core-ui';
 import {
   PostFragment,
   PostFragmentDoc,
   useRepliedPostQuery,
-} from '../generated/server';
-import { client } from '../graphql/client';
+} from '../generatedAPI/server';
 import {
   getImage,
   handleUnsupportedMarkdown,
@@ -16,8 +16,8 @@ import {
 import { makeStyles } from '../theme';
 
 import { Author } from './Author';
-import { Markdown } from './Markdown';
 import { LoadingOrError } from './LoadingOrError';
+import { Markdown } from './Markdown';
 
 type GeneralRepliedPostProps = {
   hideAuthor?: boolean;
@@ -87,9 +87,11 @@ export function RepliedPost(props: RepliedPostProps) {
     return <RepliedPostLoadingOrError loading={loading} error={!!error} />;
   }
 
-  let { replyingTo } = data;
+  let {
+    replyingTo: { post },
+  } = data;
 
-  return <BaseRepliedPost {...replyingTo} hideAuthor={hideAuthor} />;
+  return <BaseRepliedPost {...post} hideAuthor={hideAuthor} />;
 }
 
 type LocalRepliedPostProps = {
@@ -124,4 +126,4 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
 }));
 
-export { RepliedPostProps, LocalRepliedPostProps };
+export { LocalRepliedPostProps, RepliedPostProps };

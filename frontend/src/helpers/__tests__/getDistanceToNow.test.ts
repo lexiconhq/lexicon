@@ -1,4 +1,4 @@
-import { getDistanceToNow } from '../getDistanceToNow';
+import { getDistanceToNow, getDistance } from '../getDistanceToNow';
 
 it('should calculate the difference between an upcoming date and the current date', () => {
   const oneYearOneDayLater = new Date();
@@ -37,4 +37,49 @@ it('should calculate the difference between an upcoming date and the current dat
   tenSecondLater.setSeconds(tenSecondLater.getSeconds() + 10);
 
   expect(getDistanceToNow(tenSecondLater.toISOString())).toEqual('10s');
+
+  const pastDate = new Date();
+  pastDate.setSeconds(tenSecondLater.getSeconds() - 20);
+
+  expect(getDistanceToNow(pastDate.toISOString())).toEqual(undefined);
+});
+
+it('should calculate the difference between two dates', () => {
+  let firstDate = new Date(2015, 5, 15, 10, 20, 3).toString();
+  let secondDate = new Date(2016, 5, 15, 10, 24, 3).toString();
+
+  expect(getDistance(firstDate, secondDate)).toEqual('1 year');
+  expect(getDistance(secondDate, firstDate)).toEqual('1 year');
+
+  firstDate = new Date(2015, 5, 15, 10, 20, 3).toString();
+  secondDate = new Date(2015, 7, 15, 10, 24, 3).toString();
+
+  expect(getDistance(firstDate, secondDate)).toEqual('2 months');
+
+  firstDate = new Date(2015, 5, 15, 10, 20, 3).toString();
+  secondDate = new Date(2015, 5, 23, 10, 24, 3).toString();
+
+  expect(getDistance(firstDate, secondDate)).toEqual('1 week');
+
+  firstDate = new Date(2015, 5, 15, 10, 20, 3).toString();
+  secondDate = new Date(2015, 5, 20, 10, 24, 3).toString();
+
+  expect(getDistance(firstDate, secondDate)).toEqual('5 days');
+
+  firstDate = new Date(2015, 5, 15, 10, 20, 3).toString();
+  secondDate = new Date(2015, 5, 15, 13, 24, 3).toString();
+
+  expect(getDistance(firstDate, secondDate)).toEqual('3 hours');
+
+  firstDate = new Date(2015, 5, 15, 10, 20, 3).toString();
+  secondDate = new Date(2015, 5, 15, 10, 27, 3).toString();
+
+  expect(getDistance(firstDate, secondDate)).toEqual('7 minutes');
+
+  firstDate = new Date(2015, 5, 15, 10, 20, 3).toString();
+  secondDate = new Date(2015, 5, 15, 10, 20, 16).toString();
+
+  expect(getDistance(firstDate, secondDate)).toEqual('13 seconds');
+
+  expect(getDistance(firstDate, firstDate)).toEqual(undefined);
 });

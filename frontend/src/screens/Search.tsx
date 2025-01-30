@@ -1,4 +1,7 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { HeaderBackButton } from '@react-navigation/elements';
+import { useNavigation } from '@react-navigation/native';
+import Constants from 'expo-constants';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Keyboard,
   Platform,
@@ -7,9 +10,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { HeaderBackButton } from '@react-navigation/elements';
-import Constants from 'expo-constants';
 
 import {
   FooterLoadingIndicator,
@@ -123,7 +123,8 @@ export default function Search() {
       setLoading(false);
     }
     return () => clearTimeout(fetchSearch);
-  }, [skipSearchStatus, getPosts, setPosts, page, searchValue]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [skipSearchStatus, setPosts, page, searchValue]);
 
   const count = posts.length;
 

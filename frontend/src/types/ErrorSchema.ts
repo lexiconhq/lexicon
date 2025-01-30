@@ -2,7 +2,7 @@ import { ApolloError } from '@apollo/client';
 import { CodedError } from 'expo-modules-core';
 import { z } from 'zod';
 
-const ApolloErrorSchema = z.instanceof(ApolloError);
+export const ApolloErrorSchema = z.instanceof(ApolloError);
 
 export const ErrorHandlerAlertSchema = z.union([ApolloErrorSchema, z.string()]);
 

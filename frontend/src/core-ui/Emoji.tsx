@@ -10,8 +10,8 @@ import {
   EMOJI_SIZES,
   EMOJI_SIZES_VARIANTS,
 } from '../constants';
+import { useGetUrlEmoji } from '../hooks/useGetUrlEmoji';
 import { makeStyles } from '../theme';
-import { useGetUrlEmoji } from '../hooks/user/useGetUrlEmoji';
 
 type Props = Omit<ImageBackgroundProps, 'source'> & {
   emojiCode?: string;

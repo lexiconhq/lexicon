@@ -15,13 +15,13 @@ import { Post } from '../types';
 import { Author } from './Author';
 import { Markdown } from './Markdown';
 import { Metrics } from './Metrics/Metrics';
+import { PollPreview } from './Poll';
 import { PostHidden } from './PostItem';
 import {
   LocalRepliedPostProps,
   RepliedPost,
   RepliedPostProps,
 } from './RepliedPost';
-import { PollPreview } from './Poll';
 
 export type PressMoreParams = {
   id?: number;
@@ -94,8 +94,8 @@ function BaseNestedComment(props: Props) {
   const color: Color = hidden ? 'textLight' : 'textNormal';
 
   const { postRaw, loading } = usePostRaw({
-    onCompleted: ({ postRaw: { markdownContent } }) => {
-      setContent(markdownContent);
+    onCompleted: ({ postRaw: { cooked } }) => {
+      setContent(cooked.markdownContent);
       setHidden(false);
     },
   });
@@ -136,6 +136,7 @@ function BaseNestedComment(props: Props) {
           postId={id}
           topicId={topicId}
           loadingBackground="backgroundDarker"
+          postCreatedAt={createdAt}
         />
       );
     });

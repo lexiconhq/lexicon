@@ -1,5 +1,5 @@
 import { NO_EXCERPT_WORDING } from '../constants';
-import { TopicsQuery } from '../generated/server';
+import { TopicsQuery } from '../generatedAPI/server';
 import { Channel, PostWithoutId, User } from '../types';
 
 import { findChannelByCategoryId } from './findChannelByCategoryId';
@@ -54,9 +54,7 @@ let transformTopicToPost = ({
     channels,
   });
 
-  const authorUser =
-    // eslint-disable-next-line no-underscore-dangle
-    author?.__typename === 'TopicPosterNewUnion' ? author.user : undefined;
+  const authorUser = author?.user;
 
   return {
     topicId: id,

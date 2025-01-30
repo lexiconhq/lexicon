@@ -1,8 +1,9 @@
-import { PollType } from '../../generated/server';
+import { PollType } from '../../generatedAPI/server';
 import { PollFormContextValues } from '../../types';
 import {
   combineContentWithPollContent,
   getPollChoiceLabel,
+  isMultipleVoters,
 } from '../pollUtility';
 
 describe('Test Poll Utility function', () => {
@@ -87,5 +88,15 @@ describe('Test Poll Utility function', () => {
     expect(combineContentWithPollContent({ content, polls: [] })).toEqual(
       content,
     );
+  });
+
+  it('should check is multiple voter', () => {
+    expect(isMultipleVoters(3)).toBeTruthy();
+    expect(isMultipleVoters(-10)).toBeTruthy();
+    expect(isMultipleVoters(-2)).toBeTruthy();
+
+    expect(isMultipleVoters(1)).toBeFalsy();
+    expect(isMultipleVoters(-1)).toBeFalsy();
+    expect(isMultipleVoters(0)).toBeFalsy();
   });
 });

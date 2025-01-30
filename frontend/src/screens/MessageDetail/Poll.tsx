@@ -65,6 +65,7 @@ export default function Poll() {
           isCreator={isCreator}
           postId={postId}
           topicId={topicId}
+          postCreatedAt={createdAt}
         />
       </ScrollView>
     </SafeAreaView>
