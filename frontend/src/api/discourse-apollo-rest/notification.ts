@@ -1,11 +1,11 @@
 import { gql } from '@apollo/client';
 
 export const NOTIFICATION = gql`
-  query Notification($page: Int!) {
+  query Notification($page: Int!, $notificationsPath: PathBuilder) {
     # If require we can change activity same like prose userActivity. For now we use different name because cache. userActivity already used.
     notificationQuery(page: $page)
-      @rest(type: "Notifications", path: "/notifications.json") {
-      notifications {
+      @rest(type: "Notifications", path: "", pathBuilder: $notificationsPath) {
+      notifications @type(name: "NotificationsData") {
         id
         notificationType
         seen: read

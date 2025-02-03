@@ -1,5 +1,6 @@
 import { MutationHookOptions, QueryHookOptions } from '@apollo/client';
 
+import { notificationsPathBuilder } from '../../../api/pathBuilder';
 import {
   MarkReadDocument,
   MarkReadMutationVariables,
@@ -18,6 +19,12 @@ export function useNotification(
     NotificationQueryVariables
   >(NotificationDocument, {
     ...options,
+
+    variables: {
+      notificationsPath: notificationsPathBuilder,
+      page: options?.variables?.page ?? 1,
+      ...options?.variables,
+    },
   });
 
   return { data, loading, error, refetch, fetchMore };

@@ -8,10 +8,10 @@ import React, {
   useState,
 } from 'react';
 import {
-  RefreshControl,
   FlatList,
   FlatListProps,
   ListRenderItemInfo,
+  RefreshControl,
 } from 'react-native';
 
 /**
@@ -123,6 +123,12 @@ function BaseCustomFlatList<ItemType>(
     () => {
       return {
         scrollToIndex: (params) => {
+          // If the requested index is out of bounds (less than 0 or greater than the available data length),
+          // scroll to the end of the list instead.
+          if (params.index < 0 || params.index >= safePropsItemData.length) {
+            return baseFlatListRef.current?.scrollToEnd(params);
+          }
+
           const initialWindow = Math.max(
             initialNumToRender || DEFAULT_INITIAL_NUM_TO_RENDER,
             windowSize || DEFAULT_WINDOW_SIZE,
@@ -158,7 +164,7 @@ function BaseCustomFlatList<ItemType>(
         },
       };
     },
-    [initialNumToRender, windowSize],
+    [initialNumToRender, safePropsItemData.length, windowSize],
   );
 
   // debounced scroll to happened after new data layout finished
@@ -241,4 +247,4 @@ function BaseCustomFlatList<ItemType>(
 }
 const CustomFlatList = forwardRef(BaseCustomFlatList);
 
-export { CustomFlatlistRefType, CustomFlatList };
+export { CustomFlatList, CustomFlatlistRefType };

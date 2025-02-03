@@ -15,5 +15,5 @@ export const MessageDetail = z.object({
 });
 
 export const Notifications = z.object({
-  notifications: z.array(Reference),
+  'notifications@type({"name":"NotificationsData"})': z.array(Reference),
 });

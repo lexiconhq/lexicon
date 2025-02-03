@@ -24,7 +24,7 @@ export const siteOutputPatcher: RestLink.FunctionalTypePatcher = (data) => {
     postActionTypes,
     discourseBaseUrl: discourseHost,
     enableLexiconPushNotifications:
-      data?.lexicon?.settings.lexicon_push_notifications_enabled || false,
+      data?.lexicon?.settings.lexiconPushNotificationsEnabled || false,
   };
 };
 

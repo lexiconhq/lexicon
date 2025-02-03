@@ -110,7 +110,7 @@ export const GET_MESSAGE_DETAIL = gql`
           mentions
           createdAt
           postNumber
-          polls {
+          polls @type(name: "Poll") {
             ...PollFragment
           }
           pollsVotes {

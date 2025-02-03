@@ -136,10 +136,17 @@ export function appendPagination<T extends Reference>(
 
             if (parsedExisting.success && parsedIncoming.success) {
               let newData = handleDuplicateRef(
-                parsedExisting.data.notifications,
-                parsedIncoming.data.notifications,
+                parsedExisting.data[
+                  'notifications@type({"name":"NotificationsData"})'
+                ],
+                parsedIncoming.data[
+                  'notifications@type({"name":"NotificationsData"})'
+                ],
               );
-              incoming = { ...incoming, notifications: newData };
+              incoming = {
+                ...incoming,
+                'notifications@type({"name":"NotificationsData"})': newData,
+              };
             }
           }
           break;

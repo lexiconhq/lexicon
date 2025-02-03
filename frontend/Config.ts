@@ -17,7 +17,7 @@ const config: Config = {
    * to EAS Build.
    */
   localDevelopment: {
-    discourseUrl: 'https://kflounge-staging.kfox.io',
+    discourseUrl: 'http://localhost:4200',
     inferDevelopmentHost: true, // Specific to local development with Expo Go & the Android simulator. See docs.
   },
   /**
