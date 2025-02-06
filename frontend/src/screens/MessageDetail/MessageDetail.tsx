@@ -760,7 +760,7 @@ export default function MessageDetail() {
           refreshControl={
             <RefreshControl
               refreshing={refetching || isLoadingOlderPost}
-              onRefresh={() => loadMoreMessages(false)}
+              onRefresh={() => refetch()}
               tintColor={colors.loading}
             />
           }
@@ -771,7 +771,7 @@ export default function MessageDetail() {
           keyExtractor={keyExtractor}
           contentInset={{
             bottom: textInputFocused ? (35 * screen.height) / 100 : 0,
-            top: contentHeight ? ((5 * screen.height) / 100) * -1 : 0,
+            top: contentHeight ? ((2 * screen.height) / 100) * -1 : 0,
           }}
           onEndReachedThreshold={0.1}
           onEndReached={() => loadMoreMessages(true)}

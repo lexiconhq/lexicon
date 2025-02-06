@@ -142,7 +142,7 @@ export function postDetailContentHandler({
   };
 }
 
-let transformPostsToFrontendPost = (params: {
+export let transformPostsToFrontendPost = (params: {
   post: TopicDetail['postStream']['posts'][0];
   channel?: Channel;
   freqPosters: Array<User>;

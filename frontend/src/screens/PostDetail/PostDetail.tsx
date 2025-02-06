@@ -106,6 +106,7 @@ export default function PostDetail() {
   const [author, setAuthor] = useState('');
   const [flaggedByCommunity, setFlaggedByCommunity] = useState(false);
   const [content, setContent] = useState(initialContent);
+  const [firstPostId, setFirstPostId] = useState<number>(0);
   const [mentionedUsers, setMentionedUsers] = useState<Array<string>>([]);
   const [isHidden, setHidden] = useState(hidden ?? false);
   const [flatListReady, setFlatListReady] = useState(false);
@@ -187,6 +188,7 @@ export default function PostDetail() {
     // TODO: Optimize this to fetch the query only when needed #847
     postRaw({ variables: { postId: firstPost.id } });
     setHidden(firstPost.hidden || false);
+    setFirstPostId(firstPost.id);
   }, [firstPost, postRaw]);
 
   useEffect(() => {
@@ -282,16 +284,19 @@ export default function PostDetail() {
         }
       }, 500);
     }
-    const unsubscribe = navigation.addListener('focus', () => {
-      if (focusedPostNumber != null && prevScreen === 'PostPreview') {
-        setParams({ prevScreen: '' });
-        setReplyLoading(true);
-        refetchData();
-      }
-    });
-    return unsubscribe;
+
+    if (
+      focusedPostNumber != null &&
+      prevScreen === 'PostPreview' &&
+      !topicDetailLoading
+    ) {
+      setParams({ prevScreen: '' });
+      setReplyLoading(true);
+      refetchData();
+    }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [prevScreen, focusedPostNumber]);
+  }, [prevScreen, focusedPostNumber, topicDetailLoading]);
 
   let scrollIndex = postComments?.findIndex(
     ({ postNumber: itemPostNumber }) => postNumber === itemPostNumber,
@@ -589,7 +594,7 @@ export default function PostDetail() {
               onPressReply={onPressReplyProps}
               polls={firstPost?.polls}
               pollsVotes={firstPost?.pollsVotes}
-              postId={firstPost?.id}
+              postId={firstPost?.id ?? firstPostId}
             />
           }
           onRefresh={hasOlderPost ? () => loadMoreComments(false) : refreshPost}

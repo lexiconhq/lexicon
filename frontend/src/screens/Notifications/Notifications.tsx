@@ -169,7 +169,7 @@ export default function Notifications() {
         query: NotificationDocument,
         variables: { page },
         data: {
-          notification: {
+          notificationQuery: {
             notifications: newDataNotification,
             totalRowsNotifications:
               data?.notificationQuery.totalRowsNotifications,
