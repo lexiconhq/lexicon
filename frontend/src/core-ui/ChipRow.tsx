@@ -1,6 +1,12 @@
 import React, { ComponentProps } from 'react';
-import { ScrollViewProps } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
+import { ScrollViewProps, ScrollView } from 'react-native';
+/**
+ * Change ScrollView to use React Native's ScrollView due to a type problem with the `hitSlop` prop, which is not the same as ScrollViewProps.
+ *
+ * To use react-native-gesture-handler, we need to update to the latest version. Currently, we cannot update because the version recommended by Expo is ~2.16.1.
+ */
+
+// import { ScrollView } from 'react-native-gesture-handler';
 
 import { useTheme } from '../theme';
 

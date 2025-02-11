@@ -10,8 +10,8 @@ import { StackNavigationProp } from '@react-navigation/stack';
 
 import { NetworkStatus, WithRequestFailed } from '../components';
 
-import { StackAvatarUser, UserDetail } from './Types';
 import { Poll, PostData, User } from './Post';
+import { StackAvatarUser, UserDetail } from './Types';
 
 export type RootStackNavProp<T extends keyof RootStackParamList> =
   StackNavigationProp<RootStackParamList, T>;
@@ -126,11 +126,6 @@ type TagsParams = {
   canCreateTag: boolean;
 };
 
-type TwoFactorAuthParams = {
-  email: string;
-  password: string;
-};
-
 type TroubleshootParams = {
   type: WithRequestFailed<Exclude<NetworkStatus, 'Online'>>;
 };
@@ -209,15 +204,15 @@ export type RootStackParamList = {
   Notifications: undefined;
   PostDetail: PostDetailParams;
   Preferences: undefined;
-  Profile: undefined;
-  Register: undefined;
+  ProfileScreen: undefined;
   Search: undefined;
-  TwoFactorAuth: TwoFactorAuthParams;
   UserInformation: UserInformationParams;
   EditUserStatus: EditUserStatusParams;
   EmojiPicker: undefined;
   StackAvatar: StackAvatarModalParams;
   Poll: PollParams;
+  AuthenticationWebView: undefined;
+  Welcome: undefined;
 };
 
 export type TabParamList = {

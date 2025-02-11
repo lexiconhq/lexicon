@@ -8,7 +8,7 @@ npm-debug.*
 *.mobileprovision
 *.orig.*
 web-build/
-src/generated/**/*.ts
+src/generatedAPI/**/*.ts
 src/graphql/schema.json
 .env
 playstore_secret.json
@@ -24,4 +24,5 @@ artifacts/
 google-services.json
 
 android/
-generated/
+
+ios/

@@ -1,8 +1,8 @@
-import { Alert } from 'react-native';
 import { ApolloError } from '@apollo/client';
+import { Alert } from 'react-native';
 
+import { ERROR_413, ERROR_HANDLED_BY_LINK } from '../constants';
 import { StackNavProp } from '../types';
-import { ERROR_HANDLED_BY_LINK } from '../constants';
 
 import {
   ChangeUsernameError,
@@ -18,8 +18,8 @@ import { stripHTML } from './stripHTML';
  * It then searches for the well-known text, `'could not be found'`, which
  * is what our GraphQL server returns when a particular query was not found.
  */
-export function isNotFoundError(error: { message: string }) {
-  return error.message.toLowerCase().includes('could not be found');
+export function isNotFoundError(error: string) {
+  return error.toLowerCase().includes('could not be found');
 }
 
 export function errorHandler(
@@ -27,11 +27,26 @@ export function errorHandler(
   shouldMaskError = false,
   singularEntityName = '',
 ): string {
+  let message = error.message;
   if (error.networkError) {
-    return t('Please connect to a network');
+    const networkError = error.networkError;
+    if (
+      'result' in networkError &&
+      'errors' in networkError.result &&
+      Array.isArray(networkError.result.errors) &&
+      networkError.result.errors.length > 0
+    ) {
+      message = networkError.result.errors[0];
+    } else if (
+      'response' in networkError &&
+      'status' in networkError.response &&
+      networkError.response.status === 413
+    ) {
+      message = ERROR_413;
+    }
   }
 
-  if (isNotFoundError(error)) {
+  if (isNotFoundError(message)) {
     let message = t(`Sorry, we couldn't find what you were looking for.`);
 
     if (singularEntityName) {
@@ -47,7 +62,7 @@ export function errorHandler(
     return t('Something unexpected happened. Please try again.');
   }
 
-  return error.message;
+  return message;
 }
 
 export function errorHandlerAlert(
@@ -73,8 +88,7 @@ export function errorHandlerAlert(
         { text: t('Close') },
         {
           text: t('Log In'),
-          onPress: () =>
-            navigate ? navigate('Login', { emailToken: undefined }) : undefined,
+          onPress: () => (navigate ? navigate('Welcome') : undefined),
         },
       ]);
       return;

@@ -1,13 +1,13 @@
 import * as runtypes from 'runtypes';
 
 import {
-  GetTopicDetailQuery,
   NotificationQuery as GeneratedNotification,
-  ProfileQuery,
-  SiteQuery,
   UserActivityQuery as GeneratedUserActivity,
+  GetTopicDetailQuery,
+  ProfileQuery,
   SearchTagsQuery,
-} from '../generated/server';
+  SiteQuery,
+} from '../generatedAPI/server';
 
 import { Poll, PollsVotes, User } from './Post';
 
@@ -135,20 +135,16 @@ export type Image = {
   done: boolean;
 };
 
-export type UserDetail = Extract<
-  ProfileQuery['userProfile']['user'],
-  { __typename: 'UserDetail' }
->;
-
+export type UserDetail = ProfileQuery['profile']['user'];
 export type PostStream = GetTopicDetailQuery['topicDetail']['postStream'];
 export type TopicDetail = NonNullable<GetTopicDetailQuery['topicDetail']>;
 export type TopicDetailInner = TopicDetail['details'];
 
-export type SiteSettings = SiteQuery['site'];
+export type SiteSettings = SiteQuery['site']['siteSettings'];
 export type RawNotificationsType = NonNullable<
-  GeneratedNotification['notification']['notifications']
+  GeneratedNotification['notificationQuery']['notifications']
 >[number];
-export type UserActivity = GeneratedUserActivity['userActivity'][number];
+export type UserActivity = GeneratedUserActivity['activity'][number];
 
 export type Tag = SearchTagsQuery['searchTag'][number];
 

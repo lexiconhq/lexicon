@@ -4,7 +4,7 @@ import {
   PushNotificationsPreferences,
   SetPnPreferences,
   usePushNotificationsPreferences,
-} from '../hooks/auth/usePushNotifications';
+} from '../hooks/rest/auth/usePushNotifications';
 
 type ContextValue = {
   pushNotificationsPreferences: PushNotificationsPreferences;

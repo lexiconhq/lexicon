@@ -16,3 +16,7 @@ jobs:
       - uses: buildjet/cache-delete@v1
         with:
           cache_key: ${{ inputs.cache_key }}
+
+      - name: Stop Workflow
+        if: ${{ success() }}
+        run: exit 0

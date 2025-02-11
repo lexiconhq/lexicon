@@ -1,5 +1,0 @@
-{
-  "script": "./lib/index.js",
-  "name": "prose",
-  "watch": false
-}

@@ -1,4 +1,4 @@
-import { ActionSummary, Post } from '../generated/server';
+import { ActionSummary, Post } from '../generatedAPI/server';
 
 import { ActionsSummaryType } from './postDetailContentHandler';
 

@@ -1,16 +1,16 @@
-import { by, expect, element } from 'detox';
+import { by, element, expect } from 'detox';
 
 import {
   createPost,
-  waitTabProfile,
-  redirectPostDetail,
   hyperLinkScene,
+  redirectPostDetail,
+  waitTabProfile,
 } from '../helpers';
 import {
-  mockSearchTopics,
-  siteSetting,
   mockPostsReplies,
-} from '../apollo-mock/data';
+  mockSearchTopics,
+  SITE_SETTINGS,
+} from '../rest-mock/data';
 
 async function fontFormattingTest(
   postReplyTextArea: Detox.IndexableNativeElement,
@@ -106,7 +106,7 @@ describe('Home Screen', () => {
     await expect(
       element(
         by.text(
-          `Your query must be at least ${siteSetting.minSearchLength} characters long`,
+          `Your query must be at least ${SITE_SETTINGS.minSearchTermLength} characters long`,
         ),
       ).atIndex(0),
     ).toBeVisible();
@@ -180,7 +180,7 @@ describe('Home Screen', () => {
     await element(by.id('Metrics:Replies')).atIndex(1).tap();
 
     const postReplyTextArea = element(by.id('PostReply:TextArea'));
-    const repliedText = mockPostsReplies[2].markdownContent;
+    const repliedText = mockPostsReplies[2].raw;
     await postReplyTextArea.replaceText(repliedText);
 
     await createPost();

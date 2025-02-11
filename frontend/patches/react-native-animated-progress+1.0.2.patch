@@ -1,0 +1,41 @@
+diff --git a/node_modules/react-native-animated-progress/src/ProgressBar/index.js b/node_modules/react-native-animated-progress/src/ProgressBar/index.js
+index 98d44cb..0002098 100644
+--- a/node_modules/react-native-animated-progress/src/ProgressBar/index.js
++++ b/node_modules/react-native-animated-progress/src/ProgressBar/index.js
+@@ -3,13 +3,13 @@ import { Animated, StyleSheet, View } from "react-native";
+ 
+ const ProgressBar = (props) => {
+   const {
+-    height,
+-    progress,
+-    animated,
+-    indeterminate,
+-    progressDuration,
+-    indeterminateDuration,
+-    onCompletion,
++    height = 2,
++    progress = 0,
++    animated = true,
++    indeterminate = false,
++    progressDuration = 1100,
++    indeterminateDuration = 1100,
++    onCompletion = () => {},
+     backgroundColor,
+     trackColor = "#A6A6A6"
+   } = props;
+@@ -125,15 +125,4 @@ const ProgressBar = (props) => {
+   );
+ };
+ 
+-ProgressBar.defaultProps = {
+-  state: "black",
+-  height: 2,
+-  progress: 0,
+-  animated: true,
+-  indeterminate: false,
+-  indeterminateDuration: 1100,
+-  progressDuration: 1100,
+-  onCompletion: () => {}
+-};
+-
+ export default ProgressBar;

@@ -1,6 +1,6 @@
+import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { FlatList, Platform, SafeAreaView } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 
 import { CustomHeader, LoadingOrError } from '../../components';
 import { FloatingButton } from '../../core-ui';
@@ -8,11 +8,13 @@ import { useStorage } from '../../helpers';
 import { useProfile } from '../../hooks';
 import { makeStyles } from '../../theme';
 import { EmailAddress as EmailAddressType, StackNavProp } from '../../types';
+import { useDevice } from '../../utils';
 
 import EmailAddressItem from './components/EmailAddressItem';
 
 export default function EmailAddress() {
   const styles = useStyles();
+  const { isTabletLandscape } = useDevice();
 
   const { navigate } = useNavigation<StackNavProp<'EmailAddress'>>();
 
@@ -26,7 +28,7 @@ export default function EmailAddress() {
 
   const { loading: userLoading, refetch } = useProfile({
     variables: { username },
-    onCompleted: ({ userProfile: result }) => {
+    onCompleted: ({ profile: result }) => {
       // eslint-disable-next-line no-underscore-dangle
       if (result.user.__typename === 'UserDetail') {
         const { email, secondaryEmails, unconfirmedEmails } = result.user;
@@ -77,6 +79,7 @@ export default function EmailAddress() {
           rightIcon="Add"
           onPressRight={() => navigate('AddEmail')}
           disabled={loading}
+          hideHeaderLeft={isTabletLandscape}
         />
       )}
       <FlatList

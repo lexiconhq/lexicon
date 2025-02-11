@@ -1,6 +1,6 @@
 import * as Device from 'expo-device';
 
-import { mockToken } from '../../e2e/apollo-mock/data';
+import { mockToken } from '../../e2e/rest-mock/data';
 
 export async function getExpoPushTokenHandler() {
   if (!Device.isDevice) {

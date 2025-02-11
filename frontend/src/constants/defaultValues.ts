@@ -1,7 +1,7 @@
 import * as Notifications from 'expo-notifications';
 
+import { PollChartType, PollResult, PollType } from '../generatedAPI/server';
 import { NewPostForm } from '../types';
-import { PollChartType, PollResult, PollType } from '../generated/server';
 
 import { FUNCTIONAL_COLORS } from './theme';
 
@@ -51,8 +51,6 @@ export const DEFAULT_NOTIFICATION_CHANNEL_INPUT = {
   vibrationPattern: [0, 250, 250, 250],
   lightColor: '#FF231F7C',
 };
-
-export const CUSTOM_HEADER_NEW_TOKEN = 'x-prose-latest-token';
 
 export const FORM_DEFAULT_VALUES: NewPostForm = {
   title: '',

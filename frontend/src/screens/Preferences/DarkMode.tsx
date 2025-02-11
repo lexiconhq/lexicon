@@ -13,7 +13,7 @@ export default function DarkMode() {
   const { setColorScheme } = useColorScheme();
   const styles = useStyles();
 
-  const { goBack } = useNavigation<StackNavProp<'Profile'>>();
+  const { goBack } = useNavigation<StackNavProp<'Preferences'>>();
 
   const storage = useStorage();
   const [cachedColorScheme, setCachedColorScheme] = useState(

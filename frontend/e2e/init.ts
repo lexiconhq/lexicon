@@ -1,7 +1,7 @@
 import { device } from 'detox';
 import { config } from 'detox/internals';
 
-import { MockServerContext, startMockServer } from './apollo-mock/server';
+import { MockServerContext, startMockServer } from './rest-mock/mswServer';
 
 let mockServer: MockServerContext;
 // Set the default timeout
@@ -10,7 +10,6 @@ jest.setTimeout(DEFAULT_TIMEOUT_MS);
 
 beforeAll(async () => {
   mockServer = await startMockServer();
-
   if (config.behavior.init?.reinstallApp === false) {
     await device.installApp();
   }

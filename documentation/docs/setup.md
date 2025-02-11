@@ -6,17 +6,16 @@ title: Development Setup
 
 If you haven't already, make sure you [clone the Lexicon repository](quick-start#installation) from Github.
 
-### Setup a Discourse Instance, if necessary
+### Setup a Discourse Instance, if necessary {#discourse-host}
 
 In order to get started developing against the Lexicon Stack, you'll need a running Discourse instance.
 
 To recap, the Lexicon Stack consists of:
 
 - The Lexicon Mobile App
-- The Lexicon Prose GraphQL API
 - A running Discourse instance
 
-Without a Discourse instance, the Prose GraphQL API has nowhere to retrieve data from. And when the Prose GraphQL API can't retrieve any data, the Lexicon Mobile App won't be able to receive anything either.
+Without a Discourse instance, the app has no source to retrieve data from. If the app cannot retrieve any data, the Lexicon Mobile App will not function as intended.
 
 For detailed instructions on setting up a local development instance of Discourse, head over to the [tutorial](./tutorial/setup-discourse), which will walk you through the process.
 
@@ -36,40 +35,14 @@ If you wish to develop against the plugin itself, you can clone the codebase [he
 
 The [Lexicon Stack](concepts#architecture-of-the-lexicon-stack) requires some configuration in order to properly interact with your Discourse server.
 
-This involves configuring both the backend GraphQL API, which interacts with your Discourse instance; as well as the frontend Mobile App, which interacts with the GraphQL API.
+this involves configuring the frontend Mobile App, which interacts with the Discourse instance.
 
 The architecture of this setup is depicted in [Architecture of the Lexicon Stack](concepts#architecture-of-the-lexicon-stack).
-
-#### Backend GraphQL API Configuration
-
-The [Prose GraphQL API](concepts#prose-discourse-through-graphql) is fairly simple in terms of configuration. In the simplest case, it only needs to know where your Discourse instance is accessible at.
-
-It receives its configuration via a [`.env` file](https://www.codementor.io/@parthibakumarmurugesan/what-is-env-how-to-set-up-and-run-a-env-file-in-node-1pnyxw9yxj) in the root of the `api/` directory.
-
-Here is the simplest configuration of the `api/.env` file:
-
-```
-PROSE_DISCOURSE_HOST=https://meta.discourse.org
-```
-
-It is also worth noting that you can optionally configure the **Hostname** and **Port Number** that the Prose API server listens on, both of which default to **localhost** and **port 80**, respectively.
-
-```
-PROSE_DISCOURSE_HOST=https://meta.discourse.org
-
-# Instruct Prose to broadcast publicly instead of on localhost
-PROSE_APP_HOSTNAME=0.0.0.0
-
-# Instruct Prose to listen on port 8929 instead of the default port 80
-PROSE_APP_PORT=8929
-```
-
-For a comprehensive list of all environment variables that can be used to configure Prose, check out [Prose Environment Variables](env-prose).
 
 #### Frontend Mobile App Configuration
 
 :::note
-In the original release of Lexicon, the **Prose URL** was specified in `frontend/.env`. However, as part of migrating to Expo's EAS feature, we centralized the configuration into `frontend/Config.ts` to save you the trouble of needing to maintain it in more than one place, as suggested in the [Expo documentation](https://docs.expo.dev/build-reference/variables/#can-i-share-environment-variables-defined-in-easjson-with-expo-start-and-eas-update)
+In the initial release of Lexicon, connecting to a Discourse site required setting up Prose and configuring the Prose URL in the mobile app. However, with recent updates, the mobile app now connects directly to Discourse without needing Prose.
 :::
 
 To configure the frontend mobile app, you'll first need to set your app name and slug in `frontend/app.json`. The [slug](https://docs.expo.dev/workflow/glossary-of-terms/#slug) is used as part of the URL for your app on Expo's web services, so it is recommended to use kebab-case (e.g., `my-lexicon-app`).
@@ -81,91 +54,69 @@ Replace these placeholders with your desired values:
     "slug": "<your app slug>",
 ```
 
-Next, change the value of `proseUrl` in `frontend/Config.ts` to the URL of your Prose GraphQL API—whether local or already deployed somewhere.
+Next, change the value of `discourseUrl` in `frontend/Config.ts` to the URL of your Discourse instance whether local or already deployed somewhere.
 
 ```ts
 const config = {
   localDevelopment: {
-    proseUrl: 'http://localhost:8929',
+    discourseUrl: 'http://localhost:4200',
   },
   buildChannels: {
     preview: {
-      proseUrl: 'https://preview.myserver.com:8080/subpath',
+      discourseUrl: 'https://preview.discourseserver.com',
     },
     production: {
-      proseUrl: 'https://myserver.com/api/prose',
+      discourseUrl: 'https://discourseserver.com',
     },
   },
 };
 ```
 
-`localDevelopment.proseUrl` will be used during development when you run the app using `npm run start` or `expo start`, whereas the specific value within `buildChannels` (e.g., `production.proseUrl`) will be used when actually building the app.
+`localDevelopment.discourseUrl` will be used during development when you run the app using `npm run start` or `expo start`, whereas the specific value within `buildChannels` (e.g., `production.discourseUrl`) will be used when actually building the app.
 
 #### Development Scenarios
 
 When developing locally, there are at least three scenarios that you may find yourself in.
 
-Depending on which one applies to you, the config values across `frontend/Config.ts` and `api/.env` may need to be set differently.
+Depending on which one applies to you, the config values across `frontend/Config.ts` may need to be set differently.
 
-##### Scenario 1: Existing Prose Deployment
+##### Scenario 1: Existing Discourse Deployment
 
-If you've already deployed the Prose GraphQL API to a host that is publicly reachable, you will have already setup `api/.env` with the proper values.
-
-In that case, `frontend/Config.ts` only needs updated to point at the deployed GraphQL API.
+If you've already deployed the Discourse instance to a host that is publicly reachable. In that case, `frontend/Config.ts` only needs updated to point at the deployed Discourse instance.
 
 For example:
 
 ```ts
 const config = {
   localDevelopment: {
-    proseUrl: 'https://my-deployed-graphql.api',
+    discourseUrl: 'https://my-deployed-discourse',
   },
   buildChannels: {
     preview: {
-      proseUrl: 'https://my-deployed-graphql.api',
+      discourseUrl: 'https://my-deployed-discourse',
     },
     production: {
-      proseUrl: 'https://my-deployed-graphql.api',
+      discourseUrl: 'https://my-deployed-discourse',
     },
   },
 };
 ```
 
-In the example above, we have configured the app to point at `https://my-deployed-graphql.api` in all scenarios, including during development when running with `npm run start`.
+In the example above, we have configured the app to point at `https://my-deployed-discourse` in all scenarios, including during development when running with `npm run start`.
 
-##### Scenario 2: Run Prose Locally & Access from a Simulator
-
-:::info
-If you are running the Prose server locally, you should not expect that the mobile app will continue to function if you turn off your development machine. You must **deploy** the server before attempting to use the mobile app without depending on your development machine.
-:::
-
-This approach involves running both the Lexicon Mobile App and the Prose GraphQL API on your development machine. It is accomplished by instructing Expo to launch the Mobile App in the Android or iOS simulator.
-
-When developing this way, you can simply set `localDevelopment.proseUrl` to `http://localhost` in `frontend/Config.ts`. And then in `api/.env`, you can set `PROSE_APP_HOSTNAME` to `0.0.0.0`.
-
-Note that if you want to run Prose locally on a specific port, you would need to make sure that the configuration in both `api/.env` and `frontend/Config.ts` reflect that correctly.
-
-:::caution
-If you configure `PROSE_APP_HOSTNAME` in `api/.env` to only listen on `localhost` or `127.0.0.1` (rather than `0.0.0.0`), it prevents others on the same network as your development machine from accessing it. This includes both your mobile device and the Android simulator, which can lead to connectivity issues when developing locally.
-:::
-
-##### Scenario 3: Run Prose Locally & Access from your Mobile Device
-
-It can be very useful to develop and debug against the app using your actual mobile device with the [Expo Go app](https://expo.dev/client).
-
-In order to do this, you'll need to have your development machine reachable from your mobile device.
-
-A simple way to make it reachable is to ensure that your mobile device and development machine are on the same network, and then, in `api/.env`, set `PROSE_APP_HOSTNAME` to `0.0.0.0`.
-
-In a regular Expo project, you would be required to update the `localDevelopment.proseUrl` value in `frontend/Config.ts` to contain the hardcoded IP address of your development machine on your network.
-
-However, by setting the value to `http://localhost`, we handle this **automatically** by default, so you don't have to worry about it. Read more about it [here](env-mobile#infer_development_host).
-
-###### Hardcoding your local IP Address
+##### Scenario 2: Run Discourse Locally & Access from a Simulator
 
 :::info
-This approach is not ideal. If your local IP address ever changes, you'll need to locate it again, and update `Config.ts` to reflect that. For this reason, it's preferable to just use `http://localhost`.
+If you are running the Discourse instance locally, you should not expect that the mobile app will continue to function if you turn off your development machine. You must **deploy** the instance before attempting to use the mobile app without depending on your development machine.
 :::
+
+This approach involves running the Lexicon Mobile App on your development machine. It is accomplished by instructing Expo to launch the Mobile App in the Android or iOS simulator.
+
+When developing this way, you can simply set `localDevelopment.discourseUrl` to `http://localhost` in `frontend/Config.ts`.
+
+##### Scenario 3: Run Discourse Locally & Access from your Mobile Device
+
+To access your locally running Discourse server from your mobile device, you need to ensure your development machine and mobile device are on the same network.
 
 To manually instruct the Mobile App how to locate your development machine, you'll need to find out what the **local IP address** of your development machine is on your current network.
 
@@ -179,11 +130,67 @@ You will be given an IP address like `10.0.12.121` or `192.168.17.69`.
 
 You can then update the value in `frontend/Config.ts` to your local IP address.
 
-This will allow the app running on your mobile device to properly locate the GraphQL API running on your development machine.
+```javascript
+ localDevelopment: {
+    discourseUrl: 'http://192.168.17.69:4200',
+  }
+```
+
+This will allow the app running on your mobile device to properly locate the Discourse server running on your development machine.
+
+###### Reverse Port Forwarding for Android Devices
+
+If you're using an Android device, reverse port forwarding can be used to forward the Discourse server's port (default: `4200`) to the device.
+
+Here are the steps to set up reverse port forwarding:
+
+1. **Connect Your Android Device**  
+   Ensure your Android device is connected to the same network as the computer running the Discourse server (e.g., your laptop or desktop).
+
+2. **Check Device ID**  
+   Use the following command to verify that your device is connected:
+
+   ```bash
+   adb devices -l
+   ```
+
+   If your device is successfully connected, it will list your device with its UID and model.
+
+3. **Reverse the Port**  
+   Run the following command to set up reverse port forwarding:
+
+   ```bash
+   adb -s <UID> reverse tcp:<Discourse Port> tcp:<Discourse Port>
+   ```
+
+   Replace `<UID>` with your device ID from the previous step and `<Discourse Port>` with the port your Discourse server is running on (default: `4200`).
+
+   **Example:**
+
+   ```bash
+   adb -s C5216a960S05 reverse tcp:4200 tcp:4200
+   ```
+
+   This command redirects traffic from your Android device’s `localhost:4200` to your computer’s `localhost:4200`, enabling the app on your device to communicate with the local Discourse server as if it were running on the device itself.
+
+4. **Update the Config File**  
+   Open the `Config.ts` file in your project and update the `localDevelopment` configuration as follows:
+
+   ```javascript
+   localDevelopment: {
+     discourseUrl: 'http://localhost:4200',
+     inferDevelopmentHost: false,
+   },
+   ```
+
+   This ensures the app accesses `localhost` directly on the device instead of `10.0.2.2`, which is used only for Android emulators.
+
+5. **Test the Connection**  
+   Once the reverse port forwarding is set up and the configuration is updated, you can use the Lexicon mobile app to connect to your local Discourse server.
 
 ## Configure your Discourse Host
 
-As mentioned above, you'll need to have setup a Discourse host for the GraphQL API to interact with.
+As mentioned above, you'll need to have setup a Discourse host for the Lexicon Mobile App to interact with.
 
 We'd like to briefly cover the different approaches to setting up a Discourse Host for development before continuing.
 
@@ -192,7 +199,7 @@ We'd like to briefly cover the different approaches to setting up a Discourse Ho
 :::note
 Ensure that you are managing all of your ports correctly.
 
-The development setup of Discourse with Docker makes use of multiple ports, one of which being **port 3000** by default. You'll want to double-check that none of the environment variables are pointing at the ports Discourse is using.
+The development setup of Discourse with Docker makes use of multiple ports, one of which being **port 4200** by default. You'll want to double-check that none of the environment variables are pointing at the ports Discourse is using.
 :::
 
 If you'd like to run a Discourse site for development locally, the recommended way to do this to use **[Docker](https://www.docker.com/)**, so make sure you have it installed.
@@ -210,46 +217,45 @@ Just be mindful of how you're contributing to those sites if you do.
 
 The only drawback of this approach is that you can only register as a normal user, and therefore cannot modify the site's admin settings.
 
-With this approach, you'd simply configure Prose in `api/.env` to point `PROSE_DISCOURSE_HOST` at one of these instances.
+With this approach, you'd simply configure Discourse url in `frontend/Config.ts` to point `discourseUrl` at one of these instances.
 
-```bash
-PROSE_DISCOURSE_HOST=https://try.discourse.org
+```js
+ localDevelopment: {
+    discourseUrl: 'https://try.discourse.org',
+  },
 ```
 
 ## Working with the Codebase
 
 Now that you've prepared everything for development, you can start digging in on the Lexicon codebase.
 
-### Run the Lexicon Mobile App & Prose GraphQL Server
+### Run the Lexicon Mobile App
 
-You can run the Mobile App and test it out with a local Prose server by running this command **from the project root**:
+You can run the Mobile App by executing the following command **from the project root**:
 
 ```
 $ npm run dev
 ```
 
-This will simultaneously launch two processes:
+If the app is not installed on your device, navigate to the `frontend` directory and run:
 
-- The GraphQL API Server
-- The local Expo dev server, which will enable you to launch the React Native app from your device
+```bash
+// For Android:
+$ npm run android
 
-However, if you wish to run the frontend and backend seperately, execute the following command in a terminal to run the frontend
-
+// For iOS:
+$ npm run ios
 ```
-$ npm run --prefix frontend start
-```
 
-Then execute the following line in another terminal to run the backend
+This will simultaneously launch processes:
 
-```
-$ npm run --prefix api dev
-```
+- The local Expo dev server, which will enable you to build and launch the React Native app from your device
 
 ### Debugging
 
-- Use [Expo Developer Menu](https://docs.expo.io/workflow/debugging/#developer-menu) to make the debugging process easier.
+- Use [React Native Debugging Tools](https://reactnative.dev/docs/debugging) to make the debugging process easier.
 
-Opening the Expo Developer Menu depends on your device:
+Opening the React native Developer Menu depends on your device:
 
 - On an iOS Device: Shake the device, or touch 3 fingers to the screen.
 - On the iOS Simulator: Hit `⌘ + ctrl + Z` on a Mac in the emulator.
@@ -261,11 +267,19 @@ Opening the Expo Developer Menu depends on your device:
   - Then run `npm run start` again.
   - If the issue persists, you should look for the latest guidance from Expo on how to clear the cache, as it has been known to change.
 
-### Running the Test Suites
+Other tools that can be used to debug network requests include [Reactotron](https://github.com/infinitered/reactotron), which helps in debugging requests and responses from the Discourse instance.
+
+How to Use Reactotron:
+
+- Install Reactotron on your desktop. For detailed installation instructions, refer to the [official documentation](https://github.com/infinitered/reactotron?tab=readme-ov-file#installation).
+- Before running the app, make sure to open Reactotron.
+- Run the app, and if the connection is successful, you will see all network requests in Reactotron.
+
+### Running the Test Suites {#run-the-test-suite}
 
 Before running tests, double-check that your changes don't contain any errors.
 
-You can run tests across both the frontend and backend codebases sequentially by running the following command from the project root:
+You can run tests frontend codebases by running the following command from the project root:
 
 ```
 $ npm run test
@@ -275,7 +289,7 @@ On top of ensuring that all tests have passed, the command will also notify you 
 
 Also note that the process of running `npm run test` triggers an additional action in the frontend to take place before running the tests.
 
-A new folder, `frontend/generated`, is created and populated with all the GraphQL Query and Mutation types for use in the codebase.
+A new folder, `frontend/generatedAPI`, is created and populated with all the GraphQL Query and Mutation types for use in the codebase.
 
 If we did not run this before the tests, they would fail due to type errors.
 
@@ -294,11 +308,10 @@ eas build:configure
 
 You will then get a prompt from the EAS CLI related to the EAS project IDs: `android.package` and `ios.bundleIdentifier`. EAS will provide you with an existing project ID if you have one or ask you to create a new one. As for `android.package` and `ios.bundleIdentifier`, you can specify those values with `com.companyname.appname`, or any other patterns you might prefer.
 
-Once you're done, verify the `proseUrl` value you will use for the actual build of the app in `Config.ts`.
+Once you're done, verify the `discourseUrl` value you will use for the actual build of the app in `Config.ts`.
 
 :::info
-When publishing your app, it is necessary to deploy Prose somewhere publicly accessible, perhaps on a cloud hosting provider like AWS or DigitalOcean. If Prose is only running on your local machine, users that download your app won't be able to use it.
-Check [the documentation](deployment) to deploy Prose if you haven't already.
+When publishing your app, you must deploy your Discourse server to a publicly accessible location. Refer to the [documentation](setup-discourse.md#setup-discourse-in-the-cloud) for guidance on deploying Discourse if you haven't done so already.
 :::
 
 Now you can build the Mobile App via Expo (EAS) with the preview build profile by running command below:
@@ -371,6 +384,4 @@ For more details on this process—including publishing to the App Store and Goo
 
 In order for a published version of the app to be able to contact your Discourse server, you'll need to ensure that:
 
-- The GraphQL API is deployed and running properly on a host that is reachable from the app itself.
-- The GraphQL API is configured to point at the correct host and port of your Discourse server
-- Your Discourse server is reachable by the GraphQL API
+- Your Discourse server is reachable by the Lexicon Mobile App

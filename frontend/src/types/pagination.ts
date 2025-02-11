@@ -5,8 +5,8 @@ const Reference = z.object({
 });
 
 export const SearchPost = z.object({
-  posts: z.array(Reference),
-  topics: z.array(Reference),
+  'posts@type({"name":"SearchPost"})': z.array(Reference),
+  'topics@type({"name":"SearchTopic"})': z.array(Reference),
 });
 
 export const MessageDetail = z.object({
@@ -15,5 +15,5 @@ export const MessageDetail = z.object({
 });
 
 export const Notifications = z.object({
-  notifications: z.array(Reference),
+  'notifications@type({"name":"NotificationsData"})': z.array(Reference),
 });

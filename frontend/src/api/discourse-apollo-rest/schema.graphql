@@ -1,0 +1,925 @@
+interface BaseUserIcon {
+  avatarTemplate: String!
+  id: Int!
+  name: String
+  username: String!
+}
+
+type ActionSummary {
+  acted: Boolean
+  count: Int
+  id: Int!
+  canUndo: Boolean
+}
+
+type Participant {
+  avatarTemplate: String!
+  id: Int!
+  name: String
+  username: String!
+}
+
+type UserDetail {
+  admin: Boolean!
+  allowedPmUsernames: [String!]!
+  avatarTemplate: String!
+  badgeCount: Int!
+  bioCooked: String
+  bioExcerpt: String
+  bioRaw: String
+  canChangeBio: Boolean!
+  canChangeLocation: Boolean!
+  canChangeWebsite: Boolean!
+  canEdit: Boolean!
+  canEditEmail: Boolean!
+  canEditName: Boolean!
+  canEditUsername: Boolean!
+  canIgnoreUser: Boolean!
+  canMuteUser: Boolean!
+  canSendPrivateMessageToUser: Boolean!
+  canSendPrivateMessages: Boolean!
+  canUploadProfileHeader: Boolean!
+  canUploadUserCardBackground: Boolean!
+  createdAt: String!
+  dateOfBirth: String
+  email: String!
+  featuredUserBadgeIds: [Int!]
+  hasTitleBadges: Boolean!
+  id: Int!
+  ignored: Boolean!
+  ignoredUsernames: [String!]!
+  lastPostedAt: String
+  lastSeenAt: String
+  locale: String
+  location: String
+  mailingListPostsPerDay: Int!
+  moderator: Boolean!
+  muted: Boolean!
+  mutedCategoryIds: [Int!]!
+  mutedTags: [String!]!
+  mutedUsernames: [String!]!
+  name: String
+  pendingCount: Int!
+  primaryGroupFlairBgColor: String
+  primaryGroupFlairColor: String
+  primaryGroupFlairUrl: String
+  primaryGroupId: Int
+  primaryGroupName: String
+  profileViewCount: Int!
+  recentTimeRead: Int!
+  regularCategoryIds: [Int!]!
+  secondFactorBackupEnabled: Boolean
+  secondFactorEnabled: Boolean!
+  secondaryEmails: [String!]
+  status: UserStatus
+  systemAvatarTemplate: String!
+  timeRead: Int!
+  title: String
+  trackedCategoryIds: [Int!]!
+  trackedTags: [String!]!
+  trustLevel: Int!
+  unconfirmedEmails: [String!]
+  uploadedAvatarId: Int
+  username: String!
+  watchedCategoryIds: [Int!]!
+  watchedFirstPostCategoryIds: [Int!]!
+  watchedTags: [String!]!
+  watchingFirstPostTags: [String!]!
+  website: String
+  websiteName: String
+}
+
+type UserLite {
+  admin: Boolean!
+  avatarTemplate: String!
+  badgeCount: Int!
+  bioCooked: String
+  bioExcerpt: String
+  bioRaw: String
+  canEdit: Boolean!
+  canEditEmail: Boolean!
+  canEditName: Boolean!
+  canEditUsername: Boolean!
+  canIgnoreUser: Boolean!
+  canMuteUser: Boolean!
+  canSendPrivateMessageToUser: Boolean!
+  canSendPrivateMessages: Boolean!
+  canUploadProfileHeader: Boolean!
+  canUploadUserCardBackground: Boolean!
+  createdAt: String!
+  dateOfBirth: String
+  featuredUserBadgeIds: [Int!]
+  id: Int!
+  ignored: Boolean!
+  lastPostedAt: String
+  lastSeenAt: String
+  location: String
+  mailingListPostsPerDay: Int!
+  moderator: Boolean!
+  muted: Boolean!
+  name: String
+  pendingCount: Int!
+  primaryGroupFlairBgColor: String
+  primaryGroupFlairColor: String
+  primaryGroupFlairUrl: String
+  primaryGroupId: Int
+  primaryGroupName: String
+  profileViewCount: Int!
+  recentTimeRead: Int!
+  timeRead: Int!
+  title: String
+  trustLevel: Int!
+  uploadedAvatarId: Int
+  username: String!
+  website: String
+  websiteName: String
+}
+
+type UserStatus {
+  description: String!
+  emoji: String!
+  endsAt: String
+}
+
+type ProfileOutput {
+  unreadNotification: UserUnreadNotifications!
+
+  # Later need handle union type user
+  user: UserDetail!
+}
+
+type UserUnreadNotifications {
+  isThereUnreadNotifications: Boolean!
+}
+
+type NotificationDataType {
+  count: String
+  displayUsername: String
+  originalPostId: Int
+  originalPostType: Int
+  originalUsername: String
+  revisionNumber: Int
+  topicTitle: String
+  groupId: Int
+  groupName: String
+  inboxCount: Int
+  username: String
+  badgeId: Int
+  badgeName: String
+  badgeSlug: String
+  badgeTitle: Boolean
+  text: String
+}
+
+type NotificationDetail {
+  createdAt: String!
+  id: Int!
+  data: NotificationDataType!
+  fancyTitle: String
+  notificationType: Int
+  postNumber: Int
+  read: Boolean!
+  topicId: Int
+}
+
+type Notifications {
+  notifications: [NotificationDetail!]
+  loadMoreNotifications: String
+  seenNotificationId: Int
+  totalRowsNotifications: Int
+}
+
+type About {
+  postCount: Int!
+  topicCount: Int!
+}
+
+type Categories {
+  color: String!
+  descriptionText: String
+  id: Int!
+  name: String!
+}
+
+type GroupSiteSetting {
+  id: Int!
+  name: String!
+}
+
+type CategoryList {
+  categories: [Categories!]!
+}
+
+type LookupUrl {
+  shortPath: String!
+  shortUrl: String!
+  url: String!
+}
+
+type TopicFlagTypes {
+  description: String!
+  id: Int!
+  isCustomFlag: Boolean
+  isFlag: Boolean
+  longForm: String
+  name: String!
+  nameKey: String!
+  shortDescription: String
+}
+
+type SiteOutput {
+  canCreateTag: Boolean!
+  canTagTopics: Boolean!
+  discourseBaseUrl: String!
+  enableLexiconPushNotifications: Boolean!
+  groups: [GroupSiteSetting!]!
+  postActionTypes: [TopicFlagTypes!]!
+  topicFlagTypes: [TopicFlagTypes!]!
+  uncategorizedCategoryId: Int!
+  siteSettings: SiteSettingsOutput!
+}
+
+type SiteSettingsOutput {
+  canSignUp: Boolean!
+  authorizedExtensions: String!
+  minSearchLength: Int!
+  taggingEnabled: Boolean!
+  maxTagLength: Int!
+  maxTagsPerTopic: Int!
+  maxUsernameLength: Int!
+  minPasswordLength: Int!
+  minUsernameLength: Int!
+  fullNameRequired: Boolean!
+  defaultComposerCategory: String!
+  allowUncategorizedTopics: Boolean!
+  allowUserStatus: Boolean!
+  emojiSet: String!
+  externalEmojiUrl: String!
+  allowPoll: Boolean!
+  loginRequired: Boolean!
+  pollCreateMinimumTrustLevel: Int!
+}
+
+type UserIcon implements BaseUserIcon {
+  avatarTemplate: String!
+  id: Int!
+  name: String
+  username: String!
+}
+
+type PollOption {
+  html: String!
+  id: String!
+  votes: Int
+}
+
+enum PollType {
+  multiple
+  number
+  regular
+}
+
+enum PollChartType {
+  bar
+  pie
+}
+
+type UserVoter implements BaseUserIcon {
+  avatarTemplate: String!
+  id: Int!
+  name: String
+  title: String
+  username: String!
+}
+
+type PreloadedVoters {
+  pollOptionId: String!
+  users: [UserVoter!]!
+}
+
+enum PollResult {
+  always
+  on_close
+  on_vote
+}
+
+enum PollStatus {
+  closed
+  open
+}
+
+type Poll {
+  chartType: PollChartType!
+  close: String
+  groups: String
+  max: Int
+  min: Int
+  name: String!
+  options: [PollOption!]!
+  preloadedVoters: [PreloadedVoters!]
+  public: Boolean
+  results: PollResult!
+  status: PollStatus!
+  step: Int
+  title: String
+  type: PollType!
+  voters: Int!
+}
+
+type PollsVotes {
+  pollName: String!
+  pollOptionIds: [String!]!
+}
+
+type LinkCount {
+  url: String!
+}
+
+type Post {
+  actionCode: String
+  actionCodeWho: String
+  actionsSummary: [ActionSummary!]
+  admin: Boolean!
+  avatarTemplate: String!
+  canEdit: Boolean!
+  cooked: String!
+  createdAt: String!
+  displayUsername: String
+  hidden: Boolean!
+  id: Int!
+  linkCounts: [LinkCount!]
+  markdownContent: String
+  mentions: [String!]
+  moderator: Boolean!
+  name: String!
+  polls: [Poll!]
+  pollsVotes: [PollsVotes!]
+  postNumber: Int!
+  postType: Int!
+  raw: String
+  replyCount: Int!
+  replyToPostNumber: Int
+  staff: Boolean!
+  topicId: Int!
+  userId: Int!
+  userStatus: UserStatus
+  username: String!
+}
+
+type PostStream {
+  firstPost: Post
+  posts: [Post!]!
+  stream: [Int!]
+}
+
+type TopicDetail {
+  allowedUsers: [UserIcon!]
+  canEdit: Boolean
+  participants: [Participant!]!
+  createdBy: UserIcon!
+}
+
+interface BaseTopicDetailOutput {
+  categoryId: Int
+  createdAt: String
+  details: TopicDetail
+  id: Int!
+  likeCount: Int
+  liked: Boolean
+  postStream: PostStream!
+  postsCount: Int
+  tags: [String!]
+  title: String
+  views: Int
+}
+
+type TopicDetailOutput implements BaseTopicDetailOutput {
+  categoryId: Int
+  createdAt: String
+  details: TopicDetail
+  id: Int!
+  likeCount: Int
+  liked: Boolean
+  postStream: PostStream!
+  postsCount: Int
+  tags: [String!]
+  title: String
+  views: Int
+}
+
+type UserActions {
+  actionType: Int!
+  avatarTemplate: String!
+  categoryId: Int
+  createdAt: String!
+  excerpt: String!
+  hidden: Boolean
+  markdownContent: String
+  postId: Int
+  postNumber: Int!
+  title: String!
+  topicId: Int!
+  username: String!
+}
+
+type SearchUser {
+  avatarTemplate: String!
+  id: Int!
+  name: String
+  username: String!
+}
+
+type SearchGroup {
+  fullName: String
+  name: String!
+}
+
+type SearchUserOutput {
+  groups: [SearchGroup!]
+  users: [SearchUser!]!
+}
+
+type Tag {
+  count: Int!
+  id: String!
+  pmCount: Int!
+  targetTag: Boolean
+  text: String!
+}
+
+type SearchOutput {
+  posts: [SearchPost!]!
+  topics: [SearchTopic!]!
+}
+
+type SearchPost {
+  avatarTemplate: String!
+  blurb: String!
+  createdAt: String!
+  id: Int!
+  likeCount: Int!
+  name: String
+  postNumber: Int!
+  topicId: Int!
+  username: String!
+}
+
+type SearchTopic {
+  archetype: String
+  archived: Boolean!
+  bookmarked: Boolean
+  bumped: Boolean!
+  bumpedAt: String!
+  categoryId: Int
+  closed: Boolean!
+  createdAt: String!
+  excerpt: String
+  fancyTitle: String!
+  highestPostNumber: Int!
+  id: Int!
+  lastPostedAt: String
+  lastReadPostNumber: Int
+  liked: Boolean
+  newPosts: Int
+  notificationLevel: Int
+  pinned: Boolean!
+  postsCount: Int!
+  replyCount: Int!
+  slug: String!
+  tags: [String!]
+  title: String!
+  unread: Int
+  unseen: Boolean!
+  visible: Boolean!
+}
+
+type PrivateMessageDetailOutput implements BaseTopicDetailOutput {
+  categoryId: Int
+  createdAt: String
+  details: TopicDetail
+  id: Int!
+  likeCount: Int
+  liked: Boolean
+  postStream: PostStream!
+  postsCount: Int
+  tags: [String!]
+  title: String
+  views: Int
+}
+
+type MessageParticipant {
+  extras: String
+  userId: Int!
+}
+
+input NewTopicInput {
+  category: Int
+  raw: String!
+  tags: [String!]
+  title: String!
+  archetype: String
+}
+
+input NewPrivateMessageInput {
+  category: Int
+  raw: String!
+  targetRecipients: [String!]!
+  title: String!
+}
+
+input MarkReadInput {
+  id: Int
+}
+
+type PostCooked {
+  markdownContent: String!
+  mentions: [String!]!
+}
+
+type PostRaw {
+  raw: String!
+  cooked(postId: Int!): PostCooked!
+}
+
+input SetPrimaryEmailInput {
+  email: String!
+}
+
+input PushNotificationsInput {
+  pushNotificationsToken: String!
+  applicationName: String!
+  experienceId: String!
+  platform: String!
+}
+
+type PollVoteOutput {
+  poll: Poll!
+  vote: [String!]
+}
+
+input PollVoteInput {
+  options: [String!]!
+  pollName: String!
+  postId: Int!
+}
+
+type UndoPollVoteOutput {
+  poll: Poll!
+}
+
+input TogglePollStatusInput {
+  pollName: String!
+  postId: Int!
+  status: PollStatus!
+}
+
+type TogglePollStatusOutput {
+  poll: Poll!
+}
+
+type ReplyingToOutput {
+  id: Int!
+  post: Post!
+}
+
+type TagFilter {
+  id: String!
+  name: String!
+  staff: Boolean!
+  topicCount: Int!
+}
+
+type TopicPoster {
+  description: String!
+  user: UserIcon!
+  userId: Int
+}
+
+type PrivateMessageOutput {
+  primaryGroups: [Int!]
+  topicList: TopicList!
+  users: [UserIcon!]
+}
+
+type Topic {
+  authorUserId: Int
+  bumpedAt: String!
+  categoryId: Int
+  createdAt: String!
+  excerpt: String
+  id: Int!
+  imageUrl: String
+  likeCount: Int!
+  liked: Boolean
+  pinned: Boolean!
+  posters: [TopicPoster!]!
+  postsCount: Int!
+  replyCount: Int!
+  tags: [String!]
+  title: String!
+  views: Int!
+  visible: Boolean!
+  allowedUserCount: Int
+  highestPostNumber: Int!
+  unseen: Boolean!
+  lastReadPostNumber: Int
+  lastPostedAt: String!
+  lastPosterUsername: String
+  participants: [MessageParticipant!]
+}
+
+type TopicList {
+  tags: [TagFilter!]
+  topics: [Topic!]
+}
+
+type TopicsOutput {
+  topicList: TopicList
+  users: [UserIcon!]
+}
+
+type BasicTopic {
+  id: Int!
+  postsCount: Int!
+  title: String!
+}
+
+enum TopicsSortEnum {
+  LATEST
+  TOP
+}
+
+enum TopPeriodEnum {
+  ALL
+  DAILY
+  MONTHLY
+  QUATERLY
+  WEEKLY
+  YEARLY
+}
+
+input DeletePushNotificationsSubscribeInput {
+  pushNotificationsToken: String
+}
+
+input DeleteEmailInput {
+  email: String!
+}
+
+input FlagPostInput {
+  postActionTypeId: Int!
+  id: Int!
+  message: String
+}
+
+input LikePostInput {
+  postActionTypeId: Int!
+  id: Int!
+}
+
+input ChangePasswordInput {
+  login: String!
+}
+
+input AddEmailInput {
+  email: String!
+}
+
+enum UploadTypeEnum {
+  avatar
+  composer
+}
+
+type UploadOutput {
+  extension: String!
+  filesize: Int!
+  height: Int!
+  humanFilesize: String!
+  id: Int!
+  originalFilename: String!
+  shortPath: String
+  shortUrl: String!
+  thumbnailHeight: Int!
+  thumbnailWidth: Int!
+  token: Int
+  url: String!
+  width: Int!
+}
+
+input UploadInput {
+  file: File!
+  token: Int
+  type: UploadTypeEnum!
+  userId: Int
+}
+
+input SaveProfilePictureInput {
+  uploadId: Int!
+  type: String
+}
+
+input ReplyInput {
+  raw: String!
+  replyToPostNumber: Int
+  topicId: Int!
+  archetype: String
+}
+
+input LookupUrlInput {
+  shortUrls: [String!]!
+}
+
+input LeaveMessageInput {
+  username: String!
+}
+
+# This is just empty input for bodyKey post without input
+input EmptyInput {
+  _placeholder: String
+}
+
+type Query {
+  about: About!
+  category: CategoryList!
+  lookupUrls(lookupUrlInput: LookupUrlInput!): [LookupUrl!]!
+  postRaw(postId: Int!): PostRaw!
+  profile(username: String!): ProfileOutput!
+  notificationQuery(page: Int!): Notifications!
+  site: SiteOutput!
+  topicDetail(
+    includeFirstPost: Boolean
+    postIds: [Int!]
+    postNumber: Int
+    topicId: Int!
+  ): TopicDetailOutput!
+  activity(filter: String, offset: Int!, username: String!): [UserActions!]!
+  searchUser(search: String!): SearchUserOutput!
+  searchTag(limit: Int, q: String!, selectedTags: [String!]): [Tag!]!
+  search(order: String, page: Int!, search: String!): SearchOutput!
+  privateMessageList(username: String!, page: Int): PrivateMessageOutput!
+  privateMessageQuery(
+    username: String!
+    page: Int
+    messageType: String
+  ): PrivateMessageOutput!
+  privateMessageDetailQuery(
+    postIds: [Int!]
+    postNumber: Int
+    topicId: Int!
+  ): PrivateMessageDetailOutput!
+  replyingTo(postId: Int!, replyToPostId: Int): ReplyingToOutput!
+  topics(
+    categoryId: Int
+    page: Int
+    sort: TopicsSortEnum!
+    tag: String
+    topPeriod: TopPeriodEnum
+    username: String
+  ): TopicsOutput!
+  postQuery(postId: Int!): Post!
+}
+
+input LeaveMessageInput {
+  username: String!
+}
+
+type LikeTopicOrPostOutput {
+  id: Int!
+  topicId: Int!
+  likeCount: Int
+  liked: Boolean
+  postId: Int
+  postNumber: Int
+  actionsSummary: [ActionSummary!]
+}
+
+type LikedTopic {
+  id: Int!
+  likeCount: Int!
+  liked: Boolean!
+  postId: Int!
+  topicId: Int!
+}
+
+union LikeOutputUnion = LikedTopic | Post
+
+type ChangeUsernameOutput {
+  username: String!
+}
+
+input ChangeUsernameInput {
+  newUsername: String!
+}
+
+input PostInput {
+  editReason: String
+  raw: String!
+  rawOld: String
+}
+
+input EditPostInput {
+  post: PostInput!
+}
+
+input EditProfileInput {
+  bioRaw: String
+  dateOfBirth: String
+  location: String
+  name: String
+  website: String
+}
+
+type ChangeProfileOutput {
+  user: UserDetail!
+}
+
+type EditPostOutput {
+  post: Post!
+}
+
+input EditUserStatusInput {
+  description: String!
+  emoji: String!
+  endsAt: String
+}
+
+input EditTopicInput {
+  categoryId: Int
+  featureLink: String
+  tags: [String!]
+  title: String
+}
+
+type Mutation {
+  addEmail(addEmailInput: AddEmailInput!, username: String!): String!
+  changePassword(
+    changePasswordInput: ChangePasswordInput!
+  ): ChangePasswordOutput!
+  changeProfile(
+    editProfileInput: EditProfileInput
+    username: String!
+  ): ChangeProfileOutput!
+  changeUsername(
+    changeUsernameInput: ChangeUsernameInput!
+    oldUsername: String!
+  ): ChangeUsernameOutput!
+  deleteEmail(email: String!, username: String!): DeleteEmailOutput!
+  deletePushNotificationsSubscribe(
+    deletePushNotificationsSubscribeInput: DeletePushNotificationsSubscribeInput!
+  ): String!
+  deleteUserStatus: String!
+  editPost(postId: Int!, editPostInput: EditPostInput!): EditPostOutput!
+  editProfile(
+    editProfileInput: EditProfileInput
+    newUsername: String
+    uploadId: Int
+    username: String!
+  ): UserDetail!
+  editTopic(topicId: Int!, topicInput: EditTopicInput!): BasicTopic!
+  editUserStatus(editUserStatusInput: EditUserStatusInput): String!
+  flagPost(flagPostInput: FlagPostInput!): Post!
+  leaveMessage(leaveMessageInput: LeaveMessageInput!, topicId: Int!): String!
+  logout(pushNotificationsToken: String): String!
+  markRead(markReadInput: MarkReadInput): String!
+  newPrivateMessage(newPrivateMessageInput: NewPrivateMessageInput!): Post!
+  newTopic(newTopicInput: NewTopicInput!): Post!
+  pushNotifications(input: PushNotificationsInput!): String!
+  replyPost(replyInput: ReplyInput!): Post!
+  replyPrivateMessage(
+    file: File
+    replyInput: ReplyInput!
+    type: UploadTypeEnum
+    userId: Int
+  ): Post!
+  markRead(markReadInput: MarkReadInput): String!
+  newTopic(newTopicInput: NewTopicInput!): Post!
+  newPrivateMessage(newPrivateMessageInput: NewPrivateMessageInput!): Post!
+  likeTopicOrPost(postId: Int, topicId: Int, unlike: Boolean): LikeOutputUnion!
+  unlikeTopicOrPost(postId: Int): Post!
+  likeTopicOrPostRest(likePostInput: LikePostInput!): Post!
+  revokeUserApiKey(revokeUserApiKeyInput: EmptyInput): String!
+  saveProfilePicture(
+    saveProfilePictureInput: SaveProfilePictureInput!
+    username: String!
+  ): String!
+  setPrimaryEmail(
+    input: SetPrimaryEmailInput!
+    username: String!
+  ): SetPrimaryEmailOutput!
+  timings(postNumbers: [Int!]!, topicId: Int!): String!
+  togglePollStatus(input: TogglePollStatusInput!): TogglePollStatusOutput!
+  undoVotePoll(pollName: String!, postId: Int!): UndoPollVoteOutput!
+  upload(input: UploadInput!): UploadOutput!
+  votePoll(
+    options: [String!]!
+    pollName: String!
+    postId: Int!
+  ): PollVoteOutput!
+}
+
+scalar PathBuilder
+scalar SetPrimaryEmailOutput
+scalar DeleteEmailOutput
+scalar BodyBuilder
+scalar ChangePasswordOutput
+scalar File

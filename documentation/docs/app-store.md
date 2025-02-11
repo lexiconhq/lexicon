@@ -132,14 +132,13 @@ For further details, please take a look at [this link](https://developer.apple.c
 ### Setup Config Values
 
 :::info
-When publishing your app, it is necessary to deploy Prose somewhere publicly accessible, perhaps on a cloud hosting provider like AWS or DigitalOcean. If Prose is only running on your local machine, users that download your app won't be able to use it.
-Check [the documentation](deployment) to deploy Prose if you haven't already.
+When publishing your app, you must deploy your Discourse server to a publicly accessible location. Refer to the [documentation](setup-discourse.md#setup-discourse-in-the-cloud) for guidance on deploying Discourse if you haven't done so already.
 :::
 
-Next, configure the **Prose URL** for your build in `Config.ts`. You can set a different URL for each build channel.
+Next, configure the **Discourse URL** for your build in `Config.ts`. You can set a different URL for each build channel.
 
 :::note
-In the original release of Lexicon, the **Prose URL** was specified in `frontend/.env`. However, as part of migrating to Expo's EAS feature, we centralized the configuration into `frontend/Config.ts` to save you the trouble of needing to maintain it in more than one place, as suggested in the [Expo documentation](https://docs.expo.dev/build-reference/variables/#can-i-share-environment-variables-defined-in-easjson-with-expo-start-and-eas-update)
+In the initial release of Lexicon, connecting to a Discourse site required setting up Prose and configuring the Prose URL in the mobile app. However, with recent updates, the mobile app now connects directly to Discourse without needing Prose.
 :::
 
 ```ts
@@ -147,10 +146,10 @@ const config = {
   // ...
   buildChannels: {
     preview: {
-      proseUrl: 'http://PLACEHOLDER.change.this.to.your.prose.url',
+      discourseUrl: 'http://PLACEHOLDER.change.this.to.your.discourse.url',
     },
     production: {
-      proseUrl: 'http://PLACEHOLDER.change.this.to.your.prose.url',
+      discourseUrl: 'http://PLACEHOLDER.change.this.to.your.discourse.url',
     },
   },
 };
@@ -274,9 +273,6 @@ Once you've successfully passed Apple's review process and have received enough 
 As a few final reminders, double-check that...
 
 - Your Discourse instance is online, reachable, and functioning correctly.
-- The built version of your app is configured to point at the correct Prose server.
-- Your Prose server is online, reachable and healthy.
-- Your Prose server is deployed with the [recommended guidlines](dedicated#configure--deploy-prose) for production.
-  - In particular, ensure that its traffic is encrypted using an SSL certificate.
+- The built version of your app is configured to point at the correct Discourse instance.
 
 Next, we'll guide you through the process of publishing your app for Android devices on the Google Play Store.

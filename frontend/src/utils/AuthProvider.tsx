@@ -1,16 +1,22 @@
-import { Alert } from 'react-native';
 import { ApolloError, useReactiveVar } from '@apollo/client';
 import React, {
-  createContext,
   ReactElement,
+  createContext,
   useContext,
   useEffect,
   useMemo,
 } from 'react';
+import { Alert } from 'react-native';
 
-import { errorTypes, ERROR_REFETCH } from '../constants';
-import { client } from '../graphql/client';
-import { getToken, removeToken, setToken, useStorage } from '../helpers';
+import { client } from '../api/client';
+import { ERROR_REFETCH, errorTypes } from '../constants';
+import {
+  LoginError,
+  getToken,
+  removeToken,
+  setToken,
+  useStorage,
+} from '../helpers';
 import { useSiteSettings } from '../hooks';
 import { setTokenState, tokenVar } from '../reactiveVars';
 
@@ -30,6 +36,7 @@ export type AuthContextProps = {
       isLoading: false;
       token: string | null;
       canSignUp?: boolean;
+      loginRequired?: boolean;
       siteSettingsError?: ApolloError;
     }
 );
@@ -63,16 +70,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const storage = useStorage();
   const {
     canSignUp,
+    loginRequired,
     loading: siteSettingsLoading,
     error: siteSettingsError,
   } = useSiteSettings({
     onCompleted: ({ site }) => {
       const {
-        emojiSet,
-        externalEmojiUrl,
         discourseBaseUrl,
-        allowPoll,
-        pollCreateMinimumTrustLevel,
+        siteSettings: {
+          emojiSet,
+          externalEmojiUrl,
+          allowPoll,
+          pollCreateMinimumTrustLevel,
+        },
       } = site;
       storage.setItem('userStatus', {
         emojiSet,
@@ -158,10 +168,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             isLoading: false,
             token,
             canSignUp,
+            loginRequired,
             siteSettingsError,
           }),
     };
-  }, [canSignUp, siteSettingsError, siteSettingsLoading, token]);
+  }, [canSignUp, loginRequired, siteSettingsError, siteSettingsLoading, token]);
 
   return (
     <AuthContext.Provider value={authContextProps}>
@@ -191,10 +202,12 @@ const cleanSession = async () => {
       include: ['Site'],
     });
   } catch (error) {
+    // For condition error at site after error change into get graphQLErrors with value "You need to be logged in to do that."
+    // after logout
     if (
       error instanceof ApolloError &&
-      (error.message.includes(errorTypes.unauthorizedAccess) ||
-        error.message.includes(errorTypes.sessionExpired))
+      Array.isArray(error.graphQLErrors) &&
+      error.graphQLErrors[0] === LoginError
     ) {
       /**
        * we don't expose unauthorizedAccess error to user

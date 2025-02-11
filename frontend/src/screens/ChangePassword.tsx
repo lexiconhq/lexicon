@@ -1,6 +1,6 @@
+import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import { Alert, Platform, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 
 import { CustomHeader } from '../components';
 import { Button, Text } from '../core-ui';
@@ -8,10 +8,12 @@ import { useStorage } from '../helpers';
 import { useChangePassword, useProfile } from '../hooks';
 import { makeStyles } from '../theme';
 import { StackNavProp, UserDetail } from '../types';
+import { useDevice } from '../utils';
 
 export default function ChangePassword() {
   const storage = useStorage();
   const styles = useStyles();
+  const { isTabletLandscape } = useDevice();
 
   const { goBack } = useNavigation<StackNavProp<'ChangePassword'>>();
 
@@ -44,8 +46,8 @@ export default function ChangePassword() {
   useEffect(() => {
     if (userData) {
       // eslint-disable-next-line no-underscore-dangle
-      userData.userProfile.user.__typename === 'UserDetail' &&
-        setUser(userData.userProfile.user);
+      userData.profile.user.__typename === 'UserDetail' &&
+        setUser(userData.profile.user);
     }
   }, [userData, setUser]);
 
@@ -57,7 +59,9 @@ export default function ChangePassword() {
         [{ text: 'Got it' }],
         { cancelable: false },
       );
-      goBack();
+      if (!isTabletLandscape) {
+        goBack();
+      }
     },
     onError: () => {
       setError(true);
@@ -70,7 +74,9 @@ export default function ChangePassword() {
     setError(false);
     changeNewPassword({
       variables: {
-        email,
+        changePasswordInput: {
+          login: email,
+        },
       },
     });
   };
@@ -78,13 +84,17 @@ export default function ChangePassword() {
   return (
     <View style={styles.container}>
       {!ios ? (
-        <CustomHeader title={t('Change Password')} />
+        <CustomHeader
+          title={t('Change Password')}
+          hideHeaderLeft={isTabletLandscape}
+        />
       ) : (
         <CustomHeader
           title={t('Change Password')}
           rightTitle={t('Send')}
           onPressRight={onPressSend}
           isLoading={loading}
+          hideHeaderLeft={isTabletLandscape}
         />
       )}
       <View style={styles.inputContainer}>

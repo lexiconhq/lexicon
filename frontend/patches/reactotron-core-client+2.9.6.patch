@@ -1,0 +1,17 @@
+diff --git a/node_modules/reactotron-core-client/package.json b/node_modules/reactotron-core-client/package.json
+index 41b32e5..9697d6b 100644
+--- a/node_modules/reactotron-core-client/package.json
++++ b/node_modules/reactotron-core-client/package.json
+@@ -16,10 +16,10 @@
+   "main": "dist/index.js",
+   "module": "dist/index.esm.js",
+   "types": "dist/types/src/index.d.ts",
+-  "react-native": "src/index.ts",
++  "react-native": "./dist/index.js",
+   "exports": {
+     "import": "./dist/index.esm.js",
+-    "react-native": "./src/index.ts",
++    "react-native": "./dist/index.js",
+     "types": "./dist/types/src/index.d.ts",
+     "default": "./dist/index.js"
+   },

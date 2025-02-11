@@ -1,13 +1,13 @@
-import React from 'react';
 import { OperationVariables, useFragment_experimental } from '@apollo/client';
+import React from 'react';
 
-import { findChannelByCategoryId, getImage, useStorage } from '../../helpers';
 import {
   SearchPostFragment,
   SearchPostFragmentDoc,
   SearchTopicFragment,
   SearchTopicFragmentDoc,
-} from '../../generated/server';
+} from '../../generatedAPI/server';
+import { findChannelByCategoryId, getImage, useStorage } from '../../helpers';
 
 import { PostItem, PostItemProps } from './PostItem';
 
@@ -81,4 +81,4 @@ function BaseSearchPostItem(props: Props) {
 }
 
 let SearchPostItem = React.memo(BaseSearchPostItem);
-export { Props as SearchPostItemProps, SearchPostItem };
+export { SearchPostItem, Props as SearchPostItemProps };

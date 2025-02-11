@@ -1,11 +1,11 @@
 /* eslint-disable no-underscore-dangle */
-import { Alert } from 'react-native';
 import { FieldPolicy } from '@apollo/client';
-import { Reference } from '@apollo/client/utilities';
 import { SafeReadonly } from '@apollo/client/cache/core/types/common';
+import { Reference } from '@apollo/client/utilities';
+import { Alert } from 'react-native';
 
 import { ERROR_PAGINATION } from '../constants';
-import { MessageDetail, SearchPost, Notifications } from '../types';
+import { MessageDetail, Notifications, SearchPost } from '../types';
 
 import { handleDuplicateRef, handleDuplicates } from './handleDuplicates';
 
@@ -92,13 +92,13 @@ export function appendPagination<T extends Reference>(
             if (parsedExisting.success && parsedIncoming.success) {
               incoming = {
                 ...incoming,
-                posts: handleDuplicateRef(
-                  parsedExisting.data.posts,
-                  parsedIncoming.data.posts,
+                'posts@type({"name":"SearchPost"})': handleDuplicateRef(
+                  parsedExisting.data['posts@type({"name":"SearchPost"})'],
+                  parsedIncoming.data['posts@type({"name":"SearchPost"})'],
                 ),
-                topics: handleDuplicateRef(
-                  parsedExisting.data.topics,
-                  parsedIncoming.data.topics,
+                'topics@type({"name":"SearchTopic"})': handleDuplicateRef(
+                  parsedExisting.data['topics@type({"name":"SearchTopic"})'],
+                  parsedIncoming.data['topics@type({"name":"SearchTopic"})'],
                 ),
               };
             }
@@ -129,20 +129,28 @@ export function appendPagination<T extends Reference>(
             }
           }
           break;
-        case 'NOTIFICATIONS':
+        case 'NOTIFICATIONS': {
           if (existing) {
             const parsedExisting = Notifications.safeParse(existing);
             const parsedIncoming = Notifications.safeParse(incoming);
 
             if (parsedExisting.success && parsedIncoming.success) {
               let newData = handleDuplicateRef(
-                parsedExisting.data.notifications,
-                parsedIncoming.data.notifications,
+                parsedExisting.data[
+                  'notifications@type({"name":"NotificationsData"})'
+                ],
+                parsedIncoming.data[
+                  'notifications@type({"name":"NotificationsData"})'
+                ],
               );
-              incoming = { ...incoming, notifications: newData };
+              incoming = {
+                ...incoming,
+                'notifications@type({"name":"NotificationsData"})': newData,
+              };
             }
           }
           break;
+        }
       }
 
       return incoming;

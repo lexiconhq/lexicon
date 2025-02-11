@@ -1,14 +1,14 @@
 {
   "name": "lexicon",
   "scripts": {
-    "dev": "concurrently --kill-others \"yarn --cwd api dev\" \"yarn --cwd frontend start\"",
-    "quickstart": "concurrently --kill-others \"yarn --cwd api quickstart\" \"yarn --cwd frontend quickstart\"",
-    "generate": "yarn --cwd api generate && yarn --cwd frontend graphql:generate",
-    "test": "yarn --cwd api test && yarn --cwd frontend test",
+    "dev": "concurrently --kill-others \"yarn --cwd frontend start\"",
+    "quickstart": "concurrently --kill-others \"yarn --cwd frontend quickstart\"",
+    "generate": "yarn --cwd frontend graphql:generate",
+    "test": "yarn --cwd frontend test",
     "docs:install": "yarn --cwd documentation install",
     "docs:build": "yarn --cwd documentation build",
     "docs:start": "yarn --cwd documentation start",
-    "postinstall": "yarn --cwd api install && yarn --cwd frontend install"
+    "postinstall": "yarn --cwd frontend install"
   },
   "dependencies": {
     "@types/react": "^16.9.46"

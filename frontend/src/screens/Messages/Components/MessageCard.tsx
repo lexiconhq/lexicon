@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
@@ -47,6 +47,19 @@ export function MessageCard(props: Props) {
   const { navigate } = useNavigation<StackNavProp<'MessageDetail'>>();
 
   const [seen, setSeen] = useState(seenProps);
+
+  /**
+   * This useEffect ensures that when navigating to the message details directly, such as via a deep link without clicking onPressItem,
+   * the seenProps value is correctly synced with the local state. Without this, the initial message in the list might incorrectly display
+   * seen = false, even though seenProps is true.
+   */
+
+  useEffect(() => {
+    if (seen !== seenProps) {
+      setSeen(seenProps);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seenProps]);
 
   const onPressItem = () => {
     if (!seen) {

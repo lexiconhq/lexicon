@@ -1,3 +1,5 @@
+/* eslint-disable no-useless-escape */
+
 import { NO_EXCERPT_WORDING } from '../../constants';
 import {
   anchorToMarkdown,

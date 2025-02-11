@@ -2,7 +2,7 @@ import {
   Poll as BasePoll,
   PollOption as BasePollOption,
   PollsVotes as BasePollsVotes,
-} from '../generated/server';
+} from '../generatedAPI/server';
 
 import { PostReplyParams } from './Navigation';
 import { Channel } from './Types';

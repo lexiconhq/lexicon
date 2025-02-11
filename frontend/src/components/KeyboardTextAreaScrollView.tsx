@@ -6,6 +6,7 @@ import {
 } from 'react-native-keyboard-aware-scroll-view';
 
 import { makeStyles } from '../theme';
+import { useDevice } from '../utils';
 
 type Props = {
   children?: ReactNode;
@@ -19,6 +20,8 @@ export function KeyboardTextAreaScrollView(props: Props) {
   const { children, bottomMenu, bottomMenuAlwaysVisible, ...otherProps } =
     props;
 
+  const { isTabletLandscape } = useDevice();
+
   return (
     <>
       <KeyboardAwareScrollView
@@ -26,7 +29,7 @@ export function KeyboardTextAreaScrollView(props: Props) {
         enableOnAndroid
         keyboardDismissMode="on-drag"
         scrollEnabled
-        extraHeight={300}
+        extraHeight={isTabletLandscape ? 150 : 300}
         keyboardShouldPersistTaps="always"
         {...otherProps}
       >

@@ -46,7 +46,7 @@ We find that Expo makes us much more effective as developers, and also provides 
 
 In particular, Discourse sites that leverage the [Lexicon Discourse Plugin](./discourse-plugin.md) get the benefit of [push notifications](./push-notifications) through Expo's [push notifications service](https://docs.expo.dev/push-notifications/overview/), which abstracts away Google and Apple's push services into a simple interface.
 
-## Lexicon Architecture
+## Lexicon Architecture {#architecture-of-the-lexicon-stack}
 
 The Lexicon Stack is fairly simple, and only consists of 3 major pieces:
 

@@ -44,7 +44,7 @@ Having said that, we chose to build Lexicon with it for two primary reasons.
 
 We find that Expo makes us much more effective as developers, and also provides excellent services to facilitate the entire process of building and publishing React Native apps.
 
-## Lexicon Architecture
+## Lexicon Architecture {#architecture-of-the-lexicon-stack}
 
 The Lexicon Stack is fairly simple, and only consists of 3 major pieces:
 

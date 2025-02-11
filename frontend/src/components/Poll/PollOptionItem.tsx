@@ -1,12 +1,12 @@
 import React from 'react';
-import { View, StyleProp, ViewStyle } from 'react-native';
+import { StyleProp, View, ViewStyle } from 'react-native';
 import ProgressBar from 'react-native-animated-progress';
 
-import { makeStyles, useTheme } from '../../theme';
 import { RadioButton, Text } from '../../core-ui';
-import { PollChartType } from '../../generated/server';
-import { StackedAvatars } from '../StackedAvatars';
+import { PollChartType } from '../../generatedAPI/server';
+import { makeStyles, useTheme } from '../../theme';
 import { StackAvatarUser } from '../../types';
+import { StackedAvatars } from '../StackedAvatars';
 
 type PollOptionItemProps = {
   option: string;

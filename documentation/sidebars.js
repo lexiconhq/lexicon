@@ -10,10 +10,14 @@ module.exports = {
       'contributing',
       'commercial-support',
     ],
-    'Getting Started': ['quick-start', 'setup', 'customize'],
+    'Getting Started': [
+      'quick-start',
+      'discourse-login-setup',
+      'setup',
+      'customize',
+    ],
     'Configuring the Mobile App': ['env-mobile'],
     'White Labeling': ['white-labeling', 'assets', 'theming'],
-    'Deploying Prose': ['deployment', 'env-prose', 'dedicated'],
     'Configuring Discourse': ['optimal'],
     'Discourse Plugin': [
       'discourse-plugin',
@@ -31,21 +35,6 @@ module.exports = {
           'email-deep-linking/setup/enable-email-deep-linking',
           'email-deep-linking/setup/verify-email-deep-linking',
         ],
-        'Login With Link': [
-          'login-with-link/intro',
-          'login-with-link/setup/enable-login-with-link',
-          'login-with-link/setup/verify-login-with-link',
-        ],
-        'Activation Account With Link': [
-          'activation-with-link/intro',
-          'activation-with-link/setup/enable-activate-with-link',
-          'activation-with-link/setup/verify-activate-with-link',
-        ],
-        'Login with Apple': [
-          'login-with-apple/intro',
-          'login-with-apple/setup/enable-login-with-apple',
-          'login-with-apple/setup/verify-login-with-apple',
-        ],
       },
     ],
     'Publishing your App': [
@@ -61,7 +50,6 @@ module.exports = {
       'tutorial/setup',
       'tutorial/setup-cloud-server',
       'tutorial/setup-discourse',
-      'tutorial/install-prose',
       'tutorial/setup-mobile',
       'tutorial/white-label',
       'tutorial/building',

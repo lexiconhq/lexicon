@@ -1,15 +1,15 @@
-import React from 'react';
 import { OperationVariables, useFragment_experimental } from '@apollo/client';
+import React from 'react';
 
-import { findChannelByCategoryId, getImage, useStorage } from '../../helpers';
 import {
   UserActionFragment,
   UserActionFragmentDoc,
-} from '../../generated/server';
+} from '../../generatedAPI/server';
+import { findChannelByCategoryId, getImage, useStorage } from '../../helpers';
 
 import { PostItem, PostItemProps } from './PostItem';
 
-type Props = Pick<PostItemProps, 'currentUser' | 'topicId'> & {
+type Props = Pick<PostItemProps, 'currentUser' | 'topicId' | 'style'> & {
   postId?: number | null;
   actionType: number;
 };
@@ -18,7 +18,7 @@ const LIKED_ACTION_TYPE = 1;
 function BaseUserInformationPostItem(props: Props) {
   const storage = useStorage();
 
-  const { topicId, postId, actionType, currentUser } = props;
+  const { topicId, postId, actionType, currentUser, style } = props;
 
   const cacheUserActionResult = useFragment_experimental<
     UserActionFragment,
@@ -77,9 +77,10 @@ function BaseUserInformationPostItem(props: Props) {
       isLiked={isLiked}
       showLabel
       showImageRow
+      style={style}
     />
   );
 }
 
 let UserInformationPostItem = React.memo(BaseUserInformationPostItem);
-export { Props as UserInformationPostItemProps, UserInformationPostItem };
+export { UserInformationPostItem, Props as UserInformationPostItemProps };

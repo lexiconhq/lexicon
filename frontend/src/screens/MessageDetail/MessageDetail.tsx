@@ -1,5 +1,7 @@
+import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  Alert,
   Dimensions,
   Keyboard,
   NativeScrollEvent,
@@ -7,16 +9,14 @@ import {
   Platform,
   RefreshControl,
   SafeAreaView,
-  View,
-  VirtualizedList,
-  Alert,
   ScrollView,
-  TouchableOpacity,
   StyleProp,
+  TouchableOpacity,
+  View,
   ViewStyle,
+  VirtualizedList,
 } from 'react-native';
 import { KeyboardAccessoryView } from 'react-native-keyboard-accessory';
-import { useNavigation, useRoute } from '@react-navigation/native';
 
 import {
   ActionSheet,
@@ -27,7 +27,13 @@ import {
   LoadingOrError,
   MentionList,
 } from '../../components';
+import {
+  ERROR_UNEXPECTED,
+  FIRST_POST_NUMBER,
+  MAX_POST_COUNT_PER_REQUEST,
+} from '../../constants';
 import { Divider, Icon, Text, TextInputType } from '../../core-ui';
+import { MessageListDocument } from '../../generatedAPI/server';
 import {
   LeaveMessageError,
   errorHandler,
@@ -43,14 +49,16 @@ import {
   useStorage,
 } from '../../helpers';
 import {
-  useMention,
-  useMessageTiming,
-  useReplyPost,
-  useSiteSettings,
-  useMessageDetail,
-  useLoadMorePost,
   useLeaveMessage,
+  useLoadMorePost,
+  useMention,
+  useMessageDetail,
+  useMessageTiming,
+  useReplyPrivateMessage,
+  useSiteSettings,
 } from '../../hooks';
+import { useInitialLoad } from '../../hooks/useInitialLoad';
+import { IconName } from '../../icons';
 import { makeStyles, useTheme } from '../../theme';
 import {
   CursorPosition,
@@ -61,14 +69,6 @@ import {
   StackRouteProp,
   User,
 } from '../../types';
-import {
-  ERROR_UNEXPECTED,
-  FIRST_POST_NUMBER,
-  MAX_POST_COUNT_PER_REQUEST,
-} from '../../constants';
-import { MESSAGE } from '../../graphql/server/message';
-import { useInitialLoad } from '../../hooks/useInitialLoad';
-import { IconName } from '../../icons';
 
 import { MessageItem, ReplyInputField, ToolTip } from './components';
 
@@ -170,7 +170,7 @@ export default function MessageDetail() {
   } = useMessageDetail(
     {
       variables: { topicId: id, postNumber },
-      onCompleted: ({ privateMessageDetail: result }) => {
+      onCompleted: ({ privateMessageDetailQuery: result }) => {
         if (result) {
           setTitle(result.title || '');
 
@@ -215,9 +215,7 @@ export default function MessageDetail() {
               index: 1,
               routes: [
                 { name: 'TabNav', state: { routes: [{ name: 'Home' }] } },
-                {
-                  name: 'Login',
-                },
+                { name: 'Welcome' },
               ],
             });
           } else {
@@ -242,7 +240,7 @@ export default function MessageDetail() {
     }
 
     const {
-      privateMessageDetail: { details, postStream },
+      privateMessageDetailQuery: { details, postStream },
     } = baseData;
 
     if (!details) {
@@ -279,6 +277,17 @@ export default function MessageDetail() {
     setRefetching(false);
   }, [refetching]);
 
+  /**
+   * Handle scroll to end after finish reply with image or poll
+   */
+
+  useEffect(() => {
+    if (!isInitialRequest) {
+      virtualListRef.current?.scrollToEnd({ animated: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [postNumber]);
+
   useEffect(() => {
     if (!hyperlinkUrl) {
       return;
@@ -289,7 +298,7 @@ export default function MessageDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hyperlinkTitle, hyperlinkUrl]);
 
-  const { reply, loading: replyLoading } = useReplyPost({
+  const { reply, loading: replyLoading } = useReplyPrivateMessage({
     onCompleted: () => {
       setMessage('');
       refetch({ postNumber: stream.length }).then(() => {
@@ -327,7 +336,7 @@ export default function MessageDetail() {
     awaitRefetchQueries: true,
     refetchQueries: [
       {
-        query: MESSAGE,
+        query: MessageListDocument,
         variables: { username: user?.username },
       },
     ],
@@ -674,8 +683,10 @@ export default function MessageDetail() {
   const onLeaveMessage = () => {
     leaveMessage({
       variables: {
+        leaveMessageInput: {
+          username: user?.username || '',
+        },
         topicId: id,
-        username: user?.username || '',
       },
     });
   };
@@ -749,7 +760,7 @@ export default function MessageDetail() {
           refreshControl={
             <RefreshControl
               refreshing={refetching || isLoadingOlderPost}
-              onRefresh={() => loadMoreMessages(false)}
+              onRefresh={() => refetch()}
               tintColor={colors.loading}
             />
           }
@@ -760,7 +771,7 @@ export default function MessageDetail() {
           keyExtractor={keyExtractor}
           contentInset={{
             bottom: textInputFocused ? (35 * screen.height) / 100 : 0,
-            top: contentHeight ? ((5 * screen.height) / 100) * -1 : 0,
+            top: contentHeight ? ((2 * screen.height) / 100) * -1 : 0,
           }}
           onEndReachedThreshold={0.1}
           onEndReached={() => loadMoreMessages(true)}

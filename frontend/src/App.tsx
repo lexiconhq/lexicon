@@ -1,26 +1,34 @@
-import React from 'react';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ApolloProvider } from '@apollo/client';
+import React from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
+import { LogBox } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { client } from './graphql/client';
+import { client } from './api/client';
+import { RequestError, Toast } from './components';
+import ErrorBoundary from './components/ErrorBoundary';
+import { FORM_DEFAULT_VALUES } from './constants';
 import { StorageProvider } from './helpers';
 import AppNavigator from './navigation/AppNavigator';
 import { AppearanceProvider, ThemeProvider } from './theme';
-import { RequestError, Toast } from './components';
+import { NewPostForm } from './types';
 import {
+  DeviceProvider,
   ModalProvider,
   OngoingLikedTopicProvider,
   PushNotificationsProvider,
   RedirectProvider,
 } from './utils';
 import { AuthProvider } from './utils/AuthProvider';
-import { NewPostForm } from './types';
-import { FORM_DEFAULT_VALUES } from './constants';
-import ErrorBoundary from './components/ErrorBoundary';
 
 if (__DEV__) {
   require('react-native-console-time-polyfill');
+  require('../reactotronConfig');
+  // Based on react-native-reanimated documentation about warning https://docs.swmansion.com/react-native-reanimated/docs/guides/troubleshooting#reduced-motion-setting-is-enabled-on-this-device
+  LogBox.ignoreLogs([
+    '[Reanimated] Reduced motion setting is enabled on this device.',
+    'An error occurred in a responseTransformer:',
+  ]);
 }
 
 export default function App() {
@@ -36,34 +44,36 @@ export default function App() {
 
   return (
     <ApolloProvider client={client}>
-      <StorageProvider>
-        <PushNotificationsProvider>
-          <SafeAreaProvider>
-            <AppearanceProvider>
-              <ThemeProvider>
-                <ErrorBoundary>
-                  <>
-                    <OngoingLikedTopicProvider>
-                      <ModalProvider>
-                        <RedirectProvider>
-                          <RequestError>
-                            <AuthProvider>
-                              <FormProvider {...newPostMethods}>
-                                <AppNavigator />
-                              </FormProvider>
-                            </AuthProvider>
-                          </RequestError>
-                        </RedirectProvider>
-                      </ModalProvider>
-                    </OngoingLikedTopicProvider>
-                    <Toast />
-                  </>
-                </ErrorBoundary>
-              </ThemeProvider>
-            </AppearanceProvider>
-          </SafeAreaProvider>
-        </PushNotificationsProvider>
-      </StorageProvider>
+      <DeviceProvider>
+        <StorageProvider>
+          <PushNotificationsProvider>
+            <SafeAreaProvider>
+              <AppearanceProvider>
+                <ThemeProvider>
+                  <ErrorBoundary>
+                    <>
+                      <OngoingLikedTopicProvider>
+                        <ModalProvider>
+                          <RedirectProvider>
+                            <RequestError>
+                              <AuthProvider>
+                                <FormProvider {...newPostMethods}>
+                                  <AppNavigator />
+                                </FormProvider>
+                              </AuthProvider>
+                            </RequestError>
+                          </RedirectProvider>
+                        </ModalProvider>
+                      </OngoingLikedTopicProvider>
+                      <Toast />
+                    </>
+                  </ErrorBoundary>
+                </ThemeProvider>
+              </AppearanceProvider>
+            </SafeAreaProvider>
+          </PushNotificationsProvider>
+        </StorageProvider>
+      </DeviceProvider>
     </ApolloProvider>
   );
 }

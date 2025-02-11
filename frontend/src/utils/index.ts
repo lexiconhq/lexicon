@@ -5,3 +5,4 @@ export * from './useLazyQuery';
 export * from './useMutation';
 export * from './useQuery';
 export * from './RedirectProvider';
+export * from './DeviceProvider';

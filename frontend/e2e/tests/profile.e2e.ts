@@ -8,12 +8,12 @@ describe('Profile Tab', () => {
     await element(by.id('Tab:Profile')).tap();
 
     await element(by.id('Profile:Button:EditProfile')).tap();
-    await expect(element(by.id('EditProlfie:ScrollView'))).toBeVisible();
+    await expect(element(by.id('EditProfile:ScrollView'))).toBeVisible();
 
     const usernameTextInput = element(by.id('EditProfile:TextInput:Username'));
     await expect(usernameTextInput).toBeVisible();
     await expect(usernameTextInput).toHaveText('johndoe');
-    await usernameTextInput.typeText('19');
+    await usernameTextInput.replaceText('johndoe19');
     await expect(usernameTextInput).toHaveText('johndoe19');
 
     await element(by.text('Save')).atIndex(0).tap();

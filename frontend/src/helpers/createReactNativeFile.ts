@@ -1,5 +1,3 @@
-import { ReactNativeFile } from 'apollo-upload-client';
-
 import getMimeFromImagePicker from './getMimeFromImagePicker';
 
 export const createReactNativeFile = (
@@ -13,9 +11,9 @@ export const createReactNativeFile = (
   const prefix = customPrefix ? `${customPrefix}-` : '';
   const name = `${prefix}${new Date().getTime()}`;
 
-  return new ReactNativeFile({
+  return {
     uri: filePath,
     type: getMimeFromImagePicker(filePath),
     name,
-  });
+  };
 };

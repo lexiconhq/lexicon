@@ -1,23 +1,40 @@
 import { CodegenConfig } from '@graphql-codegen/cli';
 
 const config: CodegenConfig = {
-  schema: '../api/src/generated',
-  documents: ['src/graphql/server/*.{ts,tsx}'],
   config: {
     namingConvention: {
       fileName: 'change-case-all#pascalCase',
     },
   },
   generates: {
-    './src/generated/server.ts': {
+    './src/generatedAPI/server.ts': {
+      schema: 'src/api/discourse-apollo-rest/schema.graphql',
+      documents: ['src/api/discourse-apollo-rest/*.{ts,tsx}'],
       config: {
         withHooks: true,
         dedupeOperationSuffix: true,
+        scalars: {
+          BodyBuilder: 'unknown',
+          PathBuilder: 'unknown',
+          DeleteEmailOutput: 'string',
+          ChangePasswordOutput: 'string',
+          SetPrimaryEmailOutput: 'string',
+          File: 'ReactNativeFile',
+        },
       },
       plugins: [
         {
           add: {
-            content: '// THIS FILE IS GENERATED, DO NOT EDIT!',
+            /**
+             * Defines the ReactNativeFile type for file uploads.
+             */
+            content: `
+              export type ReactNativeFile = {
+                uri: string;
+                type?: string;
+                name?: string;
+              };
+            `,
           },
         },
         'typescript',
@@ -25,19 +42,9 @@ const config: CodegenConfig = {
         'typescript-react-apollo',
       ],
     },
-    './e2e/apollo-mock/generated/server.ts': {
-      plugins: [
-        {
-          add: {
-            content: '// THIS FILE IS GENERATED, DO NOT EDIT!',
-          },
-        },
-        'typescript',
-      ],
-    },
   },
   hooks: {
-    afterAllFileWrite: [`prettier --write "src/generated/**/*.{ts,tsx}"`],
+    afterAllFileWrite: [`prettier --write "src/generatedAPI/**/*.{ts,tsx}"`],
   },
 };
 

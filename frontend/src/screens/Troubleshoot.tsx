@@ -2,15 +2,9 @@ import { useRoute } from '@react-navigation/native';
 import React, { ReactNode, useMemo } from 'react';
 import { FlatList, View } from 'react-native';
 
-import Config from '../../Config';
-import {
-  LoadingOrError,
-  NetworkStatus,
-  WithRequestFailed,
-} from '../components';
-import { getProseEndpoint } from '../constants';
-import { Text, Link, Divider } from '../core-ui';
-import { useHealthQuery } from '../generated/server';
+import { NetworkStatus, WithRequestFailed } from '../components';
+import { discourseHost } from '../constants';
+import { Divider, Link, Text } from '../core-ui';
 import { makeStyles } from '../theme';
 import { RootStackRouteProp } from '../types';
 
@@ -19,10 +13,8 @@ export default function Troubleshoot() {
   let {
     params: { type },
   } = useRoute<RootStackRouteProp<'Troubleshoot'>>();
-  let isProseReachable = type !== 'NoConnection' && type !== 'ProseUnreachable';
-  let { data, loading, error } = useHealthQuery({
-    skip: !isProseReachable,
-  });
+  let isDiscourseReachable =
+    type !== 'NoConnection' && type !== 'DiscourseUnreachable';
   let { title, description, documentationLink } = troubleshootContent[type];
 
   let contents: Array<TroubleshootSectionProps> = useMemo(() => {
@@ -32,17 +24,8 @@ export default function Troubleshoot() {
         description,
       },
       {
-        description: 'Prose Endpoint (src/constants/app.ts)',
-        content: (
-          <Text>
-            {getProseEndpoint(
-              Config.proseUrl,
-              'inferDevelopmentHost' in Config
-                ? Config.inferDevelopmentHost
-                : undefined,
-            )}
-          </Text>
-        ),
+        description: 'Discourse Endpoint (./Config.ts)',
+        content: <Text>{discourseHost}</Text>,
       },
     ];
     if (documentationLink) {
@@ -51,31 +34,14 @@ export default function Troubleshoot() {
         content: <Link url={documentationLink} />,
       });
     }
-    if (isProseReachable) {
+    if (isDiscourseReachable) {
       contents.push({
-        description: 'Prose Environment Variables',
-        content: (
-          <>
-            {loading || error ? (
-              <LoadingOrError loading={loading} message={error?.message} />
-            ) : null}
-            {data?.health ? (
-              <Text>{`PROSE_DISCOURSE_HOST=${data.health.discourseHost}`}</Text>
-            ) : null}
-          </>
-        ),
+        description: 'Discourse Environment Variables',
+        content: <Text>{`DISCOURSE_HOST=${discourseHost}`}</Text>,
       });
     }
     return contents;
-  }, [
-    data?.health,
-    description,
-    documentationLink,
-    error,
-    isProseReachable,
-    loading,
-    title,
-  ]);
+  }, [description, documentationLink, isDiscourseReachable, title]);
 
   return (
     <View style={style.container}>
@@ -124,15 +90,15 @@ let troubleshootContent: Record<
     description:
       'Your device does not appear to be connected to the internet. Please double-check your connection.',
   },
-  ProseUnreachable: {
-    title: 'Prose Unreachable',
-    description: `The Prose GraphQL API was not reachable from your device. This could be due to the Prose endpoint being misconfigured within the mobile app. Please verify that the value for 'PROSE_DISCOURSE_HOST' is correct. If you continue to have issues, check the documentation.`,
+  DiscourseUnreachable: {
+    title: 'Discourse Unreachable',
+    description: `The Discourse API could not be reached from your device. This might be due to the Discourse endpoint being misconfigured within the mobile app. Please ensure that the 'discourseUrl' value in the app's configuration is correct. If the issue persists, consult the documentation.`,
     documentationLink: 'https://docs.lexicon.is/env-mobile',
   },
   REQUEST_FAILED: {
     title: 'Request failed',
     description:
-      'Something went wrong with a request to the Prose GraphQL API. To troubleshoot, check the response from the server in the React Native network inspector.',
+      'Something went wrong with a request to the Discourse API. To troubleshoot, check the response from the server in the reactotron.',
   },
 };
 

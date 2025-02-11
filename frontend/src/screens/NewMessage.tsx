@@ -1,4 +1,6 @@
+import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Controller, useFormContext } from 'react-hook-form';
 import {
   Alert,
   Platform,
@@ -7,8 +9,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { Controller, useFormContext } from 'react-hook-form';
 import { useDebouncedCallback } from 'use-debounce';
 
 import {
@@ -16,29 +16,30 @@ import {
   CustomHeader,
   HeaderItem,
   KeyboardTextAreaScrollView,
-  LoadingOrError,
   ListCreatePoll,
+  LoadingOrError,
   MentionList,
   ModalHeader,
   TextArea,
 } from '../components';
+import { FORM_DEFAULT_VALUES } from '../constants';
 import { Divider, Icon, Text, TextInputType } from '../core-ui';
-import { UploadTypeEnum } from '../generated/server';
+import { MessageListDocument, UploadTypeEnum } from '../generatedAPI/server';
 import {
+  BottomMenuNavigationParams,
+  BottomMenuNavigationScreens,
   bottomMenu,
+  combineContentWithPollContent,
   createReactNativeFile,
+  errorHandlerAlert,
   formatExtensions,
   getHyperlink,
+  getReplacedImageUploadStatus,
   insertHyperlink,
   insertImageUploadStatus,
   mentionHelper,
-  getReplacedImageUploadStatus,
-  useStorage,
-  BottomMenuNavigationScreens,
-  BottomMenuNavigationParams,
-  errorHandlerAlert,
-  combineContentWithPollContent,
   onKeyPress,
+  useStorage,
 } from '../helpers';
 import {
   useKASVWorkaround,
@@ -56,8 +57,6 @@ import {
   RootStackRouteProp,
 } from '../types';
 import { useModal } from '../utils';
-import { FORM_DEFAULT_VALUES } from '../constants';
-import { MESSAGE } from '../graphql/server/message';
 
 export default function NewMessage() {
   const { modal, setModal } = useModal();
@@ -143,7 +142,7 @@ export default function NewMessage() {
     },
     refetchQueries: [
       {
-        query: MESSAGE,
+        query: MessageListDocument,
         variables: { username },
       },
     ],
@@ -184,6 +183,11 @@ export default function NewMessage() {
     setImagesArray([...imagesArray, { link: '', done: false }]);
     setCurrentUploadToken(currentUploadToken + 1);
     const reactNativeFile = createReactNativeFile(uri);
+
+    if (!reactNativeFile) {
+      return;
+    }
+
     const { raw } = getValues();
     let result = insertImageUploadStatus(
       raw,
@@ -193,10 +197,12 @@ export default function NewMessage() {
     setValue('raw', result);
     upload({
       variables: {
-        file: reactNativeFile,
-        userId: user.id || 0,
-        type: UploadTypeEnum.Composer,
-        token: currentUploadToken,
+        input: {
+          file: reactNativeFile,
+          userId: user.id || 0,
+          type: UploadTypeEnum.Composer,
+          token: currentUploadToken,
+        },
       },
     });
     setUri('');

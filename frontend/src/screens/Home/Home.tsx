@@ -1,3 +1,5 @@
+import { useNavigation, useRoute } from '@react-navigation/native';
+import Constants from 'expo-constants';
 import React, {
   useCallback,
   useEffect,
@@ -5,9 +7,9 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { useFormContext } from 'react-hook-form';
 import { Dimensions, PixelRatio, Platform, View } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import Constants from 'expo-constants';
+import { DrawerLayout } from 'react-native-gesture-handler';
 import Animated, {
   Extrapolate,
   interpolate,
@@ -15,8 +17,8 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated';
-import { useFormContext } from 'react-hook-form';
 
+import { client } from '../../api/client';
 import {
   FooterLoadingIndicator,
   LoadingOrError,
@@ -24,25 +26,25 @@ import {
   PostListRef,
   SegmentedControl,
 } from '../../components';
+import { HomePostItem } from '../../components/PostItem/HomePostItem';
 import {
   NO_CHANNEL_FILTER,
-  isNoChannelFilter,
   isChannelFilter,
+  isNoChannelFilter,
 } from '../../constants';
 import { FloatingButton } from '../../core-ui';
 import {
-  TopicsSortEnum,
+  TopicFragment,
+  TopicFragmentDoc,
   TopicsQuery,
   TopicsQueryVariables,
-  TopicFragmentDoc,
-  TopicFragment,
-} from '../../generated/server';
-import { client } from '../../graphql/client';
+  TopicsSortEnum,
+} from '../../generatedAPI/server';
 import {
+  LoginError,
   clamp,
   errorHandler,
   errorHandlerAlert,
-  LoginError,
   transformTopicToPost,
   useStorage,
 } from '../../helpers';
@@ -52,16 +54,17 @@ import {
   useLazyTopicList,
   useSiteSettings,
 } from '../../hooks';
-import { makeStyles } from '../../theme';
+import { makeStyles, useTheme } from '../../theme';
 import {
   PostWithoutId,
   StackNavProp,
   TabNavProp,
   TabRouteProp,
 } from '../../types';
-import { HomePostItem } from '../../components/PostItem/HomePostItem';
+import { useDevice } from '../../utils';
+import { ChannelSideBarContent, ChannelSideBarDrawer } from '../Channels';
 
-import { HomeNavBar, SearchBar } from './components';
+import { HomeNavBar, HomeTabletNavBar, SearchBar } from './components';
 
 let sortTypes = {
   LATEST: { label: () => t('Latest') },
@@ -76,6 +79,8 @@ const NAV_BAR_TITLE_SIZE = 24;
 const IOS_BAR = 60;
 const ANDROID_BAR = 64;
 const MAX_SCROLL = 300; // at maximum 300 unit will be calculated for interpolation
+
+const SIDE_BAR_WIDTH = 320;
 
 /**
  * Ensure that the minimum scroll value is not greater than the minimum y value from the scroll when refreshing.
@@ -98,8 +103,10 @@ type SortOption = typeof sortOptionsArray[number];
 
 export default function Home() {
   const { refetch: siteRefetch } = useSiteSettings();
+  const { isTablet, isPortrait } = useDevice();
   const styles = useStyles();
   const { setValue } = useFormContext();
+  const [openSideBar, setOpenSideBar] = useState(false);
 
   const tabNavigation = useNavigation<TabNavProp<'Home'>>();
   const { addListener, navigate } = useNavigation<StackNavProp<'TabNav'>>();
@@ -109,6 +116,8 @@ export default function Home() {
   const routeParams = params === undefined ? false : params.backToTop;
 
   const FIRST_PAGE = 0;
+
+  const { colors } = useTheme();
 
   const storage = useStorage();
   const username = storage.getItem('user')?.username || '';
@@ -332,6 +341,48 @@ export default function Home() {
     addListener,
   ]);
 
+  /**
+   * this function used when select channel using tablet side bar
+   *
+   * @param id id of selected channel from sidebar
+   */
+
+  const onPressSideBarSelectedChannel = (id: number) => {
+    let currentPage = page;
+
+    let categoryId: number | null = id;
+    categoryId = isNoChannelFilter(id) ? null : id;
+
+    if (id !== selectedChannelId) {
+      currentPage = 0;
+    }
+
+    setSelectedChannelId(id);
+
+    const variables: TopicsQueryVariables = {
+      sort: sortState,
+      categoryId,
+      page: currentPage,
+    };
+    setPage(currentPage);
+    getData(variables);
+
+    isPortrait && setTimeout(() => drawerRef.current?.closeDrawer(), 300);
+  };
+
+  const toggleSideBar = () => {
+    isPortrait &&
+      setTimeout(
+        () =>
+          !openSideBar
+            ? drawerRef.current?.openDrawer()
+            : drawerRef.current?.closeDrawer(),
+        200,
+      );
+    setOpenSideBar(!openSideBar);
+  };
+
+  const drawerRef = useRef<DrawerLayout>(null);
   const postListRef = useRef<PostListRef<PostWithoutId>>(null);
   if (routeParams) {
     postListRef.current?.scrollToIndex({
@@ -350,9 +401,13 @@ export default function Home() {
       /**
        * Set the channel ID in a new post to use the same channel as the home channel.
        */
-      setValue('channelId', storage.getItem('homeChannelId'), {
-        shouldDirty: true,
-      });
+      setValue(
+        'channelId',
+        storage.getItem('homeChannelId') || NO_CHANNEL_FILTER.id,
+        {
+          shouldDirty: true,
+        },
+      );
       navigate('NewPost');
     } else {
       errorHandlerAlert(LoginError, navigate);
@@ -466,7 +521,7 @@ export default function Home() {
     return t('All Channels');
   };
 
-  const content = () => {
+  const postContent = () => {
     if (channelsError) {
       return (
         <LoadingOrError
@@ -511,7 +566,10 @@ export default function Home() {
         onRefresh={onRefresh}
         refreshing={refreshing}
         style={styles.fill}
-        contentContainerStyle={styles.postListContent}
+        contentContainerStyle={[
+          styles.postListContent,
+          isTablet ? styles.postListContentTablet : undefined,
+        ]}
         scrollEventThrottle={16}
         onScroll={scrollHandler}
         onEndReachedThreshold={0.1}
@@ -522,6 +580,7 @@ export default function Home() {
               topicId={item.topicId}
               prevScreen={'Home'}
               onPressReply={onPressReply}
+              style={isTablet ? styles.postItemCardTablet : undefined}
             />
           );
         }}
@@ -533,7 +592,7 @@ export default function Home() {
     );
   };
 
-  return (
+  const homeContent = () => (
     <>
       <View
         style={styles.container}
@@ -542,12 +601,22 @@ export default function Home() {
           setWidth(width);
         }}
       >
-        <HomeNavBar
-          title={getChannelName()}
-          onPressTitle={onPressTitle}
-          onPressAdd={onPressAdd}
-          style={styles.navBar}
-        />
+        {isTablet ? (
+          <HomeTabletNavBar
+            title={getChannelName()}
+            onPressAdd={onPressAdd}
+            onPressIconSideBar={toggleSideBar}
+            style={styles.navBar}
+            isShowIcon={!openSideBar}
+          />
+        ) : (
+          <HomeNavBar
+            title={getChannelName()}
+            onPressTitle={onPressTitle}
+            onPressAdd={onPressAdd}
+            style={styles.navBar}
+          />
+        )}
         <Animated.View style={[styles.header, headerTranslateY]}>
           <SearchBar
             placeholder={t('Search posts, categories, etc.')}
@@ -562,10 +631,47 @@ export default function Home() {
             selectedIndex={selectedIndex()}
           />
         </Animated.View>
-        {content()}
+        {postContent()}
         {!ios && <FloatingButton onPress={onPressAdd} style={styles.fab} />}
       </View>
     </>
+  );
+
+  return isTablet ? (
+    !isPortrait ? (
+      <ChannelSideBarDrawer
+        isShow={openSideBar}
+        setSelectedChannelId={onPressSideBarSelectedChannel}
+        hideSideBar={toggleSideBar}
+      >
+        {homeContent()}
+      </ChannelSideBarDrawer>
+    ) : (
+      <DrawerLayout
+        ref={drawerRef}
+        drawerWidth={SIDE_BAR_WIDTH}
+        drawerPosition={'left'}
+        drawerType="front"
+        drawerBackgroundColor={colors.background}
+        overlayColor={colors.backDrop}
+        onDrawerClose={() => {
+          setOpenSideBar(false);
+        }}
+        onDrawerOpen={() => {
+          setOpenSideBar(true);
+        }}
+        renderNavigationView={() => (
+          <ChannelSideBarContent
+            setSelectedChannelId={onPressSideBarSelectedChannel}
+            hideSideBar={toggleSideBar}
+          />
+        )}
+      >
+        {homeContent()}
+      </DrawerLayout>
+    )
+  ) : (
+    homeContent()
   );
 }
 
@@ -604,6 +710,12 @@ const useStyles = makeStyles(({ colors, shadow, spacing }) => ({
   },
   postListContent: {
     paddingTop: Platform.OS === 'ios' ? 0 : headerViewHeight,
+  },
+  postListContentTablet: {
+    marginHorizontal: spacing.xxxxxl,
+  },
+  postItemCardTablet: {
+    marginTop: spacing.l,
   },
   fill: {
     width: '100%',

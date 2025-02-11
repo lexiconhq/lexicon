@@ -19,6 +19,14 @@ defaultConfig.resolver.assetExts = assetExts.filter((ext) => ext !== 'svg');
   process.env.DETOX_TESTS === 'true'
     ? ['mock.ts', 'mock.tsx', ...defaultSourceExts]
     : defaultSourceExts),
-  defaultConfig.resolver.sourceExts.push('svg');
+  (defaultConfig.resolver.sourceExts = [
+    ...defaultConfig.resolver.sourceExts,
+    'expo.ts',
+    'expo.tsx',
+    'expo.js',
+    'expo.jsx',
+    'wasm',
+    'svg',
+  ]);
 
 module.exports = defaultConfig;

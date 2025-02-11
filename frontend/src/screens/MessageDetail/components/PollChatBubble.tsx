@@ -1,24 +1,30 @@
 import React, { memo } from 'react';
 import { StyleProp, TouchableOpacity, View, ViewStyle } from 'react-native';
 
-import { getDistanceToNow, getPollChoiceLabel } from '../../../helpers';
+import { Divider, Icon, Text } from '../../../core-ui';
+import { PollStatus } from '../../../generatedAPI/server';
+import {
+  getDistance,
+  getDistanceToNow,
+  getPollChoiceLabel,
+  isMultipleVoters,
+} from '../../../helpers';
 import { makeStyles, useTheme } from '../../../theme';
 import { Poll } from '../../../types';
-import { PollStatus } from '../../../generated/server';
-import { Divider, Icon, Text } from '../../../core-ui';
 
 type Props = {
   noBorder?: boolean;
   poll: Poll;
   style?: StyleProp<ViewStyle>;
   onPress?: () => void;
+  postCreatedAt: string;
 };
 
 const PollChatBubble = memo((props: Props) => {
   const styles = useStyles();
   const { colors } = useTheme();
 
-  const { noBorder = false, style, poll, onPress } = props;
+  const { noBorder = false, style, poll, onPress, postCreatedAt } = props;
 
   const isClosed =
     poll.status === PollStatus.Closed ||
@@ -44,34 +50,38 @@ const PollChatBubble = memo((props: Props) => {
       <Divider style={styles.divider} />
       <View style={styles.rowContainer}>
         <Text color="lightTextDarker">
-          {poll.voters > 1
+          {isMultipleVoters(poll.voters)
             ? t(`{number} votes`, { number: poll.voters })
             : t(`{number} vote`, { number: poll.voters })}
         </Text>
-        {isClosed ? (
-          <View style={styles.rowCenter}>
-            <Icon
-              name="Lock"
-              size="xxs"
-              color={colors.lightTextDarker}
-              style={styles.pollClosedIcon}
-            />
-            <Text size="xs" color="lightTextDarker">
-              {t('Poll Closed')}
-            </Text>
-          </View>
-        ) : poll?.close ? (
-          <View style={styles.rowCenter}>
-            <Icon name="Clock" size="xxs" style={styles.pollClosedIcon} />
-            <Text size="xs" color="primary">
-              {t(`Poll closed in {duration}`, {
-                duration: getDistanceToNow(poll.close),
-              })}
-            </Text>
-          </View>
+        {poll.close ? (
+          isClosed ? (
+            <View style={styles.rowCenter}>
+              <Icon
+                name="Lock"
+                size="xxs"
+                color={colors.lightTextDarker}
+                style={styles.pollClosedIcon}
+              />
+              <Text size="xs" color="lightTextDarker">
+                {t('Poll lasted {duration}', {
+                  duration: getDistance(poll.close, postCreatedAt),
+                })}
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.rowCenter}>
+              <Icon name="Clock" size="xxs" style={styles.pollClosedIcon} />
+              <Text size="xs" color="primary">
+                {t(`Poll closes in {duration}`, {
+                  duration: getDistanceToNow(poll.close),
+                })}
+              </Text>
+            </View>
+          )
         ) : (
           <Text size="xs" color="lightTextDarker">
-            {t('Poll Open')}
+            {t('Poll open')}
           </Text>
         )}
       </View>

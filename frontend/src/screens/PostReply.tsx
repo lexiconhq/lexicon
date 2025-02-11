@@ -1,41 +1,43 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Keyboard, Platform, SafeAreaView, View } from 'react-native';
-import { Controller, useFormContext } from 'react-hook-form';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Controller, useFormContext } from 'react-hook-form';
+import { Alert, Keyboard, Platform, SafeAreaView, View } from 'react-native';
 import { useDebouncedCallback } from 'use-debounce';
 
+import { client } from '../api/client';
 import {
   BottomMenu,
   CustomHeader,
   HeaderItem,
   KeyboardTextAreaScrollView,
+  ListCreatePoll,
   LocalRepliedPost,
   MentionList,
   ModalHeader,
   TextArea,
-  ListCreatePoll,
 } from '../components';
+import { FORM_DEFAULT_VALUES } from '../constants';
 import { Divider, IconWithLabel, TextInputType } from '../core-ui';
 import {
-  UploadTypeEnum,
   PostFragment,
   PostFragmentDoc,
-} from '../generated/server';
+  UploadTypeEnum,
+} from '../generatedAPI/server';
 import {
+  BottomMenuNavigationParams,
+  BottomMenuNavigationScreens,
   bottomMenu,
   createReactNativeFile,
   existingPostIsValid,
   formatExtensions,
   getHyperlink,
+  getReplacedImageUploadStatus,
   insertHyperlink,
   insertImageUploadStatus,
   mentionHelper,
   newPostIsValid,
-  getReplacedImageUploadStatus,
-  useStorage,
-  BottomMenuNavigationParams,
-  BottomMenuNavigationScreens,
   onKeyPress,
+  useStorage,
 } from '../helpers';
 import {
   useKASVWorkaround,
@@ -52,8 +54,6 @@ import {
   RootStackRouteProp,
 } from '../types';
 import { useModal } from '../utils';
-import { client } from '../graphql/client';
-import { FORM_DEFAULT_VALUES } from '../constants';
 
 export default function PostReply() {
   const { modal, setModal } = useModal();
@@ -175,6 +175,9 @@ export default function PostReply() {
     setImagesArray([...imagesArray, { link: '', done: false }]);
     setCurrentUploadToken(currentUploadToken + 1);
     const reactNativeFile = createReactNativeFile(uri);
+    if (!reactNativeFile) {
+      return;
+    }
     const { raw } = getValues();
     let result = insertImageUploadStatus(
       raw,
@@ -184,10 +187,12 @@ export default function PostReply() {
     setValue('raw', result);
     upload({
       variables: {
-        file: reactNativeFile,
-        userId: user.id || 0,
-        type: UploadTypeEnum.Composer,
-        token: currentUploadToken,
+        input: {
+          file: reactNativeFile,
+          userId: user.id || 0,
+          type: UploadTypeEnum.Composer,
+          token: currentUploadToken,
+        },
       },
     });
     setUri('');

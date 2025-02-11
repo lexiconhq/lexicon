@@ -1,16 +1,25 @@
-import React from 'react';
-import { Platform, TouchableOpacity, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   BottomTabBarProps,
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs';
+import React, { useEffect } from 'react';
+import { Platform, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useReactiveVar } from '@apollo/client';
+import * as ScreenOrientation from 'expo-screen-orientation';
 
 import { Icon, Text } from '../core-ui';
+import { useKeyboardListener } from '../hooks';
 import { Home as HomeScene, Profile as ProfileScene } from '../screens';
 import { makeStyles, useTheme } from '../theme';
 import { TabParamList } from '../types';
+import { useDevice } from '../utils';
 import { useAuth } from '../utils/AuthProvider';
+import { currentScreenVar } from '../constants';
+
+import ProfileDrawerNavigator from './ProfileDrawerNavigator';
+import ProfileStackNavigator from './ProfileStackNavigator';
+import { navigate } from './NavigationService';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
@@ -19,9 +28,17 @@ function TabBar({ state, navigation: { navigate } }: BottomTabBarProps) {
   const styles = useStyles();
   const { colors } = useTheme();
   const useAuthResults = useAuth();
+  const { isTabletLandscape } = useDevice();
+  const { isKeyboardVisible } = useKeyboardListener();
 
   return (
-    <View style={styles.tabContainer}>
+    <View
+      style={[
+        styles.tabContainer,
+        styles.tabContainerBorder,
+        { display: isTabletLandscape && isKeyboardVisible ? 'none' : 'flex' },
+      ]}
+    >
       {state.routes.map((route: { name: string }, index: number) => {
         const onPress = async () => {
           const token = !useAuthResults.isLoading && useAuthResults.token;
@@ -29,7 +46,7 @@ function TabBar({ state, navigation: { navigate } }: BottomTabBarProps) {
             navigate(route.name, { backToTop: true });
           } else {
             if (route.name === 'Profile' && !token) {
-              navigate('Login');
+              navigate('Welcome');
               return;
             }
             navigate(route.name, { backToTop: false });
@@ -72,6 +89,42 @@ function TabBar({ state, navigation: { navigate } }: BottomTabBarProps) {
 }
 
 export default function TabNavigator() {
+  const { isTablet, isPortrait } = useDevice();
+  let currentScreen = useReactiveVar(currentScreenVar);
+
+  useEffect(() => {
+    const checkScreenOrientation = async () => {
+      const currentOrientation = await ScreenOrientation.getOrientationAsync();
+      let { screen, params } = currentScreen;
+
+      if (
+        currentOrientation === 1 ||
+        currentOrientation === 3 ||
+        currentOrientation === 4
+      ) {
+        if (screen !== 'ProfileScreen') {
+          navigate([screen, params]);
+        }
+      }
+    };
+
+    /**
+     * Change orientation detection to use ScreenOrientation because the dimensions listener has a bug where it doesn't call the listener on the first rotation.
+     */
+    // Add event listener for dimensions change
+    const subscription = ScreenOrientation.addOrientationChangeListener(
+      checkScreenOrientation,
+    );
+
+    // Initial check
+    checkScreenOrientation();
+
+    // Cleanup event listener
+    return () => {
+      subscription.remove();
+    };
+  }, [currentScreen]);
+
   return (
     <Tab.Navigator
       initialRouteName="Home"
@@ -82,11 +135,25 @@ export default function TabNavigator() {
         component={HomeScene}
         options={{ headerShown: false }}
       />
-      <Tab.Screen
-        name="Profile"
-        component={ProfileScene}
-        options={{ headerShown: false }}
-      />
+      {!isTablet ? (
+        <Tab.Screen
+          name="Profile"
+          component={ProfileScene}
+          options={{ headerShown: false }}
+        />
+      ) : isPortrait ? (
+        <Tab.Screen
+          name="Profile"
+          component={ProfileStackNavigator}
+          options={{ headerShown: false }}
+        />
+      ) : (
+        <Tab.Screen
+          name="Profile"
+          component={ProfileDrawerNavigator}
+          options={{ headerShown: false }}
+        />
+      )}
     </Tab.Navigator>
   );
 }
@@ -95,9 +162,8 @@ const useStyles = makeStyles(({ colors }) => ({
   tabContainer: {
     flexDirection: 'row',
     backgroundColor: colors.background,
-    borderWidth: 0.2,
-    borderColor: colors.border,
   },
+  tabContainerBorder: { borderWidth: 0.2, borderColor: colors.border },
   tab: {
     flex: 1,
     alignItems: 'center',

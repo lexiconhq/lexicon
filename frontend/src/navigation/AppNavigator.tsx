@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   DarkTheme,
   DefaultTheme,
@@ -6,31 +5,30 @@ import {
   LinkingOptions,
   NavigationContainer,
 } from '@react-navigation/native';
-import { StatusBar } from 'expo-status-bar';
 import * as Linking from 'expo-linking';
 import * as Notifications from 'expo-notifications';
+import { StatusBar } from 'expo-status-bar';
+import React from 'react';
 import { View } from 'react-native';
 
-import { useColorScheme, makeStyles } from '../theme';
-import { RootStackParamList } from '../types';
+import { LoadingOrErrorView } from '../components';
 import {
   DEEP_LINK_SCREEN_CONFIG,
   EXPO_PREFIX,
   handleUrl,
-  onSubscribe,
-  isEmailLoginOrActivateAccount,
   isRouteAvailable,
-  DeepRoutes,
+  onSubscribe,
 } from '../constants';
 import { isRouteBesidePost, postOrMessageDetailPathToRoutes } from '../helpers';
-import { useRedirect } from '../utils';
 import { useInitialLoad } from '../hooks/useInitialLoad';
-import { LoadingOrErrorView } from '../components';
-import { useAuth } from '../utils/AuthProvider';
 import { useUpdateApp } from '../hooks/useUpdateApp';
+import { makeStyles, useColorScheme } from '../theme';
+import { RootStackParamList } from '../types';
+import { useDevice, useRedirect } from '../utils';
+import { useAuth } from '../utils/AuthProvider';
 
-import RootStackNavigator from './RootStackNavigator';
 import { navigationRef } from './NavigationService';
+import RootStackNavigator from './RootStackNavigator';
 
 export default function AppNavigator() {
   const { colorScheme } = useColorScheme();
@@ -39,6 +37,7 @@ export default function AppNavigator() {
   const auth = useAuth();
   const styles = useStyles();
   const { loading: appUpdateLoading } = useUpdateApp();
+  const { isTablet, isTabletLandscape } = useDevice();
 
   const darkMode = colorScheme === 'dark';
 
@@ -54,6 +53,8 @@ export default function AppNavigator() {
               setRedirectPath,
               isLoggedIn: useInitialLoadResult.isLoggedIn,
               isPublicDiscourse: useInitialLoadResult.isPublicDiscourse,
+              isTablet,
+              isTabletLandscape,
             })}
             theme={darkMode ? DarkTheme : DefaultTheme}
             ref={navigationRef}
@@ -70,9 +71,17 @@ type CreateLinkingConfigParams = {
   setRedirectPath: (path: string) => void;
   isLoggedIn: boolean;
   isPublicDiscourse: boolean;
+  isTablet?: boolean;
+  isTabletLandscape?: boolean;
 };
 const createLinkingConfig = (params: CreateLinkingConfigParams) => {
-  const { setRedirectPath, isLoggedIn, isPublicDiscourse } = params;
+  const {
+    setRedirectPath,
+    isLoggedIn,
+    isPublicDiscourse,
+    isTablet,
+    isTabletLandscape,
+  } = params;
   const linking: LinkingOptions<RootStackParamList> = {
     prefixes: [EXPO_PREFIX],
     config: { screens: DEEP_LINK_SCREEN_CONFIG },
@@ -102,25 +111,11 @@ const createLinkingConfig = (params: CreateLinkingConfigParams) => {
       const [pathname] = fullPath.split('?');
       const [route, ...pathParams] = pathname.split('/');
 
-      const routeToLogin = { routes: [{ name: 'Login' }] };
+      const routeToLogin = { routes: [{ name: 'Welcome' }] };
       // If we're not on a known deep link path, fallback to the default behavior
       // from React Navigation.
       if (!isRouteAvailable(route)) {
         return getStateFromPath(fullPath, config);
-      }
-
-      if (isEmailLoginOrActivateAccount(route)) {
-        return {
-          routes: [
-            {
-              name: 'Login',
-              params: {
-                emailToken: pathParams[0],
-                isActivateAccount: route === DeepRoutes['activate-account'],
-              },
-            },
-          ],
-        };
       }
 
       if (!isLoggedIn) {
@@ -137,7 +132,12 @@ const createLinkingConfig = (params: CreateLinkingConfigParams) => {
         }
       }
 
-      let routes = postOrMessageDetailPathToRoutes({ route, pathParams });
+      let routes = postOrMessageDetailPathToRoutes({
+        route,
+        pathParams,
+        isTablet,
+        isTabletLandscape,
+      });
 
       return {
         routes,

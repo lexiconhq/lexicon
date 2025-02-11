@@ -1,4 +1,11 @@
+import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
+import {
+  Controller,
+  useFieldArray,
+  useForm,
+  useFormContext,
+} from 'react-hook-form';
 import {
   Platform,
   SafeAreaView,
@@ -8,23 +15,39 @@ import {
 } from 'react-native';
 import { KeyboardAccessoryView } from 'react-native-keyboard-accessory';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import {
-  Controller,
-  useFieldArray,
-  useForm,
-  useFormContext,
-} from 'react-hook-form';
 
 import {
   CustomHeader,
   DateTimePicker,
-  HeaderItem,
-  ModalHeader,
   Dropdown,
   DropdownTextInput,
+  HeaderItem,
+  ModalHeader,
 } from '../components';
-import { Button, Icon, TextInput, Text, RadioButton } from '../core-ui';
+import {
+  CHART_TYPE_DROPDOWN_OPTIONS,
+  DEFAULT_MIN_CHOICE,
+  DEFAULT_NUMBER_RATING_MAX_CHOICE,
+  DEFAULT_NUMBER_RATING_STEP,
+  FORM_DEFAULT_VALUES,
+  POLL_CHOICE_TYPES,
+  RESULTS_DROPDOWN_OPTIONS,
+} from '../constants';
+import { Button, Icon, RadioButton, Text, TextInput } from '../core-ui';
+import { PollType } from '../generatedAPI/server';
+import {
+  DuplicatePollOptionsError,
+  PollValueOutOfRange,
+  PollValueRequired,
+  changeListNumberOption,
+  errorHandlerAlert,
+  formatDateTime,
+  formatTime,
+  generatePollMarkdown,
+  getListNumberStep,
+  parseInt,
+} from '../helpers';
+import { useReplyPrivateMessage, useSiteSettings } from '../hooks';
 import { makeStyles, useTheme } from '../theme';
 import {
   PollFormContextValues,
@@ -32,29 +55,6 @@ import {
   RootStackNavProp,
   RootStackRouteProp,
 } from '../types';
-import {
-  CHART_TYPE_DROPDOWN_OPTIONS,
-  RESULTS_DROPDOWN_OPTIONS,
-  POLL_CHOICE_TYPES,
-  DEFAULT_MIN_CHOICE,
-  DEFAULT_NUMBER_RATING_MAX_CHOICE,
-  DEFAULT_NUMBER_RATING_STEP,
-  FORM_DEFAULT_VALUES,
-} from '../constants';
-import {
-  changeListNumberOption,
-  getListNumberStep,
-  PollValueOutOfRange,
-  PollValueRequired,
-  formatDateTime,
-  formatTime,
-  generatePollMarkdown,
-  parseInt,
-  errorHandlerAlert,
-  DuplicatePollOptionsError,
-} from '../helpers';
-import { useReplyPost, useSiteSettings } from '../hooks';
-import { PollType } from '../generated/server';
 
 export default function NewPoll() {
   const styles = useStyles();
@@ -111,8 +111,8 @@ export default function NewPoll() {
   } = useFieldArray({ control, name: 'pollOptions' });
   const { setValue, getValues, reset: resetForm } = useFormContext();
 
-  const { reply, loading: replyMessageLoading } = useReplyPost({
-    onCompleted: ({ reply: { postNumber } }) => {
+  const { reply, loading: replyMessageLoading } = useReplyPrivateMessage({
+    onCompleted: ({ replyPrivateMessage: { postNumber } }) => {
       navigate('MessageDetail', {
         id: params.messageTopicId || 0,
         postNumber,
@@ -385,7 +385,7 @@ export default function NewPoll() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
         nestedScrollEnabled
-        keyboardShouldPersistTaps="always"
+        keyboardShouldPersistTaps="never"
         testID="NewPoll:ScrollView"
       >
         {(pollTypeMultiple || pollTypeNumber) && (
@@ -412,7 +412,7 @@ export default function NewPoll() {
               }}
               render={({ field: { value, onChange, onBlur } }) => (
                 <TextInput
-                  label={t('Min. Choice')}
+                  label={t('Min. Choices')}
                   value={`${value}`}
                   onChangeText={(text) => {
                     const parsed = parseInt(text);
@@ -452,7 +452,7 @@ export default function NewPoll() {
               }}
               render={({ field: { value, onChange, onBlur } }) => (
                 <TextInput
-                  label={t('Max. Choice')}
+                  label={t('Max Choices')}
                   value={`${value}`}
                   onChangeText={(text) => {
                     const parsed = parseInt(text);
@@ -486,7 +486,7 @@ export default function NewPoll() {
                 control={control}
                 render={({ field: { value, onChange, onBlur } }) => (
                   <TextInput
-                    label={t('Step')}
+                    label={t('Steps')}
                     value={`${value}`}
                     onChangeText={(text) => {
                       const parsed = parseInt(text);
@@ -668,11 +668,7 @@ export default function NewPoll() {
                 }}
               />
               <View style={styles.advacedSettingInput}>
-                <Text
-                  size="s"
-                  color={neverClosePoll ? 'textLighter' : 'textLight'}
-                  style={styles.datePickerLabel}
-                >
+                <Text size="s" color="textLight" style={styles.datePickerLabel}>
                   {t('Automatically close poll')}
                 </Text>
                 <View style={styles.row}>
@@ -684,7 +680,6 @@ export default function NewPoll() {
                     )}
                     onPress={() => setShowDatePicker(true)}
                     style={styles.datePicker}
-                    disabled={neverClosePoll}
                   />
                   <DropdownTextInput
                     value={formatTime({
@@ -694,7 +689,6 @@ export default function NewPoll() {
                     })}
                     onPress={() => setShowTimePicker(true)}
                     style={styles.timePicker}
-                    disabled={neverClosePoll}
                   />
                 </View>
                 <RadioButton
@@ -733,6 +727,9 @@ export default function NewPoll() {
                       onConfirm={(date) => {
                         onChange(date);
                         setShowDatePicker(false);
+                        if (neverClosePoll) {
+                          setNeverClosePoll(!neverClosePoll);
+                        }
                       }}
                       mode="date"
                       date={value?.toISOString()}
@@ -753,6 +750,9 @@ export default function NewPoll() {
                       onConfirm={(date) => {
                         onChange(date);
                         setShowTimePicker(false);
+                        if (neverClosePoll) {
+                          setNeverClosePoll(!neverClosePoll);
+                        }
                       }}
                       mode="time"
                       date={value?.toISOString()}

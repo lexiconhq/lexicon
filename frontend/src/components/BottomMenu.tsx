@@ -2,8 +2,9 @@ import React from 'react';
 import { Keyboard, Platform, ScrollView, View } from 'react-native';
 
 import { Divider, Icon } from '../core-ui';
-import { makeStyles, useTheme } from '../theme';
 import { useStorage } from '../helpers';
+import { makeStyles, useTheme } from '../theme';
+import { useDevice } from '../utils';
 
 type Props = {
   onInsertImage: () => void;
@@ -38,13 +39,19 @@ export function BottomMenu(props: Props) {
   } = props;
 
   const ios = Platform.OS === 'ios';
+  const { isTablet } = useDevice();
 
   const onHideKeyboard = () => {
     Keyboard.dismiss();
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        ios && isTablet ? styles.containerTablet : undefined,
+      ]}
+    >
       {showLeftMenu && (
         <ScrollView
           horizontal
@@ -118,18 +125,18 @@ export function BottomMenu(props: Props) {
             />
             <Divider vertical />
             {onInsertPoll &&
-              pollSetting?.allowPoll &&
-              userTrustLevel &&
-              pollSetting.pollCreateMinimumTrustLevel <= userTrustLevel && (
-                <Icon
-                  name="Chart"
-                  size="l"
-                  color={colors.textLighter}
-                  onPress={onInsertPoll}
-                  style={styles.iconButton}
-                  testID="BottomMenu:IconPoll"
-                />
-              )}
+            pollSetting?.allowPoll &&
+            userTrustLevel &&
+            pollSetting.pollCreateMinimumTrustLevel <= userTrustLevel ? (
+              <Icon
+                name="Chart"
+                size="l"
+                color={colors.textLighter}
+                onPress={onInsertPoll}
+                style={styles.iconButton}
+                testID="BottomMenu:IconPoll"
+              />
+            ) : null}
             <Divider vertical />
           </View>
         </ScrollView>
@@ -138,7 +145,7 @@ export function BottomMenu(props: Props) {
       <View style={styles.rightMenu}>
         <View style={styles.row}>
           <Divider vertical />
-          {ios && (
+          {ios ? (
             <Icon
               name="KeyboardHide"
               size="l"
@@ -146,7 +153,7 @@ export function BottomMenu(props: Props) {
               onPress={onHideKeyboard}
               style={styles.iconButton}
             />
-          )}
+          ) : null}
         </View>
       </View>
     </View>
@@ -160,6 +167,9 @@ const useStyles = makeStyles(({ colors, shadow, spacing }) => ({
     backgroundColor: colors.background,
     alignItems: 'stretch',
     ...shadow,
+  },
+  containerTablet: {
+    marginBottom: spacing.m,
   },
   marginBottom: { marginBottom: spacing.s },
   row: {

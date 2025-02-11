@@ -1,3 +1,4 @@
+import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import {
   Platform,
@@ -5,25 +6,25 @@ import {
   SafeAreaView,
   VirtualizedList,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 
 import {
   CustomHeader,
   FooterLoadingIndicator,
   LoadingOrError,
 } from '../../components';
+import { FIRST_POST_NUMBER } from '../../constants';
 import { FloatingButton } from '../../core-ui';
-import { MessageQuery } from '../../generated/server';
+import { MessageQuery } from '../../generatedAPI/server';
 import { errorHandler, getParticipants, useStorage } from '../../helpers';
 import { useMessageList } from '../../hooks';
 import { makeStyles, useTheme } from '../../theme';
 import { MessageParticipants, StackNavProp } from '../../types';
-import { FIRST_POST_NUMBER } from '../../constants';
+import { useDevice } from '../../utils';
 
 import { MessageCard } from './Components';
 
 type MessageType = NonNullable<
-  MessageQuery['privateMessage']['topicList']['topics']
+  MessageQuery['privateMessageQuery']['topicList']['topics']
 >[number];
 
 type MessageRenderItem = { item: MessageType; index: number };
@@ -31,11 +32,13 @@ type MessageRenderItem = { item: MessageType; index: number };
 export default function Messages() {
   const styles = useStyles();
   const { colors } = useTheme();
+  const { isTabletLandscape } = useDevice();
 
-  const { navigate } = useNavigation<StackNavProp<'Profile'>>();
+  const { navigate } = useNavigation<StackNavProp<'Messages'>>();
 
   const storage = useStorage();
   const username = storage.getItem('user')?.username || '';
+  const currentUserId = storage.getItem('user')?.id || '';
 
   const [messages, setMessages] = useState<Array<MessageType>>([]);
   const [participants, setParticipants] = useState<Array<MessageParticipants>>(
@@ -51,12 +54,14 @@ export default function Messages() {
     navigate('NewMessage');
   };
 
+  const conditionHiddenFooterLoading =
+    !hasOlderMessages || messages.length <= 20;
   const { error, refetch, fetchMore } = useMessageList(
     {
       variables: { username, page },
       onCompleted: (data) => {
-        const allMessages = data.privateMessage.topicList.topics ?? [];
-        const allUsers = data.privateMessage.users ?? [];
+        const allMessages = data.privateMessageList.topicList.topics ?? [];
+        const allUsers = data.privateMessageList.users ?? [];
 
         const tempMessages = allMessages.map((item) => ({
           ...item,
@@ -66,9 +71,14 @@ export default function Messages() {
         }));
 
         const tempParticipants = allMessages.map(
-          ({ participants, lastPosterUsername }) => {
-            let userIds: Array<number> =
-              participants?.map(({ userId }, idx) => userId ?? idx) || [];
+          ({ participants, lastPosterUsername, posters }) => {
+            let userIds: Array<number> = participants?.length
+              ? participants?.map(({ userId }, idx) => userId ?? idx)
+              : // This condition only happen when the only participant has left the message
+                posters
+                  // Filter out current user ID
+                  .filter(({ userId }) => userId && userId !== currentUserId)
+                  .map(({ userId }, idx) => userId ?? idx);
             return getParticipants(
               userIds,
               allUsers,
@@ -96,7 +106,7 @@ export default function Messages() {
         // TODO: test this on a site with multiple pages of messages. This edge case
         // came up when there was less than one page.
         const shouldUpdateMessages =
-          (messages.length > 0 && tempMessages.length > 0) ||
+          (messages.length > 0 && tempMessages.length >= 0) ||
           (messages.length < 1 && tempMessages.length > 0);
 
         if (shouldUpdateMessages) {
@@ -116,7 +126,12 @@ export default function Messages() {
   };
 
   const onEndReached = () => {
-    if (!hasOlderMessages || loading) {
+    // The `messages.length` condition prevents unnecessary fetching when the onEndReachedThreshold is triggered,
+    // but the layout does not require more data to be loaded.
+    // This issue occurs, for example, when there is only 1 message, and the scroll detects it has reached the threshold.
+    // In such cases, the `onEndReached` function is called, causing a loading indicator to appear despite there being no additional data.
+    // By default, we set the messages per page to 30. To solve this issue, we add a condition to check `messages.length`.
+    if (conditionHiddenFooterLoading || loading) {
       return;
     }
     setLoading(true);
@@ -179,7 +194,7 @@ export default function Messages() {
         onEndReachedThreshold={0.1}
         onEndReached={onEndReached}
         ListFooterComponent={
-          <FooterLoadingIndicator isHidden={!hasOlderMessages} />
+          <FooterLoadingIndicator isHidden={conditionHiddenFooterLoading} />
         }
         style={styles.messageContainer}
         testID="Messages:List"
@@ -194,6 +209,7 @@ export default function Messages() {
           title={t('Messages')}
           rightIcon="Add"
           onPressRight={onPressNewMessage}
+          hideHeaderLeft={isTabletLandscape}
         />
       )}
       {content}

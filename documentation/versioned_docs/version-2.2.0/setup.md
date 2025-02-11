@@ -6,7 +6,7 @@ title: Development Setup
 
 If you haven't already, make sure you [clone the Lexicon repository](quick-start#installation) from Github.
 
-### Setup a Discourse Instance, if necessary
+### Setup a Discourse Instance, if necessary {#discourse-host}
 
 In order to get started developing against the Lexicon Stack, you'll need a running Discourse instance.
 
@@ -261,7 +261,7 @@ Opening the Expo Developer Menu depends on your device:
   - Then run `npm run start` again.
   - If the issue persists, you should look for the latest guidance from Expo on how to clear the cache, as it has been known to change.
 
-### Running the Test Suites
+### Running the Test Suites {#run-the-test-suite}
 
 Before running tests, double-check that your changes don't contain any errors.
 

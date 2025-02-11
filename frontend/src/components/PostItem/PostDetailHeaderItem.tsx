@@ -1,18 +1,25 @@
-import React from 'react';
 import { OperationVariables, useFragment_experimental } from '@apollo/client';
+import React from 'react';
 
 import {
+  PostFragment,
+  PostFragmentDoc,
+  TopicFragment,
+  TopicFragmentDoc,
+} from '../../generatedAPI/server';
+import {
+  getImage,
   postDetailContentHandler,
+  transformPostsToFrontendPost,
   transformTopicToPost,
   useStorage,
 } from '../../helpers';
 import { makeStyles } from '../../theme';
-import { MetricsProp } from '../Metrics/Metrics';
-import { TopicFragment, TopicFragmentDoc } from '../../generated/server';
 import { Channel } from '../../types';
+import { MetricsProp } from '../Metrics/Metrics';
 
-import { PostItemFooter, PostItemFooterProps } from './PostItemFooter';
 import { PostItem, PostItemProps } from './PostItem';
+import { PostItemFooter, PostItemFooterProps } from './PostItemFooter';
 
 type Props = Required<
   Pick<
@@ -56,7 +63,19 @@ function BasePostDetailHeaderItem(props: Props) {
       id: topicId,
     },
   });
+  const cacheFirstPostResult = useFragment_experimental<
+    PostFragment,
+    OperationVariables
+  >({
+    fragment: PostFragmentDoc,
+    fragmentName: 'PostFragment',
+    from: {
+      __typename: 'Post',
+      id: postId,
+    },
+  });
   const cachedTopic = cacheTopicResult.data;
+  const cachedFirstPost = cacheFirstPostResult.data;
   const username = storage.getItem('user')?.username ?? '';
   let channels = storage.getItem('channels') ?? [];
 
@@ -65,6 +84,7 @@ function BasePostDetailHeaderItem(props: Props) {
     cachedTopic,
     username,
     channels,
+    cachedFirstPost,
   });
 
   if (!resolvedPostItemPropsResult) {
@@ -118,45 +138,73 @@ type ResolvePostItemPropsParams = {
   cachedTopic?: TopicFragment;
   username: string;
   channels: Array<Channel>;
+  cachedFirstPost?: PostFragment;
 };
 const resolvePostItemProps = ({
   postDetailContent,
   cachedTopic,
   username,
   channels,
+  cachedFirstPost,
 }: ResolvePostItemPropsParams):
   | {
       postItemProps: Omit<PostItemProps, 'topicId'>;
       postItemFooterProps: Omit<PostItemFooterProps, 'topicId' | 'postList'>;
     }
   | undefined => {
-  if (postDetailContent?.firstPost) {
-    const { topic, firstPost } = postDetailContent;
-    const isCreator = firstPost?.username === username;
-    return {
-      postItemProps: {
-        title: topic.title,
-        content: firstPost.content,
-        avatar: firstPost.avatar,
-        channel: firstPost.channel,
-        tags: topic.selectedTag,
-        createdAt: firstPost.createdAt,
-        username: firstPost.username,
-        isLiked: firstPost.isLiked,
-        emojiCode: firstPost.emojiStatus,
-        postId: firstPost.id,
-      },
-      postItemFooterProps: {
-        postId: firstPost.id,
-        viewCount: topic.viewCount,
-        likeCount: firstPost.likeCount,
-        replyCount: topic.replyCount,
-        isLiked: firstPost.isLiked,
-        isCreator: isCreator,
-        postNumber: firstPost.postNumber,
-        frequentPosters: firstPost.freqPosters.slice(1),
-      },
-    };
+  if (!postDetailContent && !cachedTopic) {
+    return;
+  }
+
+  if (postDetailContent) {
+    let { topic, firstPost } = postDetailContent;
+    if (!firstPost && cachedFirstPost?.id) {
+      let freqPosters = cachedTopic?.posters
+        ? cachedTopic.posters.map(({ user }) => ({
+            id: user.id,
+            username: user.username,
+            avatar: getImage(user.avatar),
+            name: user.name,
+          }))
+        : [];
+      const channel = channels?.find(
+        (channel) => channel.id === cachedTopic?.categoryId,
+      );
+      const formattedFirstPost = transformPostsToFrontendPost({
+        post: cachedFirstPost,
+        channel,
+        freqPosters,
+      });
+      firstPost = formattedFirstPost;
+    }
+
+    if (firstPost) {
+      const isCreator = firstPost?.username === username;
+      return {
+        postItemProps: {
+          title: topic.title,
+          content: firstPost.content,
+          avatar: firstPost.avatar,
+          channel: firstPost.channel,
+          tags: topic.selectedTag,
+          createdAt: firstPost.createdAt,
+          username: firstPost.username,
+          isLiked: firstPost.isLiked,
+          emojiCode: firstPost.emojiStatus,
+          postId: firstPost.id,
+        },
+        postItemFooterProps: {
+          postId: firstPost.id,
+          viewCount: topic.viewCount,
+          likeCount: firstPost.likeCount,
+          replyCount: topic.replyCount,
+          isLiked: firstPost.isLiked,
+          isCreator: isCreator,
+          postNumber: firstPost.postNumber,
+          frequentPosters: firstPost.freqPosters.slice(1),
+        },
+      };
+    }
   }
   if (cachedTopic) {
     const { topicId, ...post } = transformTopicToPost({
@@ -182,4 +230,4 @@ const useStyles = makeStyles(({ spacing }) => ({
 }));
 let PostDetailHeaderItem = React.memo(BasePostDetailHeaderItem);
 
-export { Props as PostDetailHeaderItemProps, PostDetailHeaderItem };
+export { PostDetailHeaderItem, Props as PostDetailHeaderItemProps };

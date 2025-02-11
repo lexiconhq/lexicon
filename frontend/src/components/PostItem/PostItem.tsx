@@ -149,6 +149,7 @@ function BasePostItem(props: Props) {
           isCreator={isCreator}
           postId={postId}
           topicId={topicId}
+          postCreatedAt={createdAt}
         />
       );
     });
@@ -201,7 +202,7 @@ function BasePostItem(props: Props) {
             color="primary"
             numberOfLines={numberOfLines}
           >
-            {currentUser === storage.getItem('user')?.username || ''
+            {currentUser === storage.getItem('user')?.username
               ? t(`You liked this post`)
               : t(`{currentUser} liked this post`, { currentUser })}
           </Text>

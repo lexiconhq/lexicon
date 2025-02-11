@@ -1,4 +1,4 @@
-import { PollType } from '../generated/server';
+import { PollType } from '../generatedAPI/server';
 import { PollOption } from '../helpers';
 
 import { UserMessageProps } from './Types';

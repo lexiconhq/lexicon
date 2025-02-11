@@ -9,18 +9,15 @@ function addWeeks(duration: Duration) {
   return duration;
 }
 
-export function getDistanceToNow(date: string) {
-  const endDate = new Date(date);
-  const now = new Date();
-
-  if (now > endDate) {
+function getDuration(start: Date, end: Date, combineTime?: boolean) {
+  if (start.toString() === end.toString()) {
     return undefined;
   }
 
   const { years, months, weeks, days, hours, minutes, seconds } = addWeeks(
     intervalToDuration({
-      start: now,
-      end: endDate,
+      start,
+      end,
     }),
   );
 
@@ -37,16 +34,50 @@ export function getDistanceToNow(date: string) {
     return `${days} ${days > 1 ? 'days' : 'day'}`;
   }
 
-  let result = [];
-  if (hours) {
-    result.push(`${hours}h`);
+  if (combineTime) {
+    let result = [];
+    if (hours) {
+      result.push(`${hours}h`);
+    }
+    if (minutes) {
+      result.push(`${minutes}m`);
+    }
+    if (!hours && !minutes && seconds) {
+      result.push(`${seconds}s`);
+    }
+    return result.join(' ');
+  } else {
+    if (hours) {
+      return `${hours} ${hours > 1 ? 'hours' : 'hour'}`;
+    }
+    if (minutes) {
+      return `${minutes} ${minutes > 1 ? 'minutes' : 'minute'}`;
+    }
+    if (seconds) {
+      return `${seconds} ${seconds > 1 ? 'seconds' : 'second'}`;
+    }
   }
-  if (minutes) {
-    result.push(`${minutes}m`);
-  }
-  if (!hours && !minutes && seconds) {
-    result.push(`${seconds}s`);
+}
+
+export function getDistanceToNow(date: string) {
+  const endDate = new Date(date);
+  const now = new Date();
+
+  if (now > endDate) {
+    return undefined;
   }
 
-  return result.join(' ');
+  return getDuration(now, endDate, true);
+}
+
+export function getDistance(date: string, baseDate: string) {
+  const firstDate = new Date(date);
+  const secondDate = new Date(baseDate);
+
+  let param = { start: firstDate, end: secondDate };
+  if (firstDate > secondDate) {
+    param = { start: secondDate, end: firstDate };
+  }
+
+  return getDuration(param.start, param.end);
 }
