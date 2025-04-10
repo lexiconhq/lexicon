@@ -29,7 +29,7 @@ You can see that the values in `app.json` are updated after running the command.
 #### Configuration Values
 
 :::info
-When publishing your app, you must deploy your Discourse server to a publicly accessible location. Refer to the [documentation](setup-discourse.md#setup-discourse-in-the-cloud) for guidance on deploying Discourse if you haven't done so already.
+When publishing your app, you must deploy your Discourse server to a publicly accessible location. Refer to the [documentation](tutorial/setup-discourse.md#setup-discourse-in-the-cloud) for guidance on deploying Discourse if you haven't done so already.
 
 In the initial release of Lexicon, connecting to a Discourse site required setting up Prose and configuring the Prose URL in the mobile app. However, with recent updates, the mobile app now connects directly to Discourse without needing Prose.
 :::
