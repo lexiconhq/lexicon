@@ -336,6 +336,64 @@ export function bottomMenu(params: BottomMenuParams) {
     setValue('raw', newContent);
   };
 
+  const onCollapsibleFormatting = ({
+    content,
+    cursorPosition,
+    setCursorPosition,
+    setValue,
+  }: ButtonBarParams) => {
+    const textFormattingConfig = {
+      formatBefore: '[details="Summary"]\n',
+      formatAfter: '\n[/details]',
+      positionCursor: 20,
+    };
+    const { selectedText, textAfterCursorPosition, textBeforeCursorPosition } =
+      getTextBasedCursorPosition({ cursorPosition, text: content });
+
+    let newContent = '';
+    if (cursorPosition.start === cursorPosition.end) {
+      /**
+       * First condition is used if there are no text highligh so cursor start and end will be same value
+       */
+
+      const formattedTextBeforeCursor = formatWithNewLine(
+        textBeforeCursorPosition,
+        'Before',
+      );
+      newContent =
+        formattedTextBeforeCursor +
+        textFormattingConfig.formatBefore +
+        'This text will be hidden' +
+        textFormattingConfig.formatAfter +
+        formatWithNewLine(textAfterCursorPosition, 'After');
+
+      setTextInputCursorPosition({
+        setCursorPosition,
+        position: {
+          start:
+            formattedTextBeforeCursor.length +
+            textFormattingConfig.positionCursor,
+          end:
+            formattedTextBeforeCursor.length +
+            textFormattingConfig.positionCursor +
+            24,
+        },
+      });
+    } else {
+      /**
+       * This condition used for highligh text
+       */
+      newContent =
+        formatWithNewLine(textBeforeCursorPosition, 'Before') +
+        textFormattingConfig.formatBefore +
+        selectedText.trim() +
+        textFormattingConfig.formatAfter +
+        formatWithNewLine(textAfterCursorPosition, 'After');
+    }
+
+    setValue('raw', newContent);
+  };
+
   return {
     onInsertImage,
     onInsertLink,
@@ -343,5 +401,6 @@ export function bottomMenu(params: BottomMenuParams) {
     onFontFormatting,
     onQuote,
     onListFormatting,
+    onCollapsibleFormatting,
   };
 }

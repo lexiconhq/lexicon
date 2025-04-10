@@ -64,6 +64,7 @@ export const FORM_DEFAULT_VALUES: NewPostForm = {
   polls: [],
   messageTargetSelectedUsers: [],
   messageUsersList: [],
+  draftKey: '',
 };
 /**
  * This default use based on discourse when add user status if emoji empty

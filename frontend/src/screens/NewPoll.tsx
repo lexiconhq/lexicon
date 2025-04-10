@@ -29,7 +29,6 @@ import {
   DEFAULT_MIN_CHOICE,
   DEFAULT_NUMBER_RATING_MAX_CHOICE,
   DEFAULT_NUMBER_RATING_STEP,
-  FORM_DEFAULT_VALUES,
   POLL_CHOICE_TYPES,
   RESULTS_DROPDOWN_OPTIONS,
 } from '../constants';
@@ -40,14 +39,13 @@ import {
   PollValueOutOfRange,
   PollValueRequired,
   changeListNumberOption,
-  errorHandlerAlert,
   formatDateTime,
   formatTime,
   generatePollMarkdown,
   getListNumberStep,
   parseInt,
 } from '../helpers';
-import { useReplyPrivateMessage, useSiteSettings } from '../hooks';
+import { useSiteSettings } from '../hooks';
 import { makeStyles, useTheme } from '../theme';
 import {
   PollFormContextValues,
@@ -109,23 +107,7 @@ export default function NewPoll() {
     remove,
     replace,
   } = useFieldArray({ control, name: 'pollOptions' });
-  const { setValue, getValues, reset: resetForm } = useFormContext();
-
-  const { reply, loading: replyMessageLoading } = useReplyPrivateMessage({
-    onCompleted: ({ replyPrivateMessage: { postNumber } }) => {
-      navigate('MessageDetail', {
-        id: params.messageTopicId || 0,
-        postNumber,
-        emptied: true,
-        hyperlinkUrl: '',
-        hyperlinkTitle: '',
-      });
-      resetForm(FORM_DEFAULT_VALUES);
-    },
-    onError: (error) => {
-      errorHandlerAlert(error);
-    },
-  });
+  const { setValue, getValues } = useFormContext();
 
   useEffect(() => {
     const polls: Array<PollFormContextValues> = getValues('polls');
@@ -257,49 +239,52 @@ export default function NewPoll() {
 
     const listOldPolls = getValues('polls') || [];
 
-    if (params.prevScreen === 'MessageDetail' && params.messageTopicId) {
-      return reply({
-        variables: {
-          replyInput: {
-            topicId: params.messageTopicId,
-            raw: newPoll,
-          },
-        },
-      });
-    } else {
-      /**
-       * This condition determines how to update the form context's poll value:
-       *
-       * - If there is no pollIndex, it means we are adding a new poll.
-       * - If there is a pollIndex value, it means we are editing a poll, and we only need to replace the existing value.
-       */
+    /**
+     * This condition determines how to update the form context's poll value:
+     *
+     * - If there is no pollIndex, it means we are adding a new poll.
+     * - If there is a pollIndex value, it means we are editing a poll, and we only need to replace the existing value.
+     */
 
-      if (params.pollIndex !== undefined) {
-        setValue(
-          `polls.${params.pollIndex}`,
+    if (params.pollIndex !== undefined) {
+      setValue(
+        `polls.${params.pollIndex}`,
+        {
+          ...getPollValues(),
+          pollChoiceType: pollChoiceState,
+          pollContent: newPoll,
+        },
+        { shouldDirty: true },
+      );
+    } else {
+      setValue(
+        'polls',
+        [
+          ...listOldPolls,
           {
             ...getPollValues(),
             pollChoiceType: pollChoiceState,
             pollContent: newPoll,
           },
-          { shouldDirty: true },
-        );
-      } else {
-        setValue(
-          'polls',
-          [
-            ...listOldPolls,
-            {
-              ...getPollValues(),
-              pollChoiceType: pollChoiceState,
-              pollContent: newPoll,
-            },
-          ],
-          { shouldDirty: true },
-        );
-      }
+        ],
+        { shouldDirty: true },
+      );
     }
-    navigate(params.prevScreen);
+
+    /**
+     * After adding a poll when replying to a private message,
+     * it will go back to the previous scene for message detail and image preview,
+     * because it requires sending the postNumber data for message detail.
+     * and for image preview and EditPollsList  it require send param when navigate
+     */
+
+    const goBackScreens = ['MessageDetail', 'ImagePreview', 'EditPollsList'];
+
+    if (goBackScreens.includes(params.prevScreen)) {
+      goBack();
+    } else {
+      navigate(params.prevScreen);
+    }
   });
 
   function cancelAddPoll() {
@@ -317,30 +302,18 @@ export default function NewPoll() {
       <ModalHeader
         title={t('Poll')}
         left={
-          <HeaderItem
-            label={t('Cancel')}
-            left
-            onPressItem={cancelAddPoll}
-            loading={replyMessageLoading}
-          />
+          <HeaderItem label={t('Cancel')} left onPressItem={cancelAddPoll} />
         }
         right={
           <HeaderItem
-            label={
-              params.prevScreen === 'MessageDetail' ? t('Send') : t('Done')
-            }
+            label={t('Done')}
             onPressItem={addPoll}
-            loading={replyMessageLoading}
             disabled={!isPollValid()}
           />
         }
       />
     ) : (
-      <CustomHeader
-        title={t('Poll')}
-        noShadow
-        isLoading={replyMessageLoading}
-      />
+      <CustomHeader title={t('Poll')} noShadow />
     );
 
   return (
@@ -824,14 +797,11 @@ export default function NewPoll() {
           style={styles.container}
         >
           <Button
-            content={
-              params.prevScreen === 'MessageDetail' ? t('Send') : t('Done')
-            }
+            content={t('Done')}
             large
             onPress={addPoll}
             style={styles.bottomMenu}
             disabled={!isPollValid()}
-            loading={replyMessageLoading}
           />
         </KeyboardAccessoryView>
       )}

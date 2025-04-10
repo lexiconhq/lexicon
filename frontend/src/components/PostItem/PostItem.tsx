@@ -3,12 +3,17 @@ import React, { useCallback } from 'react';
 import { TouchableOpacity, View, ViewProps } from 'react-native';
 
 import { NO_EXCERPT_WORDING } from '../../constants';
-import { CustomImage, Text } from '../../core-ui';
-import { formatRelativeTime, unescapeHTML, useStorage } from '../../helpers';
+import { CustomImage, Icon, Text } from '../../core-ui';
+import {
+  formatRelativeTime,
+  replaceTagsInContent,
+  unescapeHTML,
+  useStorage,
+} from '../../helpers';
 import { Color, makeStyles, useTheme } from '../../theme';
 import { Channel, Poll, PollsVotes, StackNavProp } from '../../types';
 import { Author } from '../Author';
-import { Markdown } from '../Markdown';
+import { MarkdownContent } from '../MarkdownContent';
 import { PollPreview } from '../Poll';
 
 import { PostGroupings } from './PostGroupings';
@@ -42,6 +47,7 @@ type Props = ViewProps & {
   pollsVotes?: Array<PollsVotes>;
   postId?: number;
   testIDStatus?: string;
+  pinned?: boolean;
 };
 
 function BasePostItem(props: Props) {
@@ -79,6 +85,7 @@ function BasePostItem(props: Props) {
     pollsVotes,
     postId,
     testIDStatus,
+    pinned,
     ...otherProps
   } = props;
 
@@ -111,7 +118,11 @@ function BasePostItem(props: Props) {
   );
 
   const contentTitle = (
-    <Text style={styles.spacingBottom} variant="semiBold" size="l">
+    <Text
+      style={[styles.spacingBottom, styles.flex]}
+      variant="semiBold"
+      size="l"
+    >
       {title}
     </Text>
   );
@@ -168,9 +179,9 @@ function BasePostItem(props: Props) {
       ) : numberOfLines === 0 ? (
         <>
           {renderPolls()}
-          <Markdown
-            style={styles.markdown}
+          <MarkdownContent
             content={content}
+            style={styles.markdown}
             fontColor={colors[color]}
             mentions={mentionedUsers}
           />
@@ -182,7 +193,7 @@ function BasePostItem(props: Props) {
           color={isTapToView ? 'primary' : color}
           variant={isTapToView ? 'bold' : 'normal'}
         >
-          {unescapeHTML(content)}
+          {replaceTagsInContent(unescapeHTML(content))}
         </Text>
       )}
     </>
@@ -208,8 +219,13 @@ function BasePostItem(props: Props) {
           </Text>
         </View>
       )}
-      <TouchableOpacity onPress={onPressPost} delayPressIn={200}>
+      <TouchableOpacity
+        onPress={onPressPost}
+        delayPressIn={200}
+        style={styles.contentTitle}
+      >
         {contentTitle}
+        {pinned && <Icon name="Pin" style={styles.pinned} />}
       </TouchableOpacity>
       {author}
       <PostGroupings channel={channel} tags={tags} />
@@ -227,7 +243,10 @@ function BasePostItem(props: Props) {
   );
 
   return (
-    <View style={[styles.container, style]} {...otherProps}>
+    <View
+      style={[styles.container, pinned && styles.pinnedBorder, style]}
+      {...otherProps}
+    >
       {wrappedMainContent}
       {footer}
     </View>
@@ -235,6 +254,7 @@ function BasePostItem(props: Props) {
 }
 
 const useStyles = makeStyles(({ colors, fontSizes, shadow, spacing }) => ({
+  flex: { flex: 1 },
   container: {
     justifyContent: 'flex-start',
     padding: spacing.xxl,
@@ -261,6 +281,9 @@ const useStyles = makeStyles(({ colors, fontSizes, shadow, spacing }) => ({
   textTime: {
     fontSize: fontSizes.s,
   },
+  contentTitle: { flexDirection: 'row', justifyContent: 'space-between' },
+  pinned: { marginLeft: spacing.s },
+  pinnedBorder: { borderLeftWidth: 4, borderColor: colors.primary },
 }));
 let PostItem = React.memo(BasePostItem);
-export { Props as PostItemProps, PostItem };
+export { PostItem, Props as PostItemProps };

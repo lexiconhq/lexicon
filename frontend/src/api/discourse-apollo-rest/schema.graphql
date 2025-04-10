@@ -396,6 +396,7 @@ interface BaseTopicDetailOutput {
 type TopicDetailOutput implements BaseTopicDetailOutput {
   categoryId: Int
   createdAt: String
+  deletedAt: String
   details: TopicDetail
   id: Int!
   likeCount: Int
@@ -518,6 +519,7 @@ input NewTopicInput {
   tags: [String!]
   title: String!
   archetype: String
+  draftKey: String
 }
 
 input NewPrivateMessageInput {
@@ -525,6 +527,7 @@ input NewPrivateMessageInput {
   raw: String!
   targetRecipients: [String!]!
   title: String!
+  draftKey: String
 }
 
 input MarkReadInput {
@@ -723,6 +726,7 @@ input ReplyInput {
   replyToPostNumber: Int
   topicId: Int!
   archetype: String
+  draftKey: String
 }
 
 input LookupUrlInput {
@@ -736,6 +740,99 @@ input LeaveMessageInput {
 # This is just empty input for bodyKey post without input
 input EmptyInput {
   _placeholder: String
+}
+
+interface BasePostDraft {
+  content: String!
+  action: String!
+  tags: [String!]!
+  archetypeId: String!
+}
+
+type NewPostDraft implements BasePostDraft {
+  content: String!
+  action: String!
+  tags: [String!]!
+  archetypeId: String!
+  title: String!
+  categoryId: Int!
+}
+
+type PostReplyDraft implements BasePostDraft {
+  content: String!
+  action: String!
+  tags: [String!]!
+  archetypeId: String!
+  categoryId: Int!
+  postId: Int
+}
+
+type NewPrivateMessageDraft implements BasePostDraft {
+  content: String!
+  action: String!
+  tags: [String!]!
+  archetypeId: String!
+  title: String!
+  recipients: [NewPrivateMessageReceiptsDraft!]!
+  categoryId: Int
+}
+
+type NewPrivateMessageReceiptsDraft {
+  recipient: String!
+  recipientData: SearchUser
+}
+
+type PrivateMessageReplyDraft implements BasePostDraft {
+  content: String!
+  action: String!
+  tags: [String!]!
+  archetypeId: String!
+  categoryId: Int
+  postId: Int
+}
+
+union PostDraftData =
+    PostReplyDraft
+  | NewPostDraft
+  | NewPrivateMessageDraft
+  | PrivateMessageReplyDraft
+
+enum PostDraftType {
+  NewTopic
+  PostReply
+  NewPrivateMessage
+  PrivateMessageReply
+}
+
+type CheckPostDraftResult {
+  draft: PostDraftData
+  sequence: Int!
+}
+
+type CreateAndUpdatePostDraftResult {
+  success: String
+  draftSequence: Int!
+}
+
+type CreateAndUpdatePostDraftResultClient {
+  success: String
+  draftSequence: Int!
+  draftKey: String!
+}
+
+type ListPostDraftsResult {
+  draft: PostDraftData
+  archetype: String
+  avatarTemplate: String!
+  excerpt: String!
+  createdAt: String!
+  draftKey: String!
+  sequence: Int!
+  draftUsername: String! # user who created the draft
+  username: String! # user who created the post or private message
+  userId: Int! # ID of the user who created the draft
+  topicId: Int # Value will be null for drafts of new posts and private messages
+  title: String # Title of the topic for post replies or private message replies
 }
 
 type Query {
@@ -777,6 +874,8 @@ type Query {
     username: String
   ): TopicsOutput!
   postQuery(postId: Int!): Post!
+  checkPostDraft(draftKey: String!): CheckPostDraftResult!
+  listPostDrafts(page: Int!): [ListPostDraftsResult!]!
 }
 
 input LeaveMessageInput {
@@ -850,6 +949,24 @@ input EditTopicInput {
   title: String
 }
 
+input CreatePostDraftDataInput {
+  categoryId: Int
+  type: PostDraftType!
+  tags: [String!]
+  title: String
+  content: String!
+  topicId: Int
+  postId: Int
+  recipients: [String]
+}
+
+input CreateAndUpdatePostDraftInputRest {
+  draftKey: String!
+  sequence: Int!
+  data: String!
+  forceSave: Boolean!
+}
+
 type Mutation {
   addEmail(addEmailInput: AddEmailInput!, username: String!): String!
   changePassword(
@@ -885,12 +1002,6 @@ type Mutation {
   newTopic(newTopicInput: NewTopicInput!): Post!
   pushNotifications(input: PushNotificationsInput!): String!
   replyPost(replyInput: ReplyInput!): Post!
-  replyPrivateMessage(
-    file: File
-    replyInput: ReplyInput!
-    type: UploadTypeEnum
-    userId: Int
-  ): Post!
   markRead(markReadInput: MarkReadInput): String!
   newTopic(newTopicInput: NewTopicInput!): Post!
   newPrivateMessage(newPrivateMessageInput: NewPrivateMessageInput!): Post!
@@ -915,6 +1026,15 @@ type Mutation {
     pollName: String!
     postId: Int!
   ): PollVoteOutput!
+  deletePostDraft(draftKey: String!, sequence: Int!): DeletePostDraftOutput!
+  createAndUpdatePostDraftRest(
+    createAndUpdatePostDraftInputRest: CreateAndUpdatePostDraftInputRest!
+  ): CreateAndUpdatePostDraftResult
+  createAndUpdatePostDraft(
+    draftData: CreatePostDraftDataInput!
+    sequence: Int!
+    draftKey: String
+  ): CreateAndUpdatePostDraftResultClient
 }
 
 scalar PathBuilder
@@ -922,4 +1042,5 @@ scalar SetPrimaryEmailOutput
 scalar DeleteEmailOutput
 scalar BodyBuilder
 scalar ChangePasswordOutput
+scalar DeletePostDraftOutput
 scalar File

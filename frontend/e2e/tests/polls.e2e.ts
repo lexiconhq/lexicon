@@ -1,21 +1,16 @@
-import { by, device, element, expect } from 'detox';
+import { by, element, expect } from 'detox';
 
-import { createPost, waitTabProfile } from '../helpers';
+import {
+  createPollOptions,
+  createPost,
+  redirectNewTopic,
+  waitTabProfile,
+} from '../helpers';
 import { mockNewTopicWithPoll } from '../rest-mock/data';
 
 async function createPoll() {
   await expect(element(by.id('NewPoll:SafeAreaView'))).toBeVisible();
-  await element(by.id('NewPoll:TextInput:Options'))
-    .atIndex(0)
-    .replaceText('Apple');
-  await element(by.id('NewPoll:Button:AddOption')).multiTap(2);
-  await element(by.id('NewPoll:TextInput:Options'))
-    .atIndex(1)
-    .replaceText('Banana');
-  await element(by.id('NewPoll:Button:AddOption')).multiTap(2);
-  await element(by.id('NewPoll:TextInput:Options'))
-    .atIndex(2)
-    .typeText('Mango\n');
+  await createPollOptions();
 
   const buttonSetting = element(by.id('NewPoll:Button:AdvancedSettings'));
   await waitFor(buttonSetting).toBeVisible().withTimeout(1000);
@@ -30,15 +25,8 @@ async function createPoll() {
 describe('Polls', () => {
   it('should create a new post with poll', async () => {
     await waitTabProfile();
-    await expect(element(by.id('Home:PostList'))).toBeVisible();
 
-    if (device.getPlatform() === 'android') {
-      await expect(element(by.id('FloatingButton'))).toBeVisible();
-      await element(by.id('FloatingButton')).tap();
-    } else {
-      await expect(element(by.id('HomeNavBar:Icon:Add'))).toBeVisible();
-      await element(by.id('HomeNavBar:Icon:Add')).tap();
-    }
+    await redirectNewTopic();
 
     await expect(element(by.id('NewPost:TextInput:Title'))).toBeVisible();
     await element(by.id('NewPost:TextInput:Title')).typeText(

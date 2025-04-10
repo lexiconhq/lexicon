@@ -1,5 +1,9 @@
 import { mockMessages } from './messages';
-import { mockNewTopicWithPoll, mockTopicsRest } from './topics';
+import {
+  mockNewTopicWithCollapsible,
+  mockNewTopicWithPoll,
+  mockTopicsRest,
+} from './topics';
 import { mockUsers } from './users';
 
 export const mockPostsReplies = [
@@ -302,7 +306,71 @@ export const mockPostWithPoll = {
   userStatus: mockUsers[0].status,
 };
 
-export const allPosts = [...mockPostsReplies, mockFirstPost, mockPostWithPoll];
+export const mockPostWithCollapsible = {
+  id: 14,
+  topicId: mockNewTopicWithCollapsible.id,
+  username: mockUsers[0].username,
+  avatarTemplate: mockUsers[0].avatarTemplate,
+  hidden: false,
+  canEdit: true,
+  cooked:
+    '<details>\n<summary>\nOuter collapsible</summary>\n<details>\n<summary>\nInner collapsible</summary>\n<details>\n<summary>\nSummary</summary>\n<p><a href="https://www.youtube.com">Link</a></p>\n</details>\n<details>\n<summary>\nSummary</summary>\n<p>test</p>\n</details>\n</details>\n</details>',
+  raw:
+    '[details="Outer collapsible"]\n' +
+    '[details="Inner collapsible"]\n' +
+    '[details="Summary"]\n' +
+    '[Link](https://www.youtube.com)\n' +
+    '[/details]\n' +
+    '[details="Summary"]\n' +
+    'test\n' +
+    '[/details]\n' +
+    '[/details]\n' +
+    '[/details]',
+  createdAt: mockNewTopicWithCollapsible.createdAt,
+  replyCount: mockNewTopicWithCollapsible.replyCount,
+  actionsSummary: [
+    {
+      id: 2,
+      count: null,
+      acted: null,
+    },
+    {
+      id: 3,
+      count: null,
+      acted: null,
+    },
+    {
+      id: 4,
+      count: null,
+      acted: null,
+    },
+    {
+      id: 8,
+      count: null,
+      acted: null,
+    },
+    {
+      id: 6,
+      count: null,
+      acted: null,
+    },
+    {
+      id: 7,
+      count: null,
+      acted: null,
+    },
+  ],
+  postNumber: 1,
+  replyToPostNumber: null,
+  userStatus: mockUsers[0].status,
+};
+
+export const allPosts = [
+  ...mockPostsReplies,
+  mockFirstPost,
+  mockPostWithPoll,
+  mockPostWithCollapsible,
+];
 
 export const cookedPollEdit = `<div class="poll" data-poll-charttype="bar" data-poll-name="poll" data-poll-public="true" data-poll-results="always" data-poll-status="open" data-poll-type="regular">
 <div class="poll-container">

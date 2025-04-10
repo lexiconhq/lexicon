@@ -39,8 +39,9 @@ export default function SelectUser() {
     getValues();
 
   const [searchValue, setSearchValue] = useState<string>('');
-  const [selectedUsers, setSelectedUsers] =
-    useState<Array<UserMessageProps>>(listOfUser);
+  const [selectedUsers, setSelectedUsers] = useState<Array<UserMessageProps>>(
+    listOfUser || [],
+  );
   const [currentUsers, setCurrentUsers] = useState<Array<string>>(users);
 
   const ios = Platform.OS === 'ios';

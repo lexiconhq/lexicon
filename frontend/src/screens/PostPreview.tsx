@@ -14,12 +14,12 @@ import {
   CustomHeader,
   HeaderItem,
   LocalRepliedPost,
-  Markdown,
+  MarkdownContent,
   ModalHeader,
   PostGroupings,
 } from '../components';
 import { PollPostPreview } from '../components/Poll';
-import { FORM_DEFAULT_VALUES } from '../constants';
+import { FORM_DEFAULT_VALUES, refetchQueriesPostDraft } from '../constants';
 import { CustomImage, Divider, IconWithLabel, Text } from '../core-ui';
 import {
   combineContentWithPollContent,
@@ -75,7 +75,14 @@ export default function PostPreview() {
 
   const [imageUrls, setImageUrls] = useState<Array<string>>();
 
-  const { title, raw: content, tags, channelId } = getValues();
+  const {
+    title,
+    raw: content,
+    tags,
+    channelId,
+    isDraft,
+    draftKey,
+  } = getValues();
   const shortUrls = getPostShortUrl(content) ?? [];
   const images = postData.images;
 
@@ -124,11 +131,14 @@ export default function PostPreview() {
     },
   });
 
+  const refetchQueries = isDraft ? refetchQueriesPostDraft : [];
+
   const { newTopic, loading: newTopicLoading } = useNewTopic({
     onCompleted: ({ newTopic: result }) => {
       resetForm(FORM_DEFAULT_VALUES);
       navToPostDetail({ topicId: result.topicId, focusedPostNumber });
     },
+    refetchQueries,
   });
 
   const { reply: replyTopic, loading: replyLoading } = useReplyTopic({
@@ -142,6 +152,7 @@ export default function PostPreview() {
     onError: (error) => {
       errorHandlerAlert(error);
     },
+    refetchQueries,
   });
 
   const { editPost, loading: editPostLoading } = useEditPost({
@@ -234,6 +245,7 @@ export default function PostPreview() {
             raw: updatedContentWithPoll,
             topicId: postData.topicId || 0,
             replyToPostNumber: postData.postNumber,
+            draftKey,
           },
         },
       });
@@ -245,6 +257,7 @@ export default function PostPreview() {
             category: channelId || 0,
             tags,
             raw: updatedContentWithPoll,
+            draftKey,
           },
         },
       });
@@ -340,12 +353,11 @@ export default function PostPreview() {
           <LocalRepliedPost replyToPostId={postData.replyToPostId} />
         )}
         {renderPolls()}
-        <Markdown
-          style={styles.markdown}
+        <MarkdownContent
           content={generateMarkdownContent(content, imageUrls)}
+          style={styles.markdown}
           nonClickable={true}
         />
-
         {/* NOTE: Earlier, this file contained the functionality to show default image if imageUrl is empty and short url length is not 0.
 
           It was removed because we already handle invalid url to use default image inside customImage.

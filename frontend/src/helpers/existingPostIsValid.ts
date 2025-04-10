@@ -1,6 +1,6 @@
-import { FieldValue, FieldValues, FormState } from 'react-hook-form';
+import { FormState, UseFormGetFieldState } from 'react-hook-form';
 
-import { PollFormContextValues } from '../types';
+import { NewPostForm, PollFormContextValues } from '../types';
 
 import { newPostIsValid } from './newPostIsValid';
 
@@ -15,7 +15,7 @@ type SubmissionDetails = {
   editType: EditType;
 };
 
-type ExistingPostIsValidParams<T extends FieldValues> = {
+type ExistingPostIsValidParams = {
   uploadsInProgress: number;
   title: string;
   oldTitle?: string;
@@ -25,15 +25,12 @@ type ExistingPostIsValidParams<T extends FieldValues> = {
   oldChannel?: number;
   tags?: Array<string>;
   oldTags?: Array<string>;
-  getFieldState?: (
-    name: string,
-    formState: FormState<FieldValue<T>>,
-  ) => { isDirty: boolean };
-  formState?: FormState<FieldValue<T>>;
+  getFieldState?: UseFormGetFieldState<NewPostForm>;
+  formState?: FormState<NewPostForm>;
   polls?: Array<PollFormContextValues>;
 };
 
-export function existingPostIsValid<T extends FieldValues>({
+export function existingPostIsValid({
   uploadsInProgress,
   title,
   oldTitle,
@@ -46,7 +43,7 @@ export function existingPostIsValid<T extends FieldValues>({
   getFieldState,
   formState,
   polls,
-}: ExistingPostIsValidParams<T>): SubmissionDetails {
+}: ExistingPostIsValidParams): SubmissionDetails {
   let titleIsValid;
   let contentIsValid;
   let channelIsValid;

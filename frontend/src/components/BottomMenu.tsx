@@ -15,6 +15,7 @@ type Props = {
   onQuote?: () => void;
   onBulletedList: () => void;
   onNumberedList: () => void;
+  onCollapsible: () => void;
   showLeftMenu?: boolean;
 };
 
@@ -35,6 +36,7 @@ export function BottomMenu(props: Props) {
     onQuote,
     onBulletedList,
     onNumberedList,
+    onCollapsible,
     showLeftMenu = true,
   } = props;
 
@@ -105,6 +107,15 @@ export function BottomMenu(props: Props) {
               onPress={onNumberedList}
               style={styles.iconButton}
               testID="BottomMenu:IconNumberList"
+            />
+            <Divider vertical />
+            <Icon
+              name="Collapsible"
+              size="l"
+              color={colors.textLighter}
+              onPress={onCollapsible}
+              style={styles.iconButton}
+              testID="BottomMenu:IconCollapsible"
             />
             <Divider vertical />
             <Icon

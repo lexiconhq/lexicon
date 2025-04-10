@@ -1,11 +1,15 @@
 /* eslint-disable no-useless-escape */
 
 import { NO_EXCERPT_WORDING } from '../../constants';
+import { PollType } from '../../generatedAPI/server';
 import {
   anchorToMarkdown,
-  filterMarkdownContent,
+  combineDataMarkdownPollAndImageList,
+  filterMarkdownContentPoll,
   generateMarkdownContent,
   getPostShortUrl,
+  processDraftPollAndImageForPrivateMessageReply,
+  replaceImageMarkdownWithPlaceholder,
   sortImageUrl,
 } from '../processRawContent';
 
@@ -157,12 +161,12 @@ describe('generateMarkdownContent returns markdown content with complete urls', 
   });
 });
 
-describe('filterMarkdownContent returns filtered markdown content', () => {
+describe('filterMarkdownContentPoll returns filtered markdown content', () => {
   it('should return the content without the poll markdown', () => {
     const pollMarkdown =
       'This is a poll![poll type=number results=always chartType=bar min=1 max=10 step=2][/poll]';
     const result = 'This is a poll!';
-    const filterResult = filterMarkdownContent(pollMarkdown);
+    const filterResult = filterMarkdownContentPoll(pollMarkdown);
     expect(filterResult.filteredMarkdown).toBe(result);
     expect(filterResult.pollMarkdowns.length).toBe(1);
     expect(filterResult.pollMarkdowns).toEqual([
@@ -174,12 +178,205 @@ describe('filterMarkdownContent returns filtered markdown content', () => {
     const pollMarkdown =
       '[poll type=number results=always chartType=bar min=1 max=10 step=2][/poll]There is two poll![poll type=regular results=always chartType=bar]\n- Banana\n- Apple\n[/poll]';
     const result = 'There is two poll!';
-    const filterResult = filterMarkdownContent(pollMarkdown);
+    const filterResult = filterMarkdownContentPoll(pollMarkdown);
     expect(filterResult.filteredMarkdown).toBe(result);
     expect(filterResult.pollMarkdowns.length).toBe(2);
     expect(filterResult.pollMarkdowns).toEqual([
       '[poll type=number results=always chartType=bar min=1 max=10 step=2][/poll]',
       '[poll type=regular results=always chartType=bar]\n- Banana\n- Apple\n[/poll]',
     ]);
+  });
+
+  it('should return empty with empty markdown', () => {
+    const filterResult = filterMarkdownContentPoll('');
+    expect(filterResult.filteredMarkdown).toBe('');
+    expect(filterResult.pollMarkdowns).toEqual([]);
+  });
+});
+
+describe('replaceImageMarkdownWithPlaceholder', () => {
+  const placeholder = '[image]';
+  it('should return empty string and empty array when content is undefined', () => {
+    const result = replaceImageMarkdownWithPlaceholder({});
+    expect(result.filterMarkdown).toBe('');
+    expect(result.imageMarkdowns).toEqual([]);
+  });
+
+  it('should return empty string and empty array when content is empty string', () => {
+    const result = replaceImageMarkdownWithPlaceholder({ content: '' });
+    expect(result.filterMarkdown).toBe('');
+    expect(result.imageMarkdowns).toEqual([]);
+  });
+
+  it('should replace image markdown with [image] placeholder and return array of image markdowns', () => {
+    const content =
+      'Here is an image ![undefined-1684143577983.jpg|3000 x 2002](upload://9WdaMOPqn99avHbcfhVV5ZbG91e.jpeg) in the text.';
+    const result = replaceImageMarkdownWithPlaceholder({
+      content,
+      placeholder,
+    });
+    expect(result.filterMarkdown).toBe('Here is an image [image] in the text.');
+    expect(result.imageMarkdowns).toEqual([
+      '![undefined-1684143577983.jpg|3000 x 2002](upload://9WdaMOPqn99avHbcfhVV5ZbG91e.jpeg)',
+    ]);
+  });
+
+  it('should handle multiple image markdown patterns and return array of image markdowns', () => {
+    const content =
+      'Image one ![img1.jpg|800 x 600](upload://img1.jpg) and image two ![img2.jpg|1024 x 768](upload://img2.jpg).';
+    const result = replaceImageMarkdownWithPlaceholder({
+      content,
+      placeholder,
+    });
+    expect(result.filterMarkdown).toBe(
+      'Image one [image] and image two [image].',
+    );
+    expect(result.imageMarkdowns).toEqual([
+      '![img1.jpg|800 x 600](upload://img1.jpg)',
+      '![img2.jpg|1024 x 768](upload://img2.jpg)',
+    ]);
+  });
+
+  it('should not alter content without image markdown patterns and return empty array', () => {
+    const content = 'This is a text without any image markdown.';
+    const result = replaceImageMarkdownWithPlaceholder({
+      content,
+      placeholder,
+    });
+    expect(result.filterMarkdown).toBe(
+      'This is a text without any image markdown.',
+    );
+    expect(result.imageMarkdowns).toEqual([]);
+  });
+});
+
+describe('combineDataMarkdownPollAndImageList', () => {
+  const imageList = [
+    {
+      url: 'http://test.com/uploads/default/original/1X/testImage.png',
+      shortUrl: 'upload://randomIdTestImage.png',
+      imageMarkdown:
+        '![testImage.png|800 x 600](upload://randomIdTestImage.png)',
+    },
+    {
+      url: 'http://test.com/uploads/default/original/1X/testImage2.png',
+      shortUrl: 'upload://randomIdTestImage2.png',
+      imageMarkdown:
+        '![testImage2.png|800 x 600](upload://randomIdTestImage2.png)',
+    },
+  ];
+  const polls = [
+    {
+      title: 'Sample Poll 1',
+      minChoice: 1,
+      maxChoice: 2,
+      step: 1,
+      pollOptions: [{ option: 'Option 1' }, { option: 'Option 2' }],
+      results: 0,
+      chartType: 1,
+      groups: ['Group A'],
+      closeDate: undefined,
+      isPublic: true,
+      pollChoiceType: PollType.Multiple,
+      pollContent:
+        '[poll type=regular results=always chartType=bar]\n* 2\n* 3\n[/poll]',
+    },
+  ];
+  it('should return the original content when there are no images or polls', () => {
+    const content = 'This is some content';
+
+    const result = combineDataMarkdownPollAndImageList({
+      content,
+      imageList: [],
+      polls: [],
+    });
+    const result1 = combineDataMarkdownPollAndImageList({
+      content,
+    });
+
+    expect(result).toBe(content);
+    expect(result1).toBe(content);
+  });
+
+  it('should combine content with image markdown when images are present', () => {
+    const content = 'This is some content with image';
+
+    const result = combineDataMarkdownPollAndImageList({ content, imageList });
+
+    expect(result).toBe(
+      `![testImage.png|800 x 600](upload://randomIdTestImage.png)\n![testImage2.png|800 x 600](upload://randomIdTestImage2.png)\n${content}`,
+    );
+  });
+
+  it('should combine content with poll content when polls are present', () => {
+    const content = 'This is some content with poll';
+
+    const result = combineDataMarkdownPollAndImageList({ content, polls });
+
+    expect(result).toBe(
+      `[poll type=regular results=always chartType=bar]\n* 2\n* 3\n[/poll]\n${content}`,
+    );
+  });
+
+  it('should combine content with poll and image content', () => {
+    const content = 'This is some content with poll and images';
+
+    const result = combineDataMarkdownPollAndImageList({
+      content,
+      polls,
+      imageList,
+    });
+
+    expect(result).toBe(
+      `[poll type=regular results=always chartType=bar]\n* 2\n* 3\n[/poll]\n![testImage.png|800 x 600](upload://randomIdTestImage.png)\n![testImage2.png|800 x 600](upload://randomIdTestImage2.png)\n${content}`,
+    );
+  });
+});
+
+describe('processDraftPollAndImageForPrivateMessageReply', () => {
+  it('should return empty polls and image message list if content is an empty string', () => {
+    expect(
+      processDraftPollAndImageForPrivateMessageReply({ content: '' }),
+    ).toEqual({
+      polls: [],
+      imageMessageReplyList: [],
+      newContentFilterRaw: '',
+    });
+  });
+
+  it('should process draft content correctly', () => {
+    const content = `This is a poll and image[poll type=regular results=always chartType=bar]\n* Option 1\n* Option 2\n[/poll]\n![testImage.png|800 x 600](upload://randomIdTestImage.png)`;
+    const result = processDraftPollAndImageForPrivateMessageReply({ content });
+
+    const polls = [
+      {
+        title: undefined,
+        minChoice: 0,
+        maxChoice: 0,
+        step: 1,
+        pollOptions: ['Option 1', 'Option 2'],
+        results: 0,
+        chartType: 0,
+        groups: [],
+        closeDate: undefined,
+        isPublic: false,
+        pollChoiceType: PollType.Regular,
+        pollContent:
+          '[poll type=regular results=always chartType=bar]\n* Option 1\n* Option 2\n[/poll]',
+      },
+    ];
+    const imageList = [
+      {
+        url: '',
+        shortUrl: 'upload://randomIdTestImage.png',
+        imageMarkdown:
+          '![testImage.png|800 x 600](upload://randomIdTestImage.png)',
+      },
+    ];
+    expect(result).toEqual({
+      polls,
+      newContentFilterRaw: 'This is a poll and image\n',
+      imageMessageReplyList: imageList,
+    });
   });
 });

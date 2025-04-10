@@ -1,4 +1,4 @@
-import { ApolloClient, NormalizedCacheObject, Resolver } from '@apollo/client';
+import { Resolver } from '@apollo/client';
 
 import {
   DeletePushNotificationsSubscribeDocument,
@@ -9,11 +9,12 @@ import {
   RevokeUserApiKeyMutationVariables,
   RevokeUserApiKeyMutation as RevokeUserApiKeyType,
 } from '../../../generatedAPI/server';
+import { Apollo } from '../../../types';
 
 export let logoutMutationResolver: Resolver = async (
   _,
   { pushNotificationsToken }: LogoutMutationVariables,
-  { client }: { client: ApolloClient<NormalizedCacheObject> },
+  { client }: { client: Apollo },
 ) => {
   try {
     if (pushNotificationsToken) {

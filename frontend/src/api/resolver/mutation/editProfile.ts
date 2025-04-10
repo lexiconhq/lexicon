@@ -1,5 +1,3 @@
-import { ApolloClient, NormalizedCacheObject } from '@apollo/client';
-
 import {
   ChangeProfileDocument,
   ChangeProfileMutationVariables,
@@ -15,6 +13,7 @@ import {
   SaveProfilePictureMutationVariables,
   SaveProfilePictureMutation as SaveProfilePictureType,
 } from '../../../generatedAPI/server';
+import { Apollo } from '../../../types';
 
 export let editProfileResolver = async (
   _: Record<string, unknown>,
@@ -24,7 +23,7 @@ export let editProfileResolver = async (
     newUsername,
     uploadId,
   }: EditProfileMutationVariables,
-  { client }: { client: ApolloClient<NormalizedCacheObject> },
+  { client }: { client: Apollo },
 ) => {
   if (newUsername) {
     let { data: usernameData } = await client.mutate<

@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 
 import { Avatar, ChatBubble, Divider, Text } from '../../../core-ui';
 import {
-  filterMarkdownContent,
+  filterMarkdownContentPoll,
   formatDateTime,
   handleUnsupportedMarkdown,
   useStorage,
@@ -76,7 +76,7 @@ export function MessageItem(props: Props) {
   };
 
   const renderFirstChatBubble = (poll?: Poll) => {
-    const filteredMessage = filterMarkdownContent(message).filteredMarkdown;
+    const filteredMessage = filterMarkdownContentPoll(message).filteredMarkdown;
 
     return (
       <>
@@ -132,7 +132,7 @@ export function MessageItem(props: Props) {
   };
 
   const renderChatBubble = () => {
-    const filteredMessage = filterMarkdownContent(message).filteredMarkdown;
+    const filteredMessage = filterMarkdownContentPoll(message).filteredMarkdown;
 
     if (!filteredMessage) {
       return null;

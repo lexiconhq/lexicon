@@ -6,6 +6,7 @@ import { MOCK_SERVER_PORT } from '../global';
 import {
   aboutHandler,
   categoriesHandler,
+  draftHandler,
   messagesHandler,
   notificationsHandler,
   pollHandler,
@@ -41,6 +42,7 @@ export const handlers = [
   ...topicsHandler,
   ...pollHandler,
   ...messagesHandler,
+  ...draftHandler,
 ];
 
 export type MockServerContext = {

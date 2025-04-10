@@ -205,8 +205,33 @@ export const mockSearchTopics = {
   ],
 };
 
+export const mockNewTopicWithCollapsible = {
+  id: 14,
+  title: 'New Post with Collapsible',
+  imageUrl: null,
+  postsCount: 1,
+  replyCount: 0,
+  createdAt: '2023-07-14T09:41:35.301Z',
+  bumpedAt: '2023-07-14T19:29:25.000Z',
+  excerpt: 'Outer collapsible',
+  visible: true,
+  liked: false,
+  tags: [],
+  views: 2,
+  likeCount: 0,
+  categoryId: mockCategories[1].id,
+  posters: [
+    {
+      userId: mockUsers[0].id,
+      description: 'Original Poster, Most Recent Poster',
+    },
+  ],
+  pinned: false,
+};
+
 export const allTopics = [
   ...mockTopicsRest,
   mockNewTopics,
   mockNewTopicWithPoll,
+  mockNewTopicWithCollapsible,
 ];

@@ -1,5 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
+import { useFormContext } from 'react-hook-form';
 import {
   Platform,
   RefreshControl,
@@ -12,7 +13,7 @@ import {
   FooterLoadingIndicator,
   LoadingOrError,
 } from '../../components';
-import { FIRST_POST_NUMBER } from '../../constants';
+import { FIRST_POST_NUMBER, FORM_DEFAULT_VALUES } from '../../constants';
 import { FloatingButton } from '../../core-ui';
 import { MessageQuery } from '../../generatedAPI/server';
 import { errorHandler, getParticipants, useStorage } from '../../helpers';
@@ -33,6 +34,7 @@ export default function Messages() {
   const styles = useStyles();
   const { colors } = useTheme();
   const { isTabletLandscape } = useDevice();
+  const { reset } = useFormContext();
 
   const { navigate } = useNavigation<StackNavProp<'Messages'>>();
 
@@ -49,10 +51,6 @@ export default function Messages() {
   const [hasOlderMessages, setHasOlderMessages] = useState(false);
 
   const ios = Platform.OS === 'ios';
-
-  const onPressNewMessage = () => {
-    navigate('NewMessage');
-  };
 
   const conditionHiddenFooterLoading =
     !hasOlderMessages || messages.length <= 20;
@@ -119,6 +117,11 @@ export default function Messages() {
     },
     'HIDE_ALERT',
   );
+
+  const onPressNewMessage = async () => {
+    reset(FORM_DEFAULT_VALUES);
+    navigate('NewMessage');
+  };
 
   const onRefresh = () => {
     setLoading(true);

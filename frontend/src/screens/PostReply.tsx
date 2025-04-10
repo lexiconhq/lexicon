@@ -1,7 +1,7 @@
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
-import { Alert, Keyboard, Platform, SafeAreaView, View } from 'react-native';
+import { Keyboard, Platform, SafeAreaView, View } from 'react-native';
 import { useDebouncedCallback } from 'use-debounce';
 
 import { client } from '../api/client';
@@ -19,6 +19,7 @@ import {
 import { FORM_DEFAULT_VALUES } from '../constants';
 import { Divider, IconWithLabel, TextInputType } from '../core-ui';
 import {
+  PostDraftType,
   PostFragment,
   PostFragmentDoc,
   UploadTypeEnum,
@@ -28,6 +29,7 @@ import {
   BottomMenuNavigationScreens,
   bottomMenu,
   createReactNativeFile,
+  errorHandlerAlert,
   existingPostIsValid,
   formatExtensions,
   getHyperlink,
@@ -37,11 +39,16 @@ import {
   mentionHelper,
   newPostIsValid,
   onKeyPress,
+  saveAndDiscardPostDraftAlert,
   useStorage,
 } from '../helpers';
 import {
+  useAutoSavePostDraft,
+  useCreateAndUpdatePostDraft,
+  useDeletePostDraft,
   useKASVWorkaround,
   useMention,
+  usePost,
   useSiteSettings,
   useStatefulUpload,
 } from '../hooks';
@@ -49,6 +56,7 @@ import { makeStyles, useTheme } from '../theme';
 import {
   CursorPosition,
   Image,
+  NewPostForm,
   RootStackNavProp,
   RootStackParamList,
   RootStackRouteProp,
@@ -120,7 +128,7 @@ export default function PostReply() {
     reset,
     getFieldState,
     formState,
-  } = useFormContext();
+  } = useFormContext<NewPostForm>();
   const polls = watch('polls');
 
   const [imagesArray, setImagesArray] = useState<Array<Image>>([]);
@@ -151,6 +159,35 @@ export default function PostReply() {
     imagesArray,
     currentUploadToken,
   );
+
+  const { createPostDraft, loading: loadingCreateAndUpdatePostDraft } =
+    useCreateAndUpdatePostDraft({
+      onError: (error) => {
+        errorHandlerAlert(error);
+      },
+      onCompleted: ({ createAndUpdatePostDraft }) => {
+        setValue('draftKey', createAndUpdatePostDraft?.draftKey);
+        setValue('sequence', createAndUpdatePostDraft?.draftSequence);
+        setValue('isDraft', true);
+      },
+    });
+  const { deletePostDraft } = useDeletePostDraft();
+  const { getPost, loading: loadingRepliedPost } = usePost();
+
+  const { debounceSaveDraft } = useAutoSavePostDraft({
+    createPostDraft,
+    getValues,
+    type: PostDraftType.PostReply,
+    topicId,
+    replyToPostId,
+  });
+
+  useEffect(() => {
+    const { isDraft } = getValues();
+    if (replyToPostId && isDraft) {
+      getPost({ variables: { postId: replyToPostId } });
+    }
+  }, [getPost, getValues, replyToPostId]);
 
   useEffect(() => {
     const { raw } = getValues();
@@ -242,6 +279,7 @@ export default function PostReply() {
     onFontFormatting,
     onQuote,
     onListFormatting,
+    onCollapsibleFormatting,
   } = bottomMenu({
     isKeyboardShow,
     user,
@@ -256,26 +294,42 @@ export default function PostReply() {
   useEffect(
     () =>
       navigation.addListener('beforeRemove', (e) => {
-        if ((!postValidity || !modal) && uploadsInProgress < 1) {
+        if (
+          ((!formState.dirtyFields.raw && !formState.dirtyFields.polls) ||
+            !modal) &&
+          uploadsInProgress < 1
+        ) {
+          reset(FORM_DEFAULT_VALUES);
           return;
         }
         e.preventDefault();
-        Alert.alert(
-          t('Discard Post Reply?'),
-          t('Are you sure you want to discard your post reply?'),
-          [
-            { text: t('Cancel') },
-            {
-              text: t('Discard'),
-              onPress: () => {
-                reset(FORM_DEFAULT_VALUES);
-                navigation.dispatch(e.data.action);
-              },
-            },
-          ],
-        );
+
+        saveAndDiscardPostDraftAlert({
+          deletePostDraft,
+          createPostDraft,
+          event: e,
+          navigation,
+          getValues,
+          resetForm: reset,
+          draftType: PostDraftType.PostReply,
+          topicId,
+          replyToPostId,
+        });
       }),
-    [postValidity, modal, navigation, uploadsInProgress, reset],
+    [
+      postValidity,
+      modal,
+      navigation,
+      uploadsInProgress,
+      reset,
+      getValues,
+      deletePostDraft,
+      createPostDraft,
+      topicId,
+      formState.dirtyFields.raw,
+      replyToPostId,
+      formState.dirtyFields.polls,
+    ],
   );
 
   const onPreview = handleSubmit(() => {
@@ -336,7 +390,7 @@ export default function PostReply() {
         title={editPostId ? t('Edit Post') : t('Reply')}
         rightTitle={t('Next')}
         onPressRight={onPreview}
-        disabled={!postValidity}
+        disabled={!postValidity || loadingCreateAndUpdatePostDraft}
         noShadow
       />
       {ios && (
@@ -346,19 +400,17 @@ export default function PostReply() {
             <HeaderItem
               label={t('Cancel')}
               onPressItem={() => {
-                if (!postValidity) {
-                  reset(FORM_DEFAULT_VALUES);
-                }
                 goBack();
               }}
               left
+              disabled={loadingCreateAndUpdatePostDraft}
             />
           }
           right={
             <HeaderItem
               label={t('Next')}
               onPressItem={onPreview}
-              disabled={!postValidity}
+              disabled={!postValidity || loadingCreateAndUpdatePostDraft}
             />
           }
         />
@@ -430,6 +482,15 @@ export default function PostReply() {
                   type: 'Number',
                 });
               }}
+              onCollapsible={() => {
+                const { raw } = getValues();
+                onCollapsibleFormatting({
+                  content: raw,
+                  cursorPosition,
+                  setCursorPosition,
+                  setValue,
+                });
+              }}
             />
           </View>
         }
@@ -443,9 +504,9 @@ export default function PostReply() {
           numberOfLines={1}
         />
         <Divider style={styles.spacingBottom} horizontalSpacing="xxl" />
-        {repliedPost}
+        {!loadingRepliedPost && repliedPost}
         <ListCreatePoll
-          polls={polls}
+          polls={polls || []}
           setValue={setValue}
           navigate={navigate}
           prevScreen="PostReply"
@@ -453,7 +514,7 @@ export default function PostReply() {
         <Controller
           name="raw"
           defaultValue={oldContent}
-          rules={{ required: polls.length === 0 }}
+          rules={{ required: polls?.length === 0 }}
           control={control}
           render={({ field: { onChange, value } }) => (
             <TextArea
@@ -480,6 +541,7 @@ export default function PostReply() {
                 );
                 onChange(text);
                 debounced(text, currentUploadToken);
+                debounceSaveDraft();
 
                 let currentPostValidity; // temp variable to get the value of existingPostIsValid or newPostIsValid helper
 

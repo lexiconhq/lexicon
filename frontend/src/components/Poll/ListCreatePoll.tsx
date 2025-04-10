@@ -1,9 +1,14 @@
 import React from 'react';
 import { ScrollView } from 'react-native';
+import { UseFormSetValue } from 'react-hook-form';
 
-import { PollFormContextValues, RootStackParamList } from '../../types';
+import {
+  NewPostForm,
+  PollFormContextValues,
+  RootStackParamList,
+} from '../../types';
 import { makeStyles } from '../../theme';
-import { getPollChoiceLabel } from '../../helpers';
+import { deletePoll, getPollChoiceLabel } from '../../helpers';
 
 import { PollChoiceCard } from './PollChoiceCard';
 
@@ -11,7 +16,7 @@ type Props = {
   polls: Array<PollFormContextValues>;
   editPostId?: number;
   navigate: (screen: 'NewPoll', params: RootStackParamList['NewPoll']) => void;
-  setValue: (name: 'polls', value: Array<PollFormContextValues>) => void;
+  setValue: UseFormSetValue<NewPostForm>;
   prevScreen: 'NewPost' | 'PostReply' | 'NewMessage';
 };
 
@@ -36,11 +41,7 @@ export function ListCreatePoll(props: Props) {
           })}
           totalOption={data.pollOptions.length}
           onDelete={() => {
-            const updatedPolls = [
-              ...polls.slice(0, index),
-              ...polls.slice(index + 1),
-            ];
-            setValue('polls', updatedPolls);
+            deletePoll({ polls, setValue, index });
           }}
           onEdit={() => {
             navigate('NewPoll', {

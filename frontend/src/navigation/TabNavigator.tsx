@@ -1,25 +1,29 @@
+import { useReactiveVar } from '@apollo/client';
 import {
   BottomTabBarProps,
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import React, { useEffect } from 'react';
 import { Platform, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useReactiveVar } from '@apollo/client';
-import * as ScreenOrientation from 'expo-screen-orientation';
 
+import { currentScreenVar } from '../constants';
 import { Icon, Text } from '../core-ui';
 import { useKeyboardListener } from '../hooks';
-import { Home as HomeScene, Profile as ProfileScene } from '../screens';
+import {
+  Home as HomeScene,
+  PostDraft,
+  Profile as ProfileScene,
+} from '../screens';
 import { makeStyles, useTheme } from '../theme';
 import { TabParamList } from '../types';
 import { useDevice } from '../utils';
 import { useAuth } from '../utils/AuthProvider';
-import { currentScreenVar } from '../constants';
 
+import { navigate } from './NavigationService';
 import ProfileDrawerNavigator from './ProfileDrawerNavigator';
 import ProfileStackNavigator from './ProfileStackNavigator';
-import { navigate } from './NavigationService';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
@@ -59,7 +63,13 @@ function TabBar({ state, navigation: { navigate } }: BottomTabBarProps) {
             onPress={onPress}
             style={styles.tab}
             activeOpacity={state.index === index ? 1 : 0.2}
-            testID={route.name === 'Profile' ? 'Tab:Profile' : 'Tab:Home'}
+            testID={
+              route.name === 'Profile'
+                ? 'Tab:Profile'
+                : route.name === 'Draft'
+                ? 'Tab:Draft'
+                : 'Tab:Home'
+            }
           >
             <View
               style={[
@@ -68,7 +78,13 @@ function TabBar({ state, navigation: { navigate } }: BottomTabBarProps) {
               ]}
             >
               <Icon
-                name={route.name === 'Home' ? 'Home' : 'Person'}
+                name={
+                  route.name === 'Home'
+                    ? 'Home'
+                    : route.name === 'Draft'
+                    ? 'Draft'
+                    : 'Person'
+                }
                 size="xl"
                 color={
                   state.index === index ? colors.activeTab : colors.inactiveTab
@@ -91,6 +107,8 @@ function TabBar({ state, navigation: { navigate } }: BottomTabBarProps) {
 export default function TabNavigator() {
   const { isTablet, isPortrait } = useDevice();
   let currentScreen = useReactiveVar(currentScreenVar);
+  const useAuthResults = useAuth();
+  const token = !useAuthResults.isLoading && useAuthResults.token;
 
   useEffect(() => {
     const checkScreenOrientation = async () => {
@@ -135,6 +153,7 @@ export default function TabNavigator() {
         component={HomeScene}
         options={{ headerShown: false }}
       />
+      {token && <Tab.Screen name="Draft" component={PostDraft} />}
       {!isTablet ? (
         <Tab.Screen
           name="Profile"

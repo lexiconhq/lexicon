@@ -1,6 +1,8 @@
-import { RestLink } from 'apollo-link-rest';
+import { Apollo } from '../../types';
 
 import { changePasswordOutputResponseTransformer } from './changePasswordOutput';
+import { checkPostDraftResultResponseTransformer } from './CheckPostDraftResult';
+import { listPostDraftsResultResponseTransformer } from './ListPostDraftsResult';
 import { postCookedResponseTransform, postRawResponseTransform } from './Post';
 import { replyingToOutputResponseTransform } from './ReplyingToOutput';
 import { searchTagOutputResponseTransform } from './searchTagOutput';
@@ -10,15 +12,18 @@ import {
 } from './stringOutput';
 import { userActionsResponseTransform } from './userActions';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ResponseTransformer = (data: any, typeName: string, client: Apollo) => any;
+
 const convertData = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any,
   type: 'json' | 'text',
 ) => {
   let newData;
-  if (type === 'json' && data.json) {
+  if (type === 'json' && data?.json) {
     newData = await data?.json();
-  } else if (data.text) {
+  } else if (data?.text) {
     newData = await data?.text();
   }
 
@@ -41,23 +46,20 @@ const convertData = async (
  */
 
 const createResponseTransformer = <T>(
-  transformer: (data: T) => unknown,
+  transformer: (data: T, typeName: string, client: Apollo) => unknown,
   type: 'json' | 'text',
   ignoreResponse?: boolean,
 ) => {
-  return async (data: T) => {
+  return async (data: T, typeName: string, client: Apollo) => {
     const convertedData = ignoreResponse ? '' : await convertData(data, type);
-    return transformer(convertedData);
+    return transformer(convertedData, typeName, client);
   };
 };
 
 /**
  * Root variable defining a record with names as keys and response transformers as values.
  */
-export const responseTransformers: Record<
-  string,
-  RestLink.ResponseTransformer
-> = {
+export const responseTransformers: Record<string, ResponseTransformer> = {
   ReplyingToOutput: createResponseTransformer(
     replyingToOutputResponseTransform,
     'json',
@@ -80,6 +82,18 @@ export const responseTransformers: Record<
   UserActions: createResponseTransformer(userActionsResponseTransform, 'json'),
   SearchTagOutput: createResponseTransformer(
     searchTagOutputResponseTransform,
+    'json',
+  ),
+  CheckPostDraftResult: createResponseTransformer(
+    checkPostDraftResultResponseTransformer,
+    'json',
+  ),
+  DeletePostDraftOutput: createResponseTransformer(
+    successResponseTransform,
+    'json',
+  ),
+  ListPostDraftsResult: createResponseTransformer(
+    listPostDraftsResultResponseTransformer,
     'json',
   ),
 };

@@ -11,17 +11,25 @@ export type FormTitle = Form & {
   title: string;
 };
 
-export type NewPostForm = FormTitle & {
-  channelId: number;
-  tags: Array<string>;
-  editPostId?: number;
-  editTopicId?: number;
-  oldContent?: string;
-  oldTitle?: string;
-  polls?: Array<PollFormContextValues>;
-  messageTargetSelectedUsers?: Array<string>;
-  messageUsersList?: Array<UserMessageProps>;
+export type FormPostDraft = {
+  isDraft?: boolean;
+  draftKey?: string;
+  sequence?: number;
 };
+
+export type NewPostForm = FormTitle &
+  FormPostDraft & {
+    channelId: number;
+    tags: Array<string>;
+    editPostId?: number;
+    editTopicId?: number;
+    oldContent?: string;
+    oldTitle?: string;
+    polls?: Array<PollFormContextValues>;
+    messageTargetSelectedUsers?: Array<string>;
+    messageUsersList?: Array<UserMessageProps>;
+    imageMessageReplyList?: Array<ImageFormContextValues>;
+  };
 
 export type PollFormValues = {
   title?: string;
@@ -39,4 +47,10 @@ export type PollFormValues = {
 export type PollFormContextValues = PollFormValues & {
   pollChoiceType: PollType;
   pollContent: string;
+};
+
+export type ImageFormContextValues = {
+  url: string;
+  shortUrl: string;
+  imageMarkdown: string;
 };

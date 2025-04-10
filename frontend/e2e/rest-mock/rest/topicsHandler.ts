@@ -7,14 +7,17 @@ import {
 import {
   cookedPollEdit,
   mockFirstPost,
+  mockListPostDrafts,
   mockMessageDetails,
   mockMessageReplies,
   mockMessages,
   mockNewMessage,
   mockNewMessageTopic,
   mockNewTopics,
+  mockNewTopicWithCollapsible,
   mockNewTopicWithPoll,
   mockPostsReplies,
+  mockPostWithCollapsible,
   mockPostWithPoll,
   mockSearchTopics,
   mockTopicDetailsRest,
@@ -46,6 +49,7 @@ type CreatePostInput = {
   replyToPostNumber?: number;
   topicId?: number;
   tags?: Array<string>;
+  draftKey?: string;
 };
 
 export const topicsHandler = [
@@ -291,6 +295,8 @@ export const topicsHandler = [
 
         let newTopic = raw.startsWith('[poll')
           ? mockNewTopicWithPoll
+          : raw.startsWith('[details')
+          ? mockNewTopicWithCollapsible
           : mockNewTopics;
         mockTopicsRest.push(newTopic);
 
@@ -302,6 +308,16 @@ export const topicsHandler = [
           cooked: `<p>${newTopic.excerpt}</p>`,
           raw: newTopic.excerpt,
         };
+      }
+
+      if ('draft_key' in reqBody) {
+        let indexToRemove = mockListPostDrafts.findIndex(
+          (draft) => draft.draft_key === reqBody.draft_key,
+        );
+
+        if (indexToRemove !== -1) {
+          mockListPostDrafts.splice(indexToRemove, 1);
+        }
       }
 
       return HttpResponse.json(response);
@@ -380,6 +396,19 @@ export const topicsHandler = [
           },
         });
       }
+
+      // This condition is for editing post with collapsible
+      if (mockPostWithCollapsible.id === parsePostId) {
+        mockPostWithCollapsible.raw = raw;
+
+        return HttpResponse.json({
+          post: {
+            id: mockPostWithCollapsible.id,
+            postNumber: mockPostWithCollapsible.postNumber,
+          },
+        });
+      }
+
       throw new Error('Post id not found');
     },
   ),

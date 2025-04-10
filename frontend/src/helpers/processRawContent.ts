@@ -2,12 +2,17 @@
 
 import { DEFAULT_IMAGE } from '../../assets/images';
 import { NO_EXCERPT_WORDING } from '../constants';
+import { ImageFormContextValues, PollFormContextValues } from '../types';
 
+import { convertPollMarkdown } from './convertPollMarkdown';
 import { formatRelativeTime } from './formatRelativeTime';
+import { combineContentWithPollContent } from './pollUtility';
+import { combineImageMarkdownWithContent } from './privateMessageReplyImageHandler';
 import { replaceQuotesWithMarkdown } from './replaceQuotesWithMarkdown';
 
 export function getPostShortUrl(content: string): Array<string> | undefined {
   //used in Post Preview scene to get all image shortUrls.
+
   const shortUrlRegex = /\((upload:\/\/\S+(?:jpe?g|png|gif|heic|heif))\)/g;
   const result = content.match(shortUrlRegex) ?? undefined;
 
@@ -23,18 +28,9 @@ export function handleUnsupportedMarkdown(content?: string) {
     return '';
   }
 
-  const message = (item: string) =>
-    t(
-      '> {item} are not supported at this time. To View, please access it on the website.',
-      { item },
-    );
-
   let result = content;
 
   result = replaceQuotesWithMarkdown(result);
-
-  const toogleRegex = /\[(details)([\s\S]*?)(\[\/\1)\]/g;
-  result = result.replace(toogleRegex, message('Toogles'));
 
   const dateRegex = /\[(?:date=)([\d/-]*) (?:timezone=")(.*?)"\]/g;
   result = result.replace(dateRegex, formatTime);
@@ -139,7 +135,7 @@ export function generateMarkdownContent(
   return markdown;
 }
 
-export function filterMarkdownContent(content?: string) {
+export function filterMarkdownContentPoll(content?: string) {
   if (!content) {
     return {
       pollMarkdowns: [],
@@ -154,5 +150,154 @@ export function filterMarkdownContent(content?: string) {
   return {
     pollMarkdowns: result.match(pollRegex) || [],
     filteredMarkdown: result.replace(pollRegex, '').trimStart(),
+  };
+}
+
+// Replacing collapsible markdown in topic's excerpt with '[details]'
+// Ex: <details><summary>Collapsible</summary>Content</details> => [details]
+export function replaceTagsInContent(content: string) {
+  const collapsibleTagRegex = /<details><summary>.+?<\/summary>.*<\/details>/gs;
+  return content.replace(collapsibleTagRegex, '[details]');
+}
+
+/**
+ * This function replaces image markdown patterns in the given content with a placeholder text.
+ *
+ * @param {Object} params An object containing the following properties:
+ *                      - {string} content: The string content or markdown to be processed
+ *                      - {string} placeholder='': The placeholder to replace the image markdown with
+ *
+ * @returns {object} {filterMarkdown: string} - An object containing the modified content in the `filterMarkdown` property.
+ *                   {imageMarkdowns: Array<string>} - an object containing array of image markdown from content.
+ */
+
+export function replaceImageMarkdownWithPlaceholder({
+  content,
+  placeholder = '',
+}: {
+  content?: string;
+  placeholder?: string;
+}) {
+  if (!content) {
+    return {
+      filterMarkdown: '',
+      imageMarkdowns: [],
+    };
+  }
+
+  // Regex pattern to match image markdown patterns with a specific format. example: ![undefined-1684143577983.jpg|3000 x 2002](upload://9WdaMOPqn99avHbcfhVV5ZbG91e.jpeg)
+
+  const regexImage =
+    /!\[([^\|]+)\|(\d+)\s*x\s*(\d+)\]\((upload:\/\/\S+(?:jpe?g|png|gif|heic|heif))\)/g;
+
+  let result = content;
+
+  return {
+    imageMarkdowns: result.match(regexImage) || [],
+    filterMarkdown: result.replace(regexImage, placeholder).trimStart(),
+  };
+}
+
+/**
+ * Combines the content markdown with images and polls if they exist.
+ *
+ * @param {Object} param The parameters required for combining data contains:
+ *                       - {string} content: content markdown without poll and images
+ *                       - {Array<ImageFormContextValues>} imageList: An array of objects, each containing an image markdown string and url
+ *                       - {Array<PollFormContextValues>} polls: An array of polls with content
+ *
+ * @returns {string} - The combined content markdown with images and/or polls.
+ */
+
+export function combineDataMarkdownPollAndImageList({
+  content,
+  imageList,
+  polls,
+}: {
+  content: string;
+  imageList?: Array<ImageFormContextValues>;
+  polls?: Array<PollFormContextValues>;
+}): string {
+  let newContentMarkdown = content;
+  /**
+   * Combine content of image markdown
+   */
+  if (imageList && !!imageList.length) {
+    newContentMarkdown = combineImageMarkdownWithContent({
+      imageList,
+      content: newContentMarkdown,
+    });
+  }
+  /**
+   * Combine content of poll markdown
+   */
+  if (polls && !!polls.length) {
+    newContentMarkdown = combineContentWithPollContent({
+      content: newContentMarkdown,
+      polls,
+    });
+  }
+
+  return newContentMarkdown;
+}
+
+/**
+ * This function will processes a markdown of a private message reply to extract and handle polls and images markdown.
+ *
+ * It will returns an object containing the processed data, including:
+ * - `polls`: A list of polls PollFormContextValues converted from markdown.
+ * - `newContentFilterRaw`: The content with poll and image markdowns removed.
+ * - `imageMessageReplyList`: A list of ImageFormContextValues.
+ *
+ * @param {Object} params  The parameters object which contain:
+ *                         - {string} content: content markdown
+ *
+ * @returns {Object} The processed result containing polls, filtered content, and image details.
+ *                         - {Array<PollFormContextValues>} polls: contain list of poll from markdown
+ *                         - {string} newContentFilterRaw: contain markdown without image and poll markdown
+ *                         - {Array<ImageFormContextValues>} imageMessageReplyList: contain image url from markdown
+ */
+
+export function processDraftPollAndImageForPrivateMessageReply({
+  content,
+}: {
+  content: string;
+}): {
+  polls: Array<PollFormContextValues>;
+  imageMessageReplyList: Array<ImageFormContextValues>;
+  newContentFilterRaw: string;
+} {
+  if (!content) {
+    return {
+      polls: [],
+      imageMessageReplyList: [],
+      newContentFilterRaw: content,
+    };
+  }
+
+  /**
+   * Get all short url from markdown content
+   */
+  const shortUrls = getPostShortUrl(content) ?? [];
+
+  /**
+   * Remove all image markdown from content markdown
+   */
+  const imageFilter = replaceImageMarkdownWithPlaceholder({ content });
+  /**
+   * Remove all poll markdown from content markdown
+   */
+  const newContentFilter = filterMarkdownContentPoll(
+    imageFilter.filterMarkdown,
+  );
+
+  return {
+    polls: convertPollMarkdown(newContentFilter.pollMarkdowns),
+    newContentFilterRaw: newContentFilter.filteredMarkdown,
+    imageMessageReplyList: shortUrls.map((value, index) => ({
+      url: '',
+      shortUrl: value,
+      imageMarkdown: imageFilter.imageMarkdowns[index],
+    })),
   };
 }

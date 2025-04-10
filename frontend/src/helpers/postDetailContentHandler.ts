@@ -59,16 +59,17 @@ export function postDetailContentHandler({
   );
 
   let freqPosters: Array<User>;
-  freqPosters = topicDetailData.details
-    ? topicDetailData.details.participants.map(
-        ({ id, username, avatar, name }) => ({
-          id,
-          username,
-          avatar: getImage(avatar),
-          name,
-        }),
-      )
-    : [];
+  freqPosters =
+    topicDetailData.details && !topicDetailData.deletedAt
+      ? topicDetailData.details.participants.map(
+          ({ id, username, avatar, name }) => ({
+            id,
+            username,
+            avatar: getImage(avatar),
+            name,
+          }),
+        )
+      : [];
 
   const {
     id,

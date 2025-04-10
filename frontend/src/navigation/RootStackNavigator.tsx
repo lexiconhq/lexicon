@@ -8,6 +8,7 @@ import {
   ChangePassword,
   Channels,
   DarkMode,
+  EditPollsList,
   EditProfile,
   EditUSerStatus,
   EmailAddress,
@@ -252,6 +253,11 @@ export default function RootStackNavigator(props: RootStackNavigatorProps) {
             <RootStack.Screen
               name="Poll"
               component={Poll}
+              options={{ ...navModal }}
+            />
+            <RootStack.Screen
+              name="EditPollsList"
+              component={EditPollsList}
               options={{ ...navModal }}
             />
           </>

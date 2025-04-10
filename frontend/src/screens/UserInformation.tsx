@@ -16,7 +16,7 @@ import { Avatar, Button, Text } from '../core-ui';
 import { errorHandler, getImage, useStorage } from '../helpers';
 import { useActivity, useProfile } from '../hooks';
 import { makeStyles } from '../theme';
-import { StackNavProp, StackRouteProp } from '../types';
+import { NewPostForm, StackNavProp, StackRouteProp } from '../types';
 
 export default function UserInformation() {
   const styles = useStyles();
@@ -26,7 +26,7 @@ export default function UserInformation() {
   const {
     params: { username },
   } = useRoute<StackRouteProp<'UserInformation'>>();
-  const { reset: resetForm } = useFormContext();
+  const { reset: resetForm } = useFormContext<NewPostForm>();
 
   const storage = useStorage();
   const currentUser = storage.getItem('user')?.username;
@@ -73,10 +73,11 @@ export default function UserInformation() {
     setShow(false);
   };
 
-  const onPressNewMessage = () => {
+  const onPressNewMessage = async () => {
     resetForm({
       messageTargetSelectedUsers: [username],
       messageUsersList: [{ name, username, avatar: userImage }],
+      draftKey: '',
     });
     navigate('NewMessage');
   };
