@@ -1,5 +1,6 @@
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useEffect, useRef, useState } from 'react';
+import { Controller, useFormContext } from 'react-hook-form';
 import {
   Alert,
   Dimensions,
@@ -26,36 +27,56 @@ import {
   FooterLoadingIndicator,
   LoadingOrError,
   MentionList,
+  PollChoiceCard,
 } from '../../components';
 import {
   ERROR_UNEXPECTED,
   FIRST_POST_NUMBER,
+  FORM_DEFAULT_VALUES,
   MAX_POST_COUNT_PER_REQUEST,
+  refetchQueriesPostDraft,
 } from '../../constants';
 import { Divider, Icon, Text, TextInputType } from '../../core-ui';
-import { MessageListDocument } from '../../generatedAPI/server';
+import {
+  MessageListDocument,
+  PostDraftType,
+  UploadTypeEnum,
+} from '../../generatedAPI/server';
 import {
   LeaveMessageError,
+  combineDataMarkdownPollAndImageList,
+  convertResultUploadIntoImageFormContext,
+  createReactNativeFile,
+  deletePoll,
   errorHandler,
   errorHandlerAlert,
   formatExtensions,
   getHyperlink,
   getImage,
+  getPollChoiceLabel,
   imagePickerHandler,
   insertHyperlink,
   mentionHelper,
   messageDetailHandler,
   messageInvalidAccessAlert,
+  saveAndDiscardPostDraftAlert,
+  sortImageUrl,
   useStorage,
 } from '../../helpers';
 import {
+  useAutoSaveManager,
+  useAutoSavePostDraft,
+  useCreateAndUpdatePostDraft,
+  useDeletePostDraft,
   useLeaveMessage,
   useLoadMorePost,
+  useLookupUrls,
   useMention,
   useMessageDetail,
   useMessageTiming,
-  useReplyPrivateMessage,
+  useReplyTopic,
   useSiteSettings,
+  useStatelessUpload,
 } from '../../hooks';
 import { useInitialLoad } from '../../hooks/useInitialLoad';
 import { IconName } from '../../icons';
@@ -65,12 +86,18 @@ import {
   ErrorHandlerAlertSchema,
   Message,
   MessageContent,
+  NewPostForm,
   StackNavProp,
   StackRouteProp,
   User,
 } from '../../types';
 
-import { MessageItem, ReplyInputField, ToolTip } from './components';
+import {
+  ListImageSelected,
+  MessageItem,
+  ReplyInputField,
+  ToolTip,
+} from './components';
 
 type MessageDetailRenderItem = {
   item: MessageContent;
@@ -111,8 +138,9 @@ export default function MessageDetail() {
   const ios = Platform.OS === 'ios';
   const screen = Dimensions.get('screen');
 
-  const { navigate, goBack, reset } =
-    useNavigation<StackNavProp<'MessageDetail'>>();
+  const navigation = useNavigation<StackNavProp<'MessageDetail'>>();
+
+  const { navigate, goBack, reset } = navigation;
 
   const {
     params: { id, postNumber, emptied, hyperlinkUrl = '', hyperlinkTitle = '' },
@@ -125,7 +153,6 @@ export default function MessageDetail() {
   const [textInputFocused, setInputFocused] = useState(false);
 
   const [title, setTitle] = useState('');
-  const [message, setMessage] = useState('');
 
   const [firstLoadedPostIndex, setFirstLoadedPostIndex] = useState(0);
   const [lastLoadedPostIndex, setLastLoadedPostIndex] = useState(0);
@@ -155,12 +182,29 @@ export default function MessageDetail() {
 
   const messageRef = useRef<TextInputType>(null);
 
+  const {
+    control,
+    getValues,
+    setValue,
+    formState: { dirtyFields },
+    reset: resetForm,
+    watch,
+  } = useFormContext<NewPostForm>();
+
+  const { raw: message, isDraft, draftKey } = getValues();
+  const imageList = watch('imageMessageReplyList');
+  const polls = watch('polls');
+
+  const shortUrls = imageList?.map(({ shortUrl }) => shortUrl) || [];
+
   const { mentionMembers } = useMention(
     mentionKeyword,
     showUserList,
     setMentionLoading,
   );
 
+  const canSendMessage =
+    !!imageList?.length || !!message.trim() || !!polls?.length;
   const {
     data: baseData,
     loading: messageDetailLoading,
@@ -228,11 +272,58 @@ export default function MessageDetail() {
     'HIDE_ALERT',
   );
 
+  const { createPostDraft, loading: loadingCreateAndUpdatePostDraft } =
+    useCreateAndUpdatePostDraft({
+      onError: (error) => {
+        errorHandlerAlert(error);
+      },
+      onCompleted: ({ createAndUpdatePostDraft }) => {
+        setValue('draftKey', createAndUpdatePostDraft?.draftKey);
+        setValue('sequence', createAndUpdatePostDraft?.draftSequence);
+        setValue('isDraft', true);
+      },
+    });
+  const { deletePostDraft } = useDeletePostDraft();
+
+  const { getImageUrls, loading: LoadingLookupUrls } = useLookupUrls({
+    fetchPolicy: 'network-only',
+    nextFetchPolicy: 'cache-first',
+    variables: { lookupUrlInput: { shortUrls } },
+    onCompleted: ({ lookupUrls }) => {
+      const imageUrls = sortImageUrl(shortUrls, lookupUrls);
+
+      setValue(
+        'imageMessageReplyList',
+        imageList?.map((data, index) => {
+          return { ...data, url: imageUrls[index] };
+        }),
+      );
+    },
+  });
+
+  const { debounceSaveDraft } = useAutoSavePostDraft({
+    createPostDraft,
+    getValues,
+    type: PostDraftType.PrivateMessageReply,
+    topicId: id,
+  });
+
+  useAutoSaveManager();
+
+  useEffect(() => {
+    const isImageUrlEmpty = imageList?.find(({ url }) => url === '');
+
+    if (shortUrls.length > 0 && !!isImageUrlEmpty) {
+      getImageUrls();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [getImageUrls, shortUrls.length]);
+
   useEffect(() => {
     if (emptied) {
-      setMessage('');
+      setValue('raw', '');
     }
-  }, [emptied]);
+  }, [emptied, setValue]);
 
   useEffect(() => {
     if (!baseData) {
@@ -294,13 +385,13 @@ export default function MessageDetail() {
     }
     const { newUrl, newTitle } = getHyperlink(hyperlinkUrl, hyperlinkTitle);
     const result = insertHyperlink(message, newTitle, newUrl);
-    setMessage(result);
+    setValue('raw', result);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hyperlinkTitle, hyperlinkUrl]);
 
-  const { reply, loading: replyLoading } = useReplyPrivateMessage({
+  const { reply, loading: replyLoading } = useReplyTopic({
     onCompleted: () => {
-      setMessage('');
+      resetForm(FORM_DEFAULT_VALUES);
       refetch({ postNumber: stream.length }).then(() => {
         if (textInputFocused && data?.contents.length) {
           if (ios) {
@@ -320,6 +411,7 @@ export default function MessageDetail() {
         setRefetching(true);
       });
     },
+    refetchQueries: isDraft ? refetchQueriesPostDraft : [],
   });
 
   useMessageTiming(id, firstLoadedPostIndex, data?.contents);
@@ -366,45 +458,92 @@ export default function MessageDetail() {
     setFirstLoadedPostIndex(nextFirstLoadedPostIndex);
   };
 
+  const { upload, loading: uploadLoading } = useStatelessUpload({
+    onCompleted: ({ upload: result }) => {
+      const listOldImageList = getValues('imageMessageReplyList') || [];
+
+      const convertResult = convertResultUploadIntoImageFormContext(result);
+      setValue('imageMessageReplyList', [...listOldImageList, convertResult], {
+        shouldDirty: true,
+      });
+
+      navToImagePreview();
+    },
+    onError: (error) => {
+      errorHandlerAlert(error);
+    },
+  });
+
+  const navToImagePreview = () => {
+    Keyboard.dismiss();
+    navigate('ImagePreview', {
+      topicId: id,
+    });
+  };
+
   const toggleToolTip = () => {
     setVisibleToolTip(!visibleToolTip);
   };
 
-  const onPressSend = (message: string) => {
+  const onPressSend = () => {
+    const { raw } = getValues();
+
+    debounceSaveDraft.cancel();
     setShowUserList(false);
-    if (message.trim() !== '') {
+    if (canSendMessage) {
+      const newRaw = combineDataMarkdownPollAndImageList({
+        content: raw,
+        imageList,
+        polls,
+      });
       reply({
         variables: {
           replyInput: {
             topicId: id,
-            raw: message,
+            raw: newRaw,
+            draftKey,
           },
         },
       });
     }
   };
 
-  const onPressImage = async () => {
-    try {
-      let result = await imagePickerHandler(normalizedExtensions);
-      if (!user || !result || !result.uri) {
-        return;
+  const onPressImage = async ({ isShowPicker }: { isShowPicker?: boolean }) => {
+    if (isShowPicker) {
+      try {
+        let result = await imagePickerHandler(normalizedExtensions);
+        if (!user || !result || !result.uri) {
+          return;
+        }
+        let imageUri = result.uri;
+        const reactNativeFile = createReactNativeFile(imageUri);
+        if (reactNativeFile) {
+          upload({
+            variables: {
+              input: {
+                file: reactNativeFile,
+                userId: user.id,
+                type: UploadTypeEnum.Composer,
+              },
+            },
+          });
+        } else {
+          Alert.alert(t('Failed Upload!'), t(`Please Try Again`), [
+            { text: t('Got it') },
+          ]);
+        }
+      } catch (unknownError) {
+        const errorResult = ErrorHandlerAlertSchema.safeParse(unknownError);
+        if (errorResult.success) {
+          errorHandlerAlert(errorResult.data);
+        } else {
+          Alert.alert(ERROR_UNEXPECTED);
+        }
       }
-      let imageUri = result.uri;
-      Keyboard.dismiss();
-      navigate('ImagePreview', {
-        topicId: id,
-        imageUri,
-        message,
-      });
-    } catch (unknownError) {
-      const errorResult = ErrorHandlerAlertSchema.safeParse(unknownError);
-      if (errorResult.success) {
-        errorHandlerAlert(errorResult.data);
-      } else {
-        Alert.alert(ERROR_UNEXPECTED);
-      }
+    } else {
+      navToImagePreview();
     }
+
     return;
   };
 
@@ -468,6 +607,66 @@ export default function MessageDetail() {
     });
   };
 
+  const setMentionRawText = (text: string) => {
+    setValue('raw', text);
+  };
+
+  useEffect(
+    () =>
+      navigation.addListener('beforeRemove', (e) => {
+        /**
+         * Add condition only when change title or content we show alert
+         */
+        if (
+          !dirtyFields.raw &&
+          !dirtyFields.polls &&
+          !dirtyFields.imageMessageReplyList
+        ) {
+          resetForm(FORM_DEFAULT_VALUES);
+          return;
+        }
+        e.preventDefault();
+
+        saveAndDiscardPostDraftAlert({
+          deletePostDraft,
+          createPostDraft,
+          event: e,
+          navigation,
+          getValues,
+          resetForm,
+          draftType: PostDraftType.PrivateMessageReply,
+          topicId: id,
+        });
+      }),
+    [
+      createPostDraft,
+      deletePostDraft,
+      dirtyFields.polls,
+      dirtyFields.raw,
+      getValues,
+      navigation,
+      resetForm,
+      id,
+      dirtyFields.imageMessageReplyList,
+    ],
+  );
+
+  useEffect(() => {
+    /**
+     * To set InitialRequest into true for able run onContentSizeChange to handle scroll
+     */
+    const unsubscribe = navigation.addListener('focus', () => {
+      setIsInitialRequest(true);
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
+  useEffect(() => {
+    onContentSizeChange();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isInitialRequest]);
+
   const MenuItem = ({
     iconName,
     text,
@@ -477,14 +676,14 @@ export default function MessageDetail() {
   }: {
     iconName: IconName;
     text: string;
-    onPress: () => void;
+    onPress: () => void | Promise<void>;
     style?: StyleProp<ViewStyle>;
     testID?: string;
   }) => (
     <TouchableOpacity
       style={[styles.toolTipMenuButton, style]}
-      onPress={() => {
-        onPress();
+      onPress={async () => {
+        await onPress();
         setVisibleToolTip(false);
       }}
       testID={testID}
@@ -509,10 +708,17 @@ export default function MessageDetail() {
         <MenuItem
           iconName="Photo"
           text={t('Add Image')}
-          onPress={onPressImage}
+          onPress={() => {
+            onPressImage({ isShowPicker: true });
+          }}
           style={styles.menuContainer}
         />
-        <MenuItem iconName="Chart" text={t('Add Poll')} onPress={onPressPoll} />
+        <MenuItem
+          iconName="Chart"
+          text={t('Add Poll')}
+          onPress={onPressPoll}
+          testID="ToolTip:MenuItem:Poll"
+        />
       </ScrollView>
     );
   };
@@ -558,80 +764,137 @@ export default function MessageDetail() {
   const getItemCount = (data: Array<MessageContent>) => data?.length;
 
   const renderFooter = (
-    <KeyboardAccessoryView
-      androidAdjustResize
-      inSafeAreaView
-      hideBorder
-      alwaysVisible
-      style={styles.keyboardAcc}
-      bumperHeight={2}
-    >
-      <MentionList
-        showUserList={showUserList}
-        members={mentionMembers}
-        mentionLoading={mentionLoading}
-        rawText={message}
-        textRef={messageRef}
-        setRawText={setMessage}
-        setShowUserList={setShowUserList}
-      />
-      <View style={styles.footerContainer}>
-        <ToolTip
-          anchorIconName="Add"
-          anchorStyle={styles.footerIcon}
-          menu={menuToolTip()}
-          visible={visibleToolTip}
-          onDismiss={toggleToolTip}
-          anchorOnPress={toggleToolTip}
-        />
-        <ReplyInputField
-          inputRef={messageRef}
-          loading={replyLoading}
-          onPressSend={onPressSend}
-          style={[
-            styles.inputContainer,
-            message.trim() !== '' && {
-              paddingVertical: 6,
-            },
-          ]}
-          message={message}
-          setMessage={setMessage}
-          onSelectedChange={(cursor) => {
-            setCursorPosition(cursor);
-          }}
-          onChangeValue={(message: string) => {
-            mentionHelper(
-              message,
-              cursorPosition,
-              setShowUserList,
-              setMentionLoading,
-              setMentionKeyword,
-            );
-            setMessage(message);
-          }}
-          onFocus={() => {
-            setInputFocused(true);
-            if (contentHeight) {
-              setTimeout(() => {
-                virtualListRef.current?.scrollToOffset({
-                  offset: contentHeight + (37 * screen.height) / 100,
-                });
-              }, 50);
+    <>
+      <KeyboardAccessoryView
+        androidAdjustResize
+        inSafeAreaView
+        hideBorder
+        alwaysVisible
+        style={styles.keyboardAcc}
+        bumperHeight={2}
+      >
+        {!!imageList?.length && (
+          <ListImageSelected
+            style={styles.listImageContainer}
+            imageUrls={imageList.map(({ url }) => url)}
+            onPressEdit={() => onPressImage({ isShowPicker: false })}
+            disableEdit={
+              replyLoading || loadingCreateAndUpdatePostDraft || uploadLoading
             }
-          }}
-          onBlur={() => {
-            setInputFocused(false);
-            if (contentHeight) {
-              setTimeout(() => {
-                virtualListRef.current?.scrollToOffset({
-                  offset: contentHeight - (37 * screen.height) / 100,
+            isEdit
+          />
+        )}
+
+        {!!polls?.length && (
+          <PollChoiceCard
+            choice={getPollChoiceLabel({
+              title: polls[0].title,
+              pollType: polls[0].pollChoiceType,
+            })}
+            totalOption={polls[0].pollOptions.length}
+            onEdit={() => {
+              if (polls.length > 1) {
+                navigate('EditPollsList', { messageTopicId: id });
+              } else {
+                navigate('NewPoll', {
+                  prevScreen: 'MessageDetail',
+                  messageTopicId: id,
+                  pollIndex: 0,
                 });
-              }, 50);
-            }
-          }}
+              }
+            }}
+            onDelete={() => {
+              /**
+               * Only show delete when there only 1 poll
+               */
+              deletePoll({ polls, setValue, index: 0 });
+            }}
+            totalPoll={polls.length > 1 ? polls.length : undefined}
+            style={styles.pollCardContainer}
+          />
+        )}
+        <MentionList
+          showUserList={showUserList}
+          members={mentionMembers}
+          mentionLoading={mentionLoading}
+          rawText={message}
+          textRef={messageRef}
+          setRawText={setMentionRawText}
+          setShowUserList={setShowUserList}
         />
-      </View>
-    </KeyboardAccessoryView>
+        <View style={styles.footerContainer}>
+          <ToolTip
+            anchorIconName="Add"
+            anchorStyle={styles.footerIcon}
+            menu={menuToolTip()}
+            visible={visibleToolTip}
+            onDismiss={toggleToolTip}
+            anchorOnPress={toggleToolTip}
+          />
+          <Controller
+            name="raw"
+            defaultValue={message}
+            control={control}
+            render={({ field: { onChange, value } }) => (
+              <ReplyInputField
+                showButton={canSendMessage}
+                inputRef={messageRef}
+                loading={
+                  replyLoading ||
+                  loadingCreateAndUpdatePostDraft ||
+                  uploadLoading
+                }
+                onPressSend={onPressSend}
+                style={[
+                  styles.inputContainer,
+                  message.trim() !== '' && {
+                    paddingVertical: 6,
+                  },
+                ]}
+                message={value}
+                onSelectedChange={(cursor) => {
+                  setCursorPosition(cursor);
+                }}
+                onChangeValue={(message: string) => {
+                  mentionHelper(
+                    message,
+                    cursorPosition,
+                    setShowUserList,
+                    setMentionLoading,
+                    setMentionKeyword,
+                  );
+                  onChange(message);
+                  // make sure after send and reset form not run debounce
+                  if (message.trim()) {
+                    debounceSaveDraft();
+                  }
+                }}
+                onFocus={() => {
+                  setInputFocused(true);
+                  if (contentHeight) {
+                    setTimeout(() => {
+                      virtualListRef.current?.scrollToOffset({
+                        offset: contentHeight + (37 * screen.height) / 100,
+                      });
+                    }, 50);
+                  }
+                }}
+                onBlur={() => {
+                  setInputFocused(false);
+                  if (contentHeight) {
+                    setTimeout(() => {
+                      virtualListRef.current?.scrollToOffset({
+                        offset: contentHeight - (37 * screen.height) / 100,
+                      });
+                    }, 50);
+                  }
+                }}
+              />
+            )}
+          />
+        </View>
+      </KeyboardAccessoryView>
+    </>
   );
 
   const onMessageScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -661,16 +924,23 @@ export default function MessageDetail() {
 
   const onContentSizeChange = () => {
     if (isInitialRequest) {
-      let postIndex = postNumber - FIRST_POST_NUMBER;
-      let postIndexInLoadedList = postIndex - firstLoadedPostIndex;
-      let index = Math.min(MAX_INITIAL_LAST_INDEX, postIndexInLoadedList);
-      try {
-        virtualListRef.current?.scrollToIndex({
-          animated: true,
-          index,
-        });
-      } catch {
-        virtualListRef.current?.scrollToEnd();
+      /** If we didn't get postNumber value it will scroll to end of list */
+      if (!postNumber) {
+        virtualListRef.current?.scrollToEnd({ animated: true });
+      } else {
+        let postIndex = postNumber - FIRST_POST_NUMBER;
+        let postIndexInLoadedList = postIndex - firstLoadedPostIndex;
+
+        let index = Math.min(MAX_INITIAL_LAST_INDEX, postIndexInLoadedList);
+
+        try {
+          virtualListRef.current?.scrollToIndex({
+            animated: true,
+            index,
+          });
+        } catch {
+          virtualListRef.current?.scrollToEnd();
+        }
       }
       setTimeout(() => setIsInitialRequest(false), 1000);
     }
@@ -718,7 +988,7 @@ export default function MessageDetail() {
     }
   };
 
-  if (messageDetailLoading && title === '') {
+  if ((messageDetailLoading || LoadingLookupUrls) && title === '') {
     return <LoadingOrError loading />;
   }
 
@@ -727,7 +997,9 @@ export default function MessageDetail() {
       title={t('Message')}
       rightIcon="More"
       onPressRight={onPressMore}
-      disabled={loadingLeaveMessage}
+      disabled={
+        loadingLeaveMessage || loadingCreateAndUpdatePostDraft || uploadLoading
+      }
     />
   ) : (
     !ios && <Divider style={styles.divider} />
@@ -830,6 +1102,18 @@ const useStyles = makeStyles(({ colors, shadow, spacing }) => {
     },
     keyboardAcc: {
       backgroundColor: colors.background,
+    },
+    listImageContainer: {
+      paddingVertical: spacing.l,
+      paddingHorizontal: spacing.xl,
+      marginBottom: spacing.m,
+      paddingRight: spacing.xxl,
+    },
+    pollCardContainer: {
+      flexGrow: 1,
+      flex: 0, // override style flex 1 inside PollChoiceCard. It require to make height card correct
+      marginHorizontal: spacing.xl,
+      marginBottom: spacing.m,
     },
     footerIcon: {
       paddingRight: spacing.xl,

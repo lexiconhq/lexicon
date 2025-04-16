@@ -1,4 +1,4 @@
-import { by, expect, element, device } from 'detox';
+import { by, device, element, expect } from 'detox';
 
 export async function createPost() {
   await expect(element(by.text('Next'))).toBeVisible();
@@ -19,7 +19,19 @@ export async function redirectPostDetail() {
   await waitFor(post)
     .toBeVisible()
     .whileElement(by.id('Home:PostList'))
-    .scroll(150, 'down');
+    .scroll(200, 'down');
   await post.tap();
   await expect(element(by.id('PostDetail:List'))).toBeVisible();
+}
+
+export async function redirectNewTopic() {
+  await expect(element(by.id('Home:PostList'))).toBeVisible();
+
+  if (device.getPlatform() === 'android') {
+    await expect(element(by.id('FloatingButton'))).toBeVisible();
+    await element(by.id('FloatingButton')).tap();
+  } else {
+    await expect(element(by.id('HomeNavBar:Icon:Add'))).toBeVisible();
+    await element(by.id('HomeNavBar:Icon:Add')).tap();
+  }
 }

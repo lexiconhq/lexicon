@@ -1,10 +1,12 @@
 import React from 'react';
 import { TextInput, View, ViewProps } from 'react-native';
 
-import { Icon } from '../../../core-ui';
-import { makeStyles, useTheme } from '../../../theme';
+import { Icon } from '../core-ui';
+import { IconSize, makeStyles, useTheme } from '../theme';
 
 type Props = ViewProps & {
+  iconSize?: IconSize;
+  placeholder?: string;
   searchValue: string;
   onSearchValueChange: (searchValue: string) => void;
 };
@@ -13,16 +15,23 @@ export function SearchBar(props: Props) {
   const styles = useStyles();
   const { colors } = useTheme();
 
-  const { searchValue, onSearchValueChange, style, ...otherProps } = props;
+  const {
+    iconSize,
+    placeholder,
+    searchValue,
+    onSearchValueChange,
+    style,
+    ...otherProps
+  } = props;
 
   return (
     <View style={[styles.searchContainer, style]} {...otherProps}>
-      <Icon name="Search" color={colors.textLighter} />
+      <Icon name="Search" color={colors.textLighter} size={iconSize} />
       <TextInput
         style={styles.searchTextInput}
         value={searchValue}
         onChangeText={(value) => onSearchValueChange(value)}
-        placeholder={t('Search for relevant tags ...')}
+        placeholder={placeholder}
         placeholderTextColor={colors.textLighter}
         autoCorrect={false}
       />

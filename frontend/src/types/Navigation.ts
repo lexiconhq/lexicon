@@ -53,8 +53,6 @@ export type HomeProps = { backToTop?: boolean };
 
 type ImagePreviewParams = {
   topicId: number;
-  imageUri: string;
-  message: string;
 };
 
 type PostImagePreviewParams = {
@@ -65,7 +63,7 @@ type PostImagePreviewParams = {
 
 export type MessageDetailParams = {
   id: number;
-  postNumber: number;
+  postNumber?: number;
   emptied?: boolean;
   hyperlinkUrl: string;
   hyperlinkTitle: string;
@@ -150,7 +148,13 @@ type EditUserStatusParams = {
 
 type NewPollParams = {
   pollIndex?: number;
-  prevScreen: 'NewPost' | 'PostReply' | 'NewMessage' | 'MessageDetail';
+  prevScreen:
+    | 'NewPost'
+    | 'PostReply'
+    | 'NewMessage'
+    | 'MessageDetail'
+    | 'ImagePreview'
+    | 'EditPollsList';
   editPost?: boolean;
   messageTopicId?: number;
 };
@@ -174,6 +178,10 @@ type PollParams = {
 type LoginParams = {
   emailToken?: string;
   isActivateAccount?: boolean;
+};
+
+type EditPollsListParams = {
+  messageTopicId: number;
 };
 
 export type RootStackParamList = {
@@ -211,6 +219,8 @@ export type RootStackParamList = {
   EmojiPicker: undefined;
   StackAvatar: StackAvatarModalParams;
   Poll: PollParams;
+  PostDraft: undefined;
+  EditPollsList: EditPollsListParams;
   AuthenticationWebView: undefined;
   Welcome: undefined;
 };
@@ -218,6 +228,7 @@ export type RootStackParamList = {
 export type TabParamList = {
   Home: undefined | HomeProps;
   Profile: undefined;
+  Draft: undefined;
 };
 
 export type RootStackRouteName = keyof RootStackParamList;

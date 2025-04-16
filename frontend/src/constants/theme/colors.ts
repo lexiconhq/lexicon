@@ -93,6 +93,7 @@ export const FUNCTIONAL_COLORS = {
   activeSideBarAndroid: BASE_COLORS.azureBlue10,
 
   primary: BASE_COLORS.royalBlue,
+  success: BASE_COLORS.green,
 
   grey: BASE_COLORS.grey,
   pureWhite: BASE_COLORS.pureWhite,

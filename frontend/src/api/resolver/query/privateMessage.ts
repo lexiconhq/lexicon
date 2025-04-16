@@ -1,17 +1,16 @@
-import { ApolloClient, NormalizedCacheObject } from '@apollo/client';
-
 import {
   MessageDocument,
   MessageQueryVariables as MessageListVariables,
   MessageQuery,
 } from '../../../generatedAPI/server';
 import { privateMessagesMerger } from '../../../helpers/api';
+import { Apollo } from '../../../types';
 import { messagePathBuilder } from '../../pathBuilder';
 
 export let privateMessageListQueryResolver = async (
   _: Record<string, unknown>,
   { username, page }: Pick<MessageListVariables, 'username' | 'page'>,
-  { client }: { client: ApolloClient<NormalizedCacheObject> },
+  { client }: { client: Apollo },
 ) => {
   const messagePath = messagePathBuilder;
 

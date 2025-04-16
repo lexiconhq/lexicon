@@ -1,6 +1,8 @@
+import { UseFormSetValue } from 'react-hook-form';
+
 import { POLL_CHOICE_TYPES } from '../constants';
 import { PollType } from '../generatedAPI/server';
-import { PollFormContextValues } from '../types';
+import { NewPostForm, PollFormContextValues } from '../types';
 
 import { capitalizeAllWords } from './capitalizeFirstLetter';
 
@@ -58,6 +60,28 @@ export function combineContentWithPollContent({
   }
 
   return updatedContentWithPoll;
+}
+
+type DeletePollParams = {
+  polls: Array<PollFormContextValues>;
+  setValue: UseFormSetValue<NewPostForm>;
+  index: number;
+};
+
+/**
+ * Deletes a poll from the polls array at the specified index.
+ *
+ * @param {DeletePollParams} params The parameters required for deleting a poll which contain:
+ *                                    - {Array<PollFormContextValues>} polls: The array of polls.
+ *                                    - {UseFormSetValue<NewPostForm>} setValue: The function to set the form value from react-hook-form.
+ *                                    - {number} index: The index of the poll to delete.
+ *
+ * @returns {void}
+ */
+
+export function deletePoll({ polls, setValue, index }: DeletePollParams) {
+  const updatedPolls = [...polls.slice(0, index), ...polls.slice(index + 1)];
+  setValue('polls', updatedPolls);
 }
 
 /**

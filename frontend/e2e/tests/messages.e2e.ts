@@ -1,17 +1,16 @@
 import { by, element, expect } from 'detox';
 
-import { hyperLinkScene, waitTabProfile } from '../helpers';
+import {
+  hyperLinkScene,
+  openToolTipMessageReply,
+  redirectNewPrivateMessage,
+  redirectToMessageDetail,
+  waitTabProfile,
+} from '../helpers';
 import { mockMessageReplies, mockNewMessageTopic } from '../rest-mock/data';
 
-const redirectToMessageDetail = async () => {
-  const message = element(by.text('Testing new message')).atIndex(0);
-  await message.tap();
-};
-
 const linkButtonBarMessage = async () => {
-  const buttonToolTip = element(by.id('ToolTip:AddIcon'));
-  await expect(buttonToolTip).toBeVisible();
-  await buttonToolTip.tap();
+  await openToolTipMessageReply();
 
   const buttonAddLink = element(by.text('Add Link')).atIndex(0);
   await expect(buttonAddLink).toBeVisible();
@@ -61,13 +60,7 @@ describe('Message Screen', () => {
   });
 
   it('should create a new message', async () => {
-    if (device.getPlatform() === 'android') {
-      await expect(element(by.id('FloatingButton'))).toBeVisible();
-      await element(by.id('FloatingButton')).tap();
-    } else {
-      await expect(element(by.id('HeaderItem:IconOnly'))).toBeVisible();
-      await element(by.id('HeaderItem:IconOnly')).tap();
-    }
+    await redirectNewPrivateMessage();
 
     await expect(element(by.id('NewMessage:TextArea'))).toBeVisible();
     await element(by.id('NewMessage:TextArea')).typeText(

@@ -7,7 +7,7 @@ import React, {
   useState,
 } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { Platform, SafeAreaView, TouchableOpacity } from 'react-native';
+import { Alert, Platform, SafeAreaView, TouchableOpacity } from 'react-native';
 
 import {
   ActionSheet,
@@ -25,14 +25,16 @@ import {
   RenderItemCustomOption,
 } from '../../components';
 import {
+  FORM_DEFAULT_VALUES,
   MAX_POST_COUNT_PER_REQUEST,
   RESULTS_DROPDOWN_OPTIONS,
 } from '../../constants';
 import { Text } from '../../core-ui';
 import {
+  checkDraftAlert,
   errorHandler,
   errorHandlerAlert,
-  filterMarkdownContent,
+  filterMarkdownContentPoll,
   handleUnsupportedMarkdown,
   LoginError,
   postDetailContentHandler,
@@ -40,6 +42,8 @@ import {
   useStorage,
 } from '../../helpers';
 import {
+  useDeletePostDraft,
+  useLazyCheckPostDraft,
   useLoadMorePost,
   usePostRaw,
   useTopicDetail,
@@ -47,7 +51,7 @@ import {
 } from '../../hooks';
 import { useInitialLoad } from '../../hooks/useInitialLoad';
 import { makeStyles, useTheme } from '../../theme';
-import { Post, StackNavProp, StackRouteProp } from '../../types';
+import { NewPostForm, Post, StackNavProp, StackRouteProp } from '../../types';
 
 import { useNotificationScroll } from './hooks';
 import PostDetailSkeletonLoading from './PostDetailSkeletonLoading';
@@ -71,7 +75,7 @@ export default function PostDetail() {
   const { colors } = useTheme();
 
   const navigation = useNavigation<StackNavProp<'PostDetail'>>();
-  const { navigate, reset, setParams } = navigation;
+  const { navigate, reset, setParams, goBack } = navigation;
   const useInitialLoadResult = useInitialLoad();
 
   const {
@@ -114,7 +118,7 @@ export default function PostDetail() {
   const postIdOnFocusRef = useRef<number>();
   const postIdOnFocus = postIdOnFocusRef.current;
 
-  const { setValue, reset: resetForm } = useFormContext();
+  const { setValue, reset: resetForm } = useFormContext<NewPostForm>();
 
   const ios = Platform.OS === 'ios';
 
@@ -127,6 +131,18 @@ export default function PostDetail() {
   } = useTopicDetail(
     {
       variables: { topicId, postNumber, includeFirstPost: true },
+      onCompleted: ({ topicDetail }) => {
+        if (topicDetail.deletedAt) {
+          Alert.alert(t('Error'), t('This topic has been deleted.'), [
+            {
+              text: t('Got it'),
+              onPress: () => {
+                goBack();
+              },
+            },
+          ]);
+        }
+      },
       onError: (error) => {
         /**
          * if we get error about private post which cannot be access.
@@ -163,6 +179,10 @@ export default function PostDetail() {
       setMentionedUsers(cooked.mentions);
     },
   });
+
+  const { deletePostDraft } = useDeletePostDraft();
+
+  const { checkPostDraft } = useLazyCheckPostDraft();
 
   let postDetailContent = useMemo(() => {
     if (!data) {
@@ -355,7 +375,7 @@ export default function PostDetail() {
        * This is done to check if the value has changed compared to the initial value of the post before editing, using `react-hook-form`'s `isDirty` feature.
        */
 
-      const newContentFilter = filterMarkdownContent(oldContent);
+      const newContentFilter = filterMarkdownContentPoll(oldContent);
 
       /**
        * Add polls reset from based on PollFormContextValues type for default value if polls not null
@@ -374,15 +394,15 @@ export default function PostDetail() {
             newContentFilter.pollMarkdowns.length &&
             polls.map((data, index) => {
               return {
-                title: data.title,
-                minChoice: data.min,
-                maxChoice: data.max,
-                step: data.step,
+                title: data.title || '',
+                minChoice: data.min || 0,
+                maxChoice: data.max || 0,
+                step: data.step || 0,
                 results: RESULTS_DROPDOWN_OPTIONS.findIndex(
                   ({ value }) => value === data.results,
                 ),
                 chartType: data.chartType === 'bar' ? 0 : 1,
-                isPublic: data.public,
+                isPublic: data.public ?? false,
                 pollOptions: data.options.map(({ html }) => ({
                   option: html,
                 })),
@@ -478,12 +498,45 @@ export default function PostDetail() {
   );
 
   const onPressReply = useCallback(
-    (params?: PressReplyParams) => {
+    async (params?: PressReplyParams) => {
       if (!currentUserId) {
         return errorHandlerAlert(LoginError, navigate);
       }
       if (!topic) {
         return;
+      }
+      const draftKey = `topic_${topicId}`;
+      let { data, error } = await checkPostDraft({
+        variables: { draftKey },
+      });
+
+      if (data && !error) {
+        const { checkPostDraft } = data;
+        const { selectedChannelId, selectedTag } = topic;
+
+        setValue('sequence', checkPostDraft.sequence);
+        setValue('channelId', selectedChannelId);
+        setValue('tags', selectedTag);
+
+        if (
+          checkPostDraft.draft &&
+          // eslint-disable-next-line no-underscore-dangle
+          checkPostDraft.draft.__typename === 'PostReplyDraft'
+        ) {
+          return checkDraftAlert({
+            navigate,
+            setValue,
+            resetForm,
+            checkPostDraft,
+            deletePostDraft,
+            replyToPostId: params?.replyToPostId,
+            titleTopic: topic.title,
+            topicId,
+            channelId: selectedChannelId,
+          });
+        }
+      } else {
+        resetForm(FORM_DEFAULT_VALUES);
       }
       navigate('PostReply', {
         topicId,
@@ -491,7 +544,16 @@ export default function PostDetail() {
         replyToPostId: params?.replyToPostId,
       });
     },
-    [currentUserId, topic, topicId, navigate],
+    [
+      currentUserId,
+      topic,
+      checkPostDraft,
+      topicId,
+      navigate,
+      setValue,
+      resetForm,
+      deletePostDraft,
+    ],
   );
 
   let onPressReplyProps: PostDetailHeaderItemProps['onPressReply'] = ({

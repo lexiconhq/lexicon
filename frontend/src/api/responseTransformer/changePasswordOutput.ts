@@ -1,7 +1,7 @@
 export const changePasswordOutputResponseTransformer = (data: {
-  user_found: boolean;
+  success: string;
 }) => {
-  if (!data.user_found) {
+  if (!data.success) {
     throw new Error(`No account found`);
   }
   return 'success';

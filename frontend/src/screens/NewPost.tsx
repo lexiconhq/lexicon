@@ -2,7 +2,6 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import {
-  Alert,
   Platform,
   SafeAreaView,
   ScrollView,
@@ -21,11 +20,7 @@ import {
   ModalHeader,
   TextArea,
 } from '../components';
-import {
-  FORM_DEFAULT_VALUES,
-  NO_CHANNEL_FILTER,
-  isNoChannelFilter,
-} from '../constants';
+import { NO_CHANNEL_FILTER, isNoChannelFilter } from '../constants';
 import {
   Chip,
   Divider,
@@ -35,25 +30,32 @@ import {
   TextInput,
   TextInputType,
 } from '../core-ui';
-import { UploadTypeEnum } from '../generatedAPI/server';
+import { PostDraftType, UploadTypeEnum } from '../generatedAPI/server';
 import {
   BottomMenuNavigationParams,
   BottomMenuNavigationScreens,
   bottomMenu,
   createReactNativeFile,
+  errorHandlerAlert,
   existingPostIsValid,
   formatExtensions,
   getHyperlink,
   getReplacedImageUploadStatus,
+  goBackWithoutSaveDraftAlert,
   insertHyperlink,
   insertImageUploadStatus,
   mentionHelper,
   newPostIsValid,
   onKeyPress,
   parseInt,
+  saveAndDiscardPostDraftAlert,
   useStorage,
 } from '../helpers';
 import {
+  useAutoSaveManager,
+  useAutoSavePostDraft,
+  useCreateAndUpdatePostDraft,
+  useDeletePostDraft,
   useKASVWorkaround,
   useMention,
   useSiteSettings,
@@ -63,6 +65,7 @@ import { makeStyles, useTheme } from '../theme';
 import {
   CursorPosition,
   Image,
+  NewPostForm,
   RootStackNavProp,
   RootStackRouteProp,
 } from '../types';
@@ -113,14 +116,14 @@ export default function NewPost() {
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, dirtyFields },
     formState,
     setValue,
     getValues,
     watch,
     reset: resetForm,
     getFieldState,
-  } = useFormContext();
+  } = useFormContext<NewPostForm>();
 
   let { params } = useRoute<RootStackRouteProp<'NewPost'>>();
   let {
@@ -132,6 +135,8 @@ export default function NewPost() {
     hyperlinkUrl,
     hyperlinkTitle,
     imageUri,
+    sequence,
+    isDraft,
   } = useMemo(() => {
     const values = getValues();
 
@@ -144,6 +149,8 @@ export default function NewPost() {
       hyperlinkUrl: params?.hyperlinkUrl || '',
       hyperlinkTitle: params?.hyperlinkTitle || '',
       imageUri: params?.imageUri || '',
+      sequence: values?.sequence,
+      isDraft: values.isDraft ?? false,
     };
   }, [params, getValues]);
 
@@ -153,6 +160,7 @@ export default function NewPost() {
    */
 
   const selectedChannel: number = watch('channelId');
+
   const selectedTags: Array<string> = watch('tags');
   const polls = watch('polls');
 
@@ -185,6 +193,7 @@ export default function NewPost() {
     }
   }, 1500);
 
+  useAutoSaveManager();
   const kasv = useKASVWorkaround();
 
   const newPostRef = useRef<TextInputType>(null);
@@ -231,7 +240,7 @@ export default function NewPost() {
   const doneCreatePost = handleSubmit(() => {
     navigate('PostPreview', {
       reply: false,
-      postData: { topicId: editTopicId },
+      postData: { topicId: editTopicId || 0 },
       editPostId:
         editPostType === 'Post' || editPostType === 'Both'
           ? editPostId
@@ -249,6 +258,27 @@ export default function NewPost() {
     imagesArray,
     currentUploadToken,
   );
+
+  const { createPostDraft, loading: loadingCreateAndUpdatePostDraft } =
+    useCreateAndUpdatePostDraft({
+      onError: (error) => {
+        errorHandlerAlert(error);
+      },
+      onCompleted: ({ createAndUpdatePostDraft }) => {
+        setValue('draftKey', createAndUpdatePostDraft?.draftKey);
+        setValue('sequence', createAndUpdatePostDraft?.draftSequence);
+        setValue('isDraft', true);
+      },
+    });
+  const { deletePostDraft } = useDeletePostDraft();
+
+  // debounce save draft new post every time type text input
+  const { debounceSaveDraft } = useAutoSavePostDraft({
+    createPostDraft,
+    getValues,
+    type: PostDraftType.NewTopic,
+    skip: !!(editPostId || editTopicId),
+  });
 
   useEffect(() => {
     const { raw } = getValues();
@@ -313,6 +343,7 @@ export default function NewPost() {
     onFontFormatting,
     onQuote,
     onListFormatting,
+    onCollapsibleFormatting,
   } = bottomMenu({
     isKeyboardShow,
     user,
@@ -363,26 +394,48 @@ export default function NewPost() {
   useEffect(
     () =>
       navigation.addListener('beforeRemove', (e) => {
-        if ((!postValidity || !modal) && uploadsInProgress < 1) {
+        /**
+         * Add condition only when change title or content we show alert
+         */
+        if (
+          ((!dirtyFields.title && !dirtyFields.raw && !dirtyFields.polls) ||
+            !modal) &&
+          uploadsInProgress < 1
+        ) {
           return;
         }
         e.preventDefault();
-        Alert.alert(
-          t('Discard Post?'),
-          t('Are you sure you want to discard your post?'),
-          [
-            { text: t('Cancel') },
-            {
-              text: t('Discard'),
-              onPress: () => {
-                resetForm(FORM_DEFAULT_VALUES);
-                navigation.dispatch(e.data.action);
-              },
-            },
-          ],
-        );
+
+        // make sure not show save draft alert when edit post
+        !editPostId || !editTopicId
+          ? saveAndDiscardPostDraftAlert({
+              deletePostDraft,
+              createPostDraft,
+              event: e,
+              navigation,
+              getValues,
+              resetForm,
+              draftType: PostDraftType.NewTopic,
+            })
+          : goBackWithoutSaveDraftAlert({ event: e, navigation, resetForm });
       }),
-    [postValidity, modal, navigation, uploadsInProgress, resetForm],
+    [
+      postValidity,
+      modal,
+      navigation,
+      uploadsInProgress,
+      resetForm,
+      createPostDraft,
+      deletePostDraft,
+      sequence,
+      getValues,
+      selectedChannel,
+      selectedTags,
+      isDraft,
+      dirtyFields,
+      editPostId,
+      editTopicId,
+    ],
   );
 
   const setMentionValue = (text: string) => {
@@ -398,18 +451,16 @@ export default function NewPost() {
             label={t('Cancel')}
             left
             onPressItem={() => {
-              if (!postValidity) {
-                resetForm(FORM_DEFAULT_VALUES);
-              }
               goBack();
             }}
+            disabled={loadingCreateAndUpdatePostDraft}
           />
         }
         right={
           <HeaderItem
             label={t('Next')}
             onPressItem={doneCreatePost}
-            disabled={!postValidity}
+            disabled={!postValidity || loadingCreateAndUpdatePostDraft}
           />
         }
       />
@@ -417,7 +468,7 @@ export default function NewPost() {
       <CustomHeader
         title={editTopicId || editPostId ? t('Edit Post') : t('New Post')}
         rightTitle={t('Next')}
-        disabled={!postValidity}
+        disabled={!postValidity || loadingCreateAndUpdatePostDraft}
         onPressRight={doneCreatePost}
       />
     );
@@ -492,6 +543,15 @@ export default function NewPost() {
                   type: 'Number',
                 });
               }}
+              onCollapsible={() => {
+                const { raw } = getValues();
+                onCollapsibleFormatting({
+                  content: raw,
+                  cursorPosition,
+                  setCursorPosition,
+                  setValue,
+                });
+              }}
               showLeftMenu={showLeftMenu}
             />
           </View>
@@ -536,6 +596,7 @@ export default function NewPost() {
                       setPostValidity(currentPostValidity);
                     }
                     onChange(text);
+                    debounceSaveDraft();
                   }}
                   onFocus={() => setShowLeftMenu(false)}
                   error={errors.title != null}
@@ -630,7 +691,7 @@ export default function NewPost() {
           )}
 
           <ListCreatePoll
-            polls={polls}
+            polls={polls || []}
             setValue={setValue}
             navigate={navigate}
             editPostId={editPostId}
@@ -640,7 +701,7 @@ export default function NewPost() {
           <Controller
             name="raw"
             defaultValue={oldContent}
-            rules={{ required: polls.length === 0 }}
+            rules={{ required: polls?.length === 0 }}
             control={control}
             render={({ field: { onChange, value } }) => (
               <TextArea
@@ -668,6 +729,7 @@ export default function NewPost() {
 
                   onChange(text);
 
+                  debounceSaveDraft();
                   debounced(text, currentUploadToken);
 
                   const { title, polls } = getValues();

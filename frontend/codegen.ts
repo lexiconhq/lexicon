@@ -19,6 +19,7 @@ const config: CodegenConfig = {
           DeleteEmailOutput: 'string',
           ChangePasswordOutput: 'string',
           SetPrimaryEmailOutput: 'string',
+          DeletePostDraftOutput: 'string',
           File: 'ReactNativeFile',
         },
       },

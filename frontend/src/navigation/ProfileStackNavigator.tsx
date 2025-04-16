@@ -1,20 +1,20 @@
-import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
+import React from 'react';
 
 import {
+  Activity,
   AddEmail,
   ChangePassword,
   EditProfile,
+  EditUSerStatus,
   EmailAddress,
   Messages,
-  Preferences,
-  EditUSerStatus,
   Notifications,
+  Preferences,
   Profile,
-  Activity,
 } from '../screens';
-import { RootStackParamList } from '../types';
 import { useTheme } from '../theme';
+import { RootStackParamList } from '../types';
 
 const ProfileStack = createStackNavigator<RootStackParamList>();
 

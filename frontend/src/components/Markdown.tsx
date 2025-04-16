@@ -7,7 +7,7 @@ import { Platform, StyleProp, View, ViewStyle } from 'react-native';
 import BaseMarkdown, {
   ASTNode,
   MarkdownIt,
-  MarkdownProps,
+  MarkdownProps as BaseMarkdownProps,
 } from 'react-native-markdown-display';
 
 import { discourseHost } from '../constants';
@@ -16,14 +16,14 @@ import { CustomImage } from '../core-ui/CustomImage';
 import { Text } from '../core-ui/Text';
 import {
   extractPathname,
-  filterMarkdownContent,
+  filterMarkdownContentPoll,
   getValidDetailParams,
 } from '../helpers';
 import { isEmojiImage } from '../helpers/emojiHandler';
 import { makeStyles } from '../theme';
 import { StackNavProp } from '../types';
 
-type Props = Omit<MarkdownProps, 'rules' | 'style'> & {
+export type MarkdownProps = Omit<BaseMarkdownProps, 'rules' | 'style'> & {
   content: string;
   fontColor?: string;
   style?: StyleProp<ViewStyle>;
@@ -34,7 +34,7 @@ type Props = Omit<MarkdownProps, 'rules' | 'style'> & {
 
 const ios = Platform.OS === 'ios';
 
-export function Markdown(props: Props) {
+export function Markdown(props: MarkdownProps) {
   const { navigate, push } = useNavigation<StackNavProp<'UserInformation'>>();
   let styles = useStyles();
 
@@ -48,7 +48,7 @@ export function Markdown(props: Props) {
     ...otherProps
   } = props;
 
-  content = filterMarkdownContent(content).filteredMarkdown;
+  content = filterMarkdownContentPoll(content).filteredMarkdown;
 
   styles = fontColor
     ? { ...styles, ...{ body: { ...styles.body, color: fontColor } } }

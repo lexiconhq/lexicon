@@ -5,7 +5,7 @@
 // i.e. configure graphql-code-generator to produce the same output as apollo-tools was.
 //
 // The problem this script solves is that src/graphql/server has all of its filenames
-// in camelCase, but the codebase currently imports from src/generated/server as if
+// in camelCase, but the codebase currently imports from src/generatedAPI/server as if
 // all of the generated filenames are in PascaleCase.
 //
 // Despite tinkering with graphql-code-generator settings & plugins quite a bit, there

@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import React from 'react';
-import { Image, View, Text as RNText } from 'react-native';
+import { Image, Text as RNText, View } from 'react-native';
 
 import { DarkLogo, LightLogo } from '../../assets/images';
 import { Button, Text } from '../core-ui';

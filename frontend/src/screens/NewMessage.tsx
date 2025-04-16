@@ -1,8 +1,11 @@
-import { useNavigation, useRoute } from '@react-navigation/native';
+import {
+  CommonActions,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import {
-  Alert,
   Platform,
   SafeAreaView,
   TextInput,
@@ -22,13 +25,18 @@ import {
   ModalHeader,
   TextArea,
 } from '../components';
-import { FORM_DEFAULT_VALUES } from '../constants';
+import { FORM_DEFAULT_VALUES, refetchQueriesPostDraft } from '../constants';
 import { Divider, Icon, Text, TextInputType } from '../core-ui';
-import { MessageListDocument, UploadTypeEnum } from '../generatedAPI/server';
 import {
+  MessageListDocument,
+  PostDraftType,
+  UploadTypeEnum,
+} from '../generatedAPI/server';
+// import { LIST_POST_DRAFT } from '../graphql/server/postDraft';
+import {
+  bottomMenu,
   BottomMenuNavigationParams,
   BottomMenuNavigationScreens,
-  bottomMenu,
   combineContentWithPollContent,
   createReactNativeFile,
   errorHandlerAlert,
@@ -39,9 +47,14 @@ import {
   insertImageUploadStatus,
   mentionHelper,
   onKeyPress,
+  saveAndDiscardPostDraftAlert,
   useStorage,
 } from '../helpers';
 import {
+  useAutoSaveManager,
+  useAutoSavePostDraft,
+  useCreateAndUpdatePostDraft,
+  useDeletePostDraft,
   useKASVWorkaround,
   useMention,
   useNewMessage,
@@ -52,6 +65,7 @@ import { makeStyles, useTheme } from '../theme';
 import {
   CursorPosition,
   Image,
+  NewPostForm,
   PollFormContextValues,
   RootStackNavProp,
   RootStackRouteProp,
@@ -73,7 +87,7 @@ export default function NewMessage() {
   const ios = Platform.OS === 'ios';
 
   const navigation = useNavigation<RootStackNavProp<'NewMessage'>>();
-  const { navigate, goBack } = navigation;
+  const { navigate, goBack, dispatch } = navigation;
 
   let { params } = useRoute<RootStackRouteProp<'NewMessage'>>();
 
@@ -82,13 +96,14 @@ export default function NewMessage() {
     handleSubmit,
     setValue,
     getValues,
-    formState,
+    formState: { dirtyFields, isValid },
     watch,
     reset: resetForm,
-  } = useFormContext();
+  } = useFormContext<NewPostForm>();
 
-  const users: Array<string> = watch('messageTargetSelectedUsers');
-  const polls: Array<PollFormContextValues> = watch('polls');
+  const users: Array<string> | undefined = watch('messageTargetSelectedUsers');
+  const polls: Array<PollFormContextValues> | undefined = watch('polls');
+  const { isDraft, draftKey } = getValues();
 
   let { hyperlinkUrl, hyperlinkTitle, imageUri } = useMemo(() => {
     return {
@@ -127,6 +142,40 @@ export default function NewMessage() {
 
   const username = storage.getItem('user')?.username ?? '';
 
+  const navToMessages = () => {
+    dispatch((state) => {
+      let newRoutesFilter = state.routes.filter(
+        ({ name }) => name !== 'NewMessage',
+      );
+
+      let routesMap = [...newRoutesFilter];
+
+      /**
+       * This condition is used if we edit a new message from the post draft scene.
+       * When we click send, it will navigate to the message, and when we go back, it will return to the post draft.
+       */
+
+      if (
+        isDraft &&
+        state.routes[state.routes.length - 2].name === 'PostDraft'
+      ) {
+        routesMap = [
+          ...routesMap,
+          {
+            name: 'Messages',
+            key: 'messages',
+          },
+        ];
+      }
+
+      return CommonActions.reset({
+        ...state,
+        routes: routesMap,
+        index: routesMap.length - 1,
+      });
+    });
+  };
+
   const { upload, tempArray, completedToken } = useStatefulUpload(
     imagesArray,
     currentUploadToken,
@@ -135,7 +184,7 @@ export default function NewMessage() {
   const { newMessage, loading: newMessageLoading } = useNewMessage({
     onCompleted: () => {
       resetForm(FORM_DEFAULT_VALUES);
-      navigate('Messages');
+      navToMessages();
     },
     onError: (error) => {
       errorHandlerAlert(error);
@@ -145,6 +194,7 @@ export default function NewMessage() {
         query: MessageListDocument,
         variables: { username },
       },
+      ...(isDraft ? refetchQueriesPostDraft : []),
     ],
   });
 
@@ -167,6 +217,27 @@ export default function NewMessage() {
     showUserList,
     setMentionLoading,
   );
+
+  const { createPostDraft, loading: loadingCreateAndUpdatePostDraft } =
+    useCreateAndUpdatePostDraft({
+      onError: (error) => {
+        errorHandlerAlert(error);
+      },
+      onCompleted: ({ createAndUpdatePostDraft }) => {
+        setValue('draftKey', createAndUpdatePostDraft?.draftKey);
+        setValue('sequence', createAndUpdatePostDraft?.draftSequence);
+        setValue('isDraft', true);
+      },
+    });
+  const { deletePostDraft } = useDeletePostDraft();
+
+  const { debounceSaveDraft } = useAutoSavePostDraft({
+    createPostDraft,
+    getValues,
+    type: PostDraftType.NewPrivateMessage,
+  });
+
+  useAutoSaveManager();
 
   useEffect(() => {
     setModal(true);
@@ -232,6 +303,7 @@ export default function NewMessage() {
     onFontFormatting,
     onQuote,
     onListFormatting,
+    onCollapsibleFormatting,
   } = bottomMenu({
     isKeyboardShow,
     user,
@@ -241,7 +313,7 @@ export default function NewMessage() {
   });
 
   useEffect(() => {
-    setSelectedUsers(users);
+    setSelectedUsers(users || []);
   }, [users]);
 
   const { length } = selectedUsers;
@@ -265,35 +337,49 @@ export default function NewMessage() {
   useEffect(
     () =>
       navigation.addListener('beforeRemove', (e) => {
-        if (uploadsInProgress < 1 && (!formState.isValid || !modal)) {
+        if (
+          uploadsInProgress < 1 &&
+          ((!dirtyFields.title && !dirtyFields.raw && !dirtyFields.polls) ||
+            !modal)
+        ) {
           resetForm(FORM_DEFAULT_VALUES);
           return;
         }
         e.preventDefault();
-        Alert.alert(
-          t('Discard Message?'),
-          t('Are you sure you want to discard your message?'),
-          [
-            { text: t('Cancel') },
-            {
-              text: t('Discard'),
-              onPress: () => {
-                resetForm(FORM_DEFAULT_VALUES);
-                navigation.dispatch(e.data.action);
-              },
-            },
-          ],
-        );
+        saveAndDiscardPostDraftAlert({
+          deletePostDraft,
+          createPostDraft,
+          event: e,
+          navigation,
+          getValues,
+          resetForm,
+          draftType: PostDraftType.NewPrivateMessage,
+        });
       }),
-    [navigation, formState.isValid, modal, uploadsInProgress, resetForm],
+    [
+      navigation,
+      modal,
+      uploadsInProgress,
+      resetForm,
+      deletePostDraft,
+      createPostDraft,
+      getValues,
+      dirtyFields.title,
+      dirtyFields.raw,
+      dirtyFields.polls,
+    ],
   );
 
   const sendMessage = handleSubmit(() => {
     const { title, raw } = getValues();
 
+    // Make sure auto save draft not save draft when create message
+
+    debounceSaveDraft.cancel();
+
     const updatedContentWithPoll = combineContentWithPollContent({
       content: raw,
-      polls,
+      polls: polls || [],
     });
 
     setModal(false);
@@ -302,7 +388,8 @@ export default function NewMessage() {
         newPrivateMessageInput: {
           title,
           raw: updatedContentWithPoll,
-          targetRecipients: users,
+          targetRecipients: users || [],
+          draftKey,
         },
       },
     });
@@ -325,7 +412,7 @@ export default function NewMessage() {
             label={t('Cancel')}
             onPressItem={goBack}
             left
-            disabled={newMessageLoading}
+            disabled={newMessageLoading || loadingCreateAndUpdatePostDraft}
           />
         }
         right={
@@ -333,9 +420,10 @@ export default function NewMessage() {
             label={t('Send')}
             onPressItem={sendMessage}
             disabled={
-              !formState.isValid ||
+              !isValid ||
               selectedUsers.length === 0 ||
-              newMessageLoading
+              newMessageLoading ||
+              loadingCreateAndUpdatePostDraft
             }
           />
         }
@@ -345,9 +433,9 @@ export default function NewMessage() {
         title={t('New Message')}
         rightTitle={t('Send')}
         onPressRight={sendMessage}
-        disabled={!formState.isValid || selectedUsers.length === 0}
+        disabled={!isValid || selectedUsers.length === 0}
         noShadow
-        isLoading={newMessageLoading}
+        isLoading={newMessageLoading || loadingCreateAndUpdatePostDraft}
       />
     );
 
@@ -424,6 +512,15 @@ export default function NewMessage() {
                     type: 'Number',
                   });
                 }}
+                onCollapsible={() => {
+                  const { raw } = getValues();
+                  onCollapsibleFormatting({
+                    content: raw,
+                    cursorPosition,
+                    setCursorPosition,
+                    setValue,
+                  });
+                }}
                 showLeftMenu={showLeftMenu}
               />
             </View>
@@ -444,7 +541,10 @@ export default function NewMessage() {
                       { marginLeft: spacing.m, textAlign: 'right' },
                     ]}
                     value={value}
-                    onChangeText={onChange}
+                    onChangeText={(text) => {
+                      onChange(text);
+                      debounceSaveDraft();
+                    }}
                     onFocus={() => setShowLeftMenu(false)}
                     placeholder={t('What do you want to talk about?')}
                     placeholderTextColor={colors.darkTextLighter}
@@ -490,7 +590,7 @@ export default function NewMessage() {
             <Divider horizontalSpacing="xxl" />
 
             <ListCreatePoll
-              polls={polls}
+              polls={polls || []}
               setValue={setValue}
               navigate={navigate}
               prevScreen="NewMessage"
@@ -525,6 +625,7 @@ export default function NewMessage() {
                     );
                     onChange(text);
                     debounced(text, currentUploadToken);
+                    debounceSaveDraft();
                   }}
                   style={styles.spacingHorizontal}
                   onFocus={(event) => {

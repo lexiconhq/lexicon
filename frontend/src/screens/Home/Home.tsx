@@ -42,6 +42,7 @@ import {
 } from '../../generatedAPI/server';
 import {
   LoginError,
+  checkDraftAlert,
   clamp,
   errorHandler,
   errorHandlerAlert,
@@ -51,11 +52,14 @@ import {
 import {
   useAbout,
   useChannels,
+  useDeletePostDraft,
+  useLazyCheckPostDraft,
   useLazyTopicList,
   useSiteSettings,
 } from '../../hooks';
 import { makeStyles, useTheme } from '../../theme';
 import {
+  NewPostForm,
   PostWithoutId,
   StackNavProp,
   TabNavProp,
@@ -97,7 +101,7 @@ const ios = Platform.OS === 'ios';
 const statusBarHeight = Constants.statusBarHeight;
 const actionBarHeight =
   statusBarHeight + (ios ? IOS_BAR : ANDROID_BAR) + normalizedSize;
-const headerViewHeight = 92;
+const headerViewHeight = actionBarHeight + (ios ? 0 : 24);
 
 type SortOption = typeof sortOptionsArray[number];
 
@@ -105,7 +109,7 @@ export default function Home() {
   const { refetch: siteRefetch } = useSiteSettings();
   const { isTablet, isPortrait } = useDevice();
   const styles = useStyles();
-  const { setValue } = useFormContext();
+  const { setValue, reset: resetForm } = useFormContext<NewPostForm>();
   const [openSideBar, setOpenSideBar] = useState(false);
 
   const tabNavigation = useNavigation<TabNavProp<'Home'>>();
@@ -258,6 +262,9 @@ export default function Home() {
     },
   });
 
+  const { deletePostDraft } = useDeletePostDraft();
+  const { checkPostDraft } = useLazyCheckPostDraft();
+
   const getData = useCallback(
     (variables: TopicsQueryVariables) => {
       getTopicList({ variables });
@@ -395,7 +402,7 @@ export default function Home() {
     navigate('Channels', { prevScreen: 'Home' });
   };
 
-  const onPressAdd = () => {
+  const onPressAdd = async () => {
     const currentUserId = storage.getItem('user')?.id;
     if (currentUserId) {
       /**
@@ -408,6 +415,8 @@ export default function Home() {
           shouldDirty: true,
         },
       );
+      setValue('isDraft', false);
+      setValue('draftKey', '');
       navigate('NewPost');
     } else {
       errorHandlerAlert(LoginError, navigate);
@@ -448,7 +457,7 @@ export default function Home() {
   };
 
   const onPressReply = useCallback(
-    (param: { topicId: number }) => {
+    async (param: { topicId: number }) => {
       let { topicId } = param;
       const cacheTopic = client.readFragment<TopicFragment>({
         id: `Topic:${topicId}`,
@@ -458,13 +467,48 @@ export default function Home() {
         return null;
       }
       let { title, replyCount } = transformTopicToPost(cacheTopic);
+
+      const draftKey = `topic_${topicId}`;
+      let { data, error } = await checkPostDraft({
+        variables: { draftKey },
+      });
+
+      if (data && !error) {
+        const { checkPostDraft } = data;
+
+        if (
+          checkPostDraft.draft &&
+          // eslint-disable-next-line no-underscore-dangle
+          checkPostDraft.draft.__typename === 'PostReplyDraft'
+        ) {
+          return checkDraftAlert({
+            navigate,
+            setValue,
+            resetForm,
+            checkPostDraft,
+            deletePostDraft,
+            titleTopic: title,
+            topicId,
+            channelId: selectedChannelId,
+            focusedPostNumber: replyCount,
+          });
+        }
+      }
+
       navigate('PostReply', {
         topicId,
         title,
         focusedPostNumber: replyCount,
       });
     },
-    [navigate],
+    [
+      checkPostDraft,
+      deletePostDraft,
+      navigate,
+      resetForm,
+      selectedChannelId,
+      setValue,
+    ],
   );
 
   let isFetchingMoreTopics = useRef(false);
@@ -556,7 +600,10 @@ export default function Home() {
       <PostList
         postListRef={postListRef}
         data={topicsData}
-        contentInset={{ top: headerViewHeight }}
+        contentInset={{
+          // statusBarHeight ios phone device value from expo is bigger than tablet and android. when check android and tablet around 25-30 but ios phone show result 54
+          top: headerViewHeight - (ios && !isTablet ? statusBarHeight / 3 : 0),
+        }}
         contentOffset={{
           x: 0,
           y: Platform.OS === 'ios' ? -headerViewHeight : 0,

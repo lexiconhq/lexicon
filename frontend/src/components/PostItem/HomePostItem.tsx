@@ -62,6 +62,7 @@ function BaseHomePostItem(props: Props) {
     postNumber,
     content,
     imageUrls,
+    pinned,
   } = transformTopicToPost({ ...cacheTopic, channels: channelsData ?? [] });
 
   const isCreator = username === storage.getItem('user')?.username;
@@ -91,6 +92,7 @@ function BaseHomePostItem(props: Props) {
       isLiked={isLiked}
       numberOfLines={5}
       showImageRow
+      pinned={pinned}
       style={style}
       footer={
         <PostItemFooter

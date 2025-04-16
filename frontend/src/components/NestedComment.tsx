@@ -13,7 +13,7 @@ import { Color, makeStyles, useTheme } from '../theme';
 import { Post } from '../types';
 
 import { Author } from './Author';
-import { Markdown } from './Markdown';
+import { MarkdownContent } from './MarkdownContent';
 import { Metrics } from './Metrics/Metrics';
 import { PollPreview } from './Poll';
 import { PostHidden } from './PostItem';
@@ -188,10 +188,8 @@ function BaseNestedComment(props: Props) {
         ) : (
           <>
             {renderPolls()}
-            <Markdown
+            <MarkdownContent
               content={
-                // If `replyToPostId` is truthy, then we delete the quote in outer comment,
-                // because what's inside the quote is the inner part of a nested comment
                 replyToPostId
                   ? handleUnsupportedMarkdown(deleteQuoteBbCode(content))
                   : handleUnsupportedMarkdown(content)

@@ -1,4 +1,4 @@
-import React, { Dispatch, RefObject, SetStateAction, useState } from 'react';
+import React, { RefObject, useState } from 'react';
 import { TextInput, View, ViewProps } from 'react-native';
 
 import {
@@ -16,7 +16,6 @@ type Props = ViewProps & {
   disabled?: boolean;
   inputPlaceholder?: string;
   message?: string;
-  setMessage?: Dispatch<SetStateAction<string>>;
   onPressSend: (message: string) => void;
   onFocus?: () => void;
   onBlur?: () => void;
@@ -35,7 +34,6 @@ export function ReplyInputField(props: Props) {
     disabled = false,
     inputPlaceholder = t('Write your reply here'),
     message = '',
-    setMessage,
     onPressSend,
     onFocus,
     onBlur,

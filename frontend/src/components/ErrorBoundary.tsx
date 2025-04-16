@@ -1,6 +1,6 @@
-import React, { ReactNode } from 'react';
-import { View, StyleSheet, NativeModules } from 'react-native';
 import { reloadAsync } from 'expo-updates';
+import React, { ReactNode } from 'react';
+import { NativeModules, StyleSheet, View } from 'react-native';
 
 import { SPACING } from '../constants';
 import { Button, Icon, Text } from '../core-ui';
@@ -34,7 +34,7 @@ class ErrorBoundary extends React.Component<Props, State> {
     if (this.state.hasError) {
       return (
         <View style={styles.container}>
-          <Icon name="WarningCircle" size="xxl" />
+          <Icon name="WarningCircle" size="xxxl" />
           <Text style={styles.textErrorTitle} variant="semiBold" size="l">
             {t('Something Went Wrong')}
           </Text>

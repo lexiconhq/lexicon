@@ -1,5 +1,3 @@
-import { ApolloClient, NormalizedCacheObject } from '@apollo/client';
-
 import { LIKE_ACTION_ID } from '../../../constants';
 import {
   GetTopicDetailDocument,
@@ -16,7 +14,7 @@ import {
   UnlikeTopicOrPostMutationVariables,
   UnlikeTopicOrPostMutation as UnlikeTopicOrPostType,
 } from '../../../generatedAPI/server';
-import { ApolloErrorSchema } from '../../../types';
+import { Apollo, ApolloErrorSchema } from '../../../types';
 import { ActionsSummary, LikedTopic } from '../../../types/api';
 import {
   topicsDetailPathBuilder,
@@ -30,7 +28,7 @@ type LikableEntity = 'post' | 'topic';
 export let likeTopicOrPostResolver = async (
   _: Record<string, unknown>,
   { postId, topicId, unlike }: LikeTopicOrPostMutationVariables,
-  { client }: { client: ApolloClient<NormalizedCacheObject> },
+  { client }: { client: Apollo },
 ) => {
   if ((!postId && !topicId) || (postId && topicId)) {
     throw new Error('Please provide either only the post ID or the topic ID');

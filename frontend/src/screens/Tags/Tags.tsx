@@ -11,6 +11,7 @@ import {
   CustomHeader,
   HeaderItem,
   ModalHeader,
+  SearchBar,
 } from '../../components';
 import { Button, Text } from '../../core-ui';
 import {
@@ -23,7 +24,7 @@ import { useSiteSettings, useTags } from '../../hooks';
 import { makeStyles } from '../../theme';
 import { RootStackNavProp, Tag } from '../../types';
 
-import { AvailableTags, SearchBar, SelectedTags } from './components';
+import { AvailableTags, SelectedTags } from './components';
 
 export default function Tags() {
   const styles = useStyles();
@@ -203,6 +204,7 @@ export default function Tags() {
             setSearchValue(value),
             setError(null),
           ]}
+          placeholder={t('Search for relevant tags ...')}
           style={styles.searchBar}
         />
         {availableTags.length === 0 && !canCreateTag && !tagsLoading && (

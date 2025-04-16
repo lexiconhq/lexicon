@@ -38,6 +38,7 @@
     "@shopify/flash-list": "1.6.4",
     "apollo-link-rest": "^0.9.0",
     "change-case": "^5.4.4",
+    "dataloader": "^2.2.3",
     "date-fns": "^2.30.0",
     "expo": "~51.0.37",
     "expo-apple-authentication": "~6.4.2",

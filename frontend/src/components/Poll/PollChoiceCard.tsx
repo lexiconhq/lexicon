@@ -8,12 +8,13 @@ type Props = {
   choice: string;
   totalOption: number;
   onEdit: () => void;
-  onDelete: () => void;
+  onDelete?: () => void;
   style?: StyleProp<ViewStyle>;
+  totalPoll?: number;
 };
 
 export function PollChoiceCard(props: Props) {
-  const { choice, totalOption, onDelete, onEdit, style } = props;
+  const { choice, totalOption, onDelete, onEdit, style, totalPoll } = props;
   const { colors } = useTheme();
   const styles = useStyles();
 
@@ -21,29 +22,37 @@ export function PollChoiceCard(props: Props) {
     <View style={[styles.container, style]} testID="PollChoiceCard:View">
       <Icon name="Chart" size="l" style={styles.pollIcon} />
       <View style={styles.titleContainer}>
-        <Text numberOfLines={2} style={styles.textChoice}>
-          {choice}
-        </Text>
-        <Text size="s" color="lightTextDarker">
-          {t('{total} options', { total: totalOption })}
-        </Text>
+        {totalPoll ? (
+          <Text>{t('Polls ({total})', { total: totalPoll })}</Text>
+        ) : (
+          <>
+            <Text numberOfLines={2} style={styles.textChoice}>
+              {choice}
+            </Text>
+            <Text size="s" color="lightTextDarker">
+              {t('{total} options', { total: totalOption })}
+            </Text>
+          </>
+        )}
       </View>
       <View style={styles.iconContainer}>
         <Icon
           name="Edit"
           size="l"
           color={colors.textLighter}
-          style={styles.ediIcon}
+          style={!!onDelete && styles.ediIcon}
           onPress={onEdit}
           testID="PollChoiceCard:Icon:Edit"
         />
-        <Icon
-          name="Delete"
-          size="l"
-          color={colors.textLighter}
-          onPress={onDelete}
-          testID="PollChoiceCard:Icon:Delete"
-        />
+        {!!onDelete && !totalPoll && (
+          <Icon
+            name="Delete"
+            size="l"
+            color={colors.textLighter}
+            onPress={onDelete}
+            testID="PollChoiceCard:Icon:Delete"
+          />
+        )}
       </View>
     </View>
   );

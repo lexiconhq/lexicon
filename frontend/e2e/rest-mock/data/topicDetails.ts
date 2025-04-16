@@ -1,5 +1,14 @@
-import { mockFirstPost, mockPostWithPoll, mockPostsReplies } from './posts';
-import { mockNewTopicWithPoll, mockTopicsRest } from './topics';
+import {
+  mockFirstPost,
+  mockPostWithCollapsible,
+  mockPostWithPoll,
+  mockPostsReplies,
+} from './posts';
+import {
+  mockNewTopicWithCollapsible,
+  mockNewTopicWithPoll,
+  mockTopicsRest,
+} from './topics';
 import { mockUsers } from './users';
 
 export let mockTopicDetailsRest = [
@@ -36,6 +45,26 @@ export let mockTopicDetailsRest = [
     postStream: {
       posts: [mockPostWithPoll],
       stream: [mockPostWithPoll.id],
+    },
+    details: {
+      canEdit: true,
+      allowedUsers: null,
+      participants: [mockUsers[0]],
+    },
+  },
+  {
+    id: mockNewTopicWithCollapsible.id,
+    title: mockNewTopicWithCollapsible.title,
+    views: mockNewTopicWithCollapsible.views,
+    likeCount: mockNewTopicWithCollapsible.likeCount,
+    postsCount: mockNewTopicWithCollapsible.postsCount,
+    liked: mockNewTopicWithCollapsible.liked,
+    categoryId: mockNewTopicWithCollapsible.categoryId,
+    tags: mockNewTopicWithCollapsible.tags,
+    createdAt: mockNewTopicWithCollapsible.createdAt,
+    postStream: {
+      posts: [mockPostWithCollapsible],
+      stream: [mockPostWithCollapsible.id],
     },
     details: {
       canEdit: true,

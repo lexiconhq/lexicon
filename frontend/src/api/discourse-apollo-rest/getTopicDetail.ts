@@ -118,6 +118,7 @@ export const GET_TOPIC_DETAIL = gql`
       categoryId
       tags
       createdAt
+      deletedAt
       postStream @type(name: "PostStream") {
         posts @type(name: "Post") {
           ...PostFragment
@@ -168,7 +169,7 @@ export const REPLIED_POST = gql`
 export const POST = gql`
   query PostQuery($postId: Int!) {
     postQuery(postId: $postId)
-      @rest(path: "posts/{args.postId}.json", type: "Post") {
+      @rest(path: "/posts/{args.postId}.json", type: "Post") {
       ...PostFragment
     }
   }

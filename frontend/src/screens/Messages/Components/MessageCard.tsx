@@ -1,10 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { useFormContext } from 'react-hook-form';
+import { TouchableOpacity } from 'react-native';
 
-import { formatRelativeTime } from '../../../helpers';
+import { FORM_DEFAULT_VALUES } from '../../../constants';
+import {
+  formatRelativeTime,
+  processDraftPollAndImageForPrivateMessageReply,
+} from '../../../helpers';
+import { useLazyCheckPostDraft } from '../../../hooks';
 import { makeStyles, useTheme } from '../../../theme';
-import { MessageParticipants, StackNavProp } from '../../../types';
+import { MessageParticipants, NewPostForm, StackNavProp } from '../../../types';
 
 import { MessageAvatar } from './MessageAvatar';
 import { MessageContent } from './MessageContent';
@@ -38,6 +44,7 @@ export function MessageCard(props: Props) {
     testID,
   } = props;
 
+  const { setValue, reset: resetForm } = useFormContext<NewPostForm>();
   const { participantsToShow } = messageParticipants ?? {
     participantsToShow: [],
   };
@@ -45,6 +52,53 @@ export function MessageCard(props: Props) {
   const firstParticipant = participantsToShow[0] ?? { username: '' };
 
   const { navigate } = useNavigation<StackNavProp<'MessageDetail'>>();
+
+  const navToMessageDetail = () => {
+    navigate('MessageDetail', {
+      id,
+      postNumber,
+      hyperlinkUrl: '',
+      hyperlinkTitle: '',
+    });
+  };
+
+  const { checkPostDraft } = useLazyCheckPostDraft({
+    nextFetchPolicy: 'cache-and-network',
+    fetchPolicy: 'network-only',
+    onCompleted: ({ checkPostDraft }) => {
+      setValue('sequence', checkPostDraft.sequence);
+
+      if (
+        checkPostDraft.draft &&
+        // eslint-disable-next-line no-underscore-dangle
+        checkPostDraft.draft.__typename === 'PrivateMessageReplyDraft'
+      ) {
+        let draftData = checkPostDraft.draft;
+
+        const { imageMessageReplyList, newContentFilterRaw, polls } =
+          processDraftPollAndImageForPrivateMessageReply({
+            content: draftData.content,
+          });
+
+        resetForm({
+          ...FORM_DEFAULT_VALUES,
+          raw: newContentFilterRaw,
+          isDraft: true,
+          sequence: checkPostDraft.sequence,
+          polls,
+          imageMessageReplyList,
+          draftKey: `topic_${id}`,
+        });
+      } else {
+        resetForm(FORM_DEFAULT_VALUES);
+      }
+      navToMessageDetail();
+    },
+    onError: () => {
+      resetForm(FORM_DEFAULT_VALUES);
+      navToMessageDetail();
+    },
+  });
 
   const [seen, setSeen] = useState(seenProps);
 
@@ -61,15 +115,12 @@ export function MessageCard(props: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seenProps]);
 
-  const onPressItem = () => {
+  const onPressItem = async () => {
     if (!seen) {
       setSeen(true);
     }
-    navigate('MessageDetail', {
-      id,
-      postNumber,
-      hyperlinkUrl: '',
-      hyperlinkTitle: '',
+    await checkPostDraft({
+      variables: { draftKey: `topic_${id}` },
     });
   };
 

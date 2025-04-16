@@ -3,6 +3,7 @@ import {
   ApolloLink,
   InMemoryCache,
   Reference,
+  defaultDataIdFromObject,
 } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import { onError } from '@apollo/client/link/error';
@@ -13,6 +14,7 @@ import { getNetworkStateAsync } from 'expo-network';
 
 import { networkStatusVar, requestFailedVar } from '../components/RequestError';
 import { NO_CHANNEL_FILTER, discourseHost, errorTypes } from '../constants';
+import { defaultArgsListPostDraft } from '../constants/postDraft';
 import {
   appendPagination,
   decodeToken,
@@ -27,16 +29,37 @@ import { logoutTokenVar, setTokenState, tokenVar } from '../reactiveVars';
 
 import { bodySerializers } from './bodySerializers';
 import {
+  createAndUpdatePostDraftResolver,
   editProfileResolver,
   likeTopicOrPostResolver,
   logoutMutationResolver,
   privateMessageListQueryResolver,
-  replyResolver,
 } from './resolver';
 import { responseTransformers } from './responseTransformer';
 import { typePatchers } from './typePatcher';
 
 const cache = new InMemoryCache({
+  // This function is used for generating a unique key using __typename.
+  // In this case, we use this function to create a unique key for each ListPostDraftsResult
+  // data using field 'draft_key', to fix issue with cache not properly merge
+  // because ListPostDraftsResult doesn't return an id.
+  dataIdFromObject(responseObject) {
+    // eslint-disable-next-line no-underscore-dangle
+    switch (responseObject.__typename) {
+      case 'ListPostDraftsResult':
+        return `ListPostDraftsResult:${responseObject.draftKey}`;
+      default:
+        return defaultDataIdFromObject(responseObject);
+    }
+  },
+  possibleTypes: {
+    BasePostDraft: [
+      'NewPostDraft',
+      'PostReplyDraft',
+      'NewPrivateMessageDraft',
+      'PrivateMessageReplyDraft',
+    ],
+  },
   typePolicies: {
     TopicDetailOutput: getTopicDetailOutputCacheBehavior(),
     PrivateMessageDetailOutput: getTopicDetailOutputCacheBehavior(),
@@ -134,6 +157,35 @@ const cache = new InMemoryCache({
           },
         },
         searchTag: replaceDataPagination(['q', 'selectedTags']),
+        listPostDrafts: {
+          keyArgs: false,
+          merge: (existing, incoming, { variables }) => {
+            if (!existing || !incoming) {
+              return existing || incoming || null;
+            }
+
+            const { page } = variables || {};
+
+            // Calculate how many items we expect in total based on the page number ex page 1 expect 50
+            const expectedTotal = page
+              ? page * defaultArgsListPostDraft.limit
+              : 0;
+
+            // If we're loading a previous page and already have enough items, prepend
+            if (page && expectedTotal <= existing.length) {
+              return handleDuplicates({
+                oldArray: existing,
+                newArray: incoming,
+                newArrayIs: 'prepended',
+              });
+            }
+            return handleDuplicates({
+              oldArray: existing,
+              newArray: incoming,
+              newArrayIs: 'appended',
+            });
+          },
+        },
       },
     },
   },
@@ -227,7 +279,7 @@ const errorLink = onError(({ graphQLErrors, networkError, operation }) => {
   }
 });
 
-const restLink = new RestLink({
+const restLink: RestLink = new RestLink({
   uri: discourseHost,
   // Example if we want custom type response
   typePatcher: typePatchers,
@@ -246,7 +298,7 @@ const restLink = new RestLink({
       return dataJson;
     }
 
-    return transformer(data, typeName);
+    return transformer(data, typeName, client);
   },
 
   /**
@@ -262,10 +314,10 @@ export const client = new ApolloClient({
       privateMessageList: privateMessageListQueryResolver,
     },
     Mutation: {
-      replyPrivateMessage: replyResolver,
       likeTopicOrPost: likeTopicOrPostResolver,
       logout: logoutMutationResolver,
       editProfile: editProfileResolver,
+      createAndUpdatePostDraft: createAndUpdatePostDraftResolver,
     },
   },
   cache,
