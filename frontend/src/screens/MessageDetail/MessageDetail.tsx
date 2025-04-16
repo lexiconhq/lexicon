@@ -64,6 +64,7 @@ import {
   useStorage,
 } from '../../helpers';
 import {
+  useAutoSaveManager,
   useAutoSavePostDraft,
   useCreateAndUpdatePostDraft,
   useDeletePostDraft,
@@ -307,6 +308,8 @@ export default function MessageDetail() {
     topicId: id,
   });
 
+  useAutoSaveManager();
+
   useEffect(() => {
     const isImageUrlEmpty = imageList?.find(({ url }) => url === '');
 
@@ -484,6 +487,8 @@ export default function MessageDetail() {
 
   const onPressSend = () => {
     const { raw } = getValues();
+
+    debounceSaveDraft.cancel();
     setShowUserList(false);
     if (canSendMessage) {
       const newRaw = combineDataMarkdownPollAndImageList({
@@ -859,7 +864,10 @@ export default function MessageDetail() {
                     setMentionKeyword,
                   );
                   onChange(message);
-                  debounceSaveDraft();
+                  // make sure after send and reset form not run debounce
+                  if (message.trim()) {
+                    debounceSaveDraft();
+                  }
                 }}
                 onFocus={() => {
                   setInputFocused(true);

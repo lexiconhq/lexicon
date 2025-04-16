@@ -1,5 +1,3 @@
-export * from './PrivateTopicAlert';
-export * from './PushNotificationsSetupFailAlert';
 export * from './automaticFontColor';
 export * from './bottomMenu';
 export * from './capitalizeFirstLetter';
@@ -46,7 +44,9 @@ export * from './paginationHandler';
 export * from './parser';
 export * from './pickImage';
 export * from './postDetailContentHandler';
+export * from './PrivateTopicAlert';
 export * from './processRawContent';
+export * from './PushNotificationsSetupFailAlert';
 export * from './relatedUsers';
 export * from './replaceQuotesWithMarkdown';
 export * from './secureStore';
@@ -59,6 +59,7 @@ export * from './textArea';
  * Draft
  */
 export * from './checkPostDraftAlert';
+export * from './goBackWithoutSaveDraftAlert';
 export * from './postDraftContentHandler';
 export * from './privateMessageRecipientsDraft';
 export * from './saveAndDiscardPostDraftAlert';

@@ -71,18 +71,12 @@ export default function PostPreview() {
   const storage = useStorage();
   const channels = storage.getItem('channels');
 
-  const { reset: resetForm, getValues } = useFormContext();
+  const { reset: resetForm, getValues, watch } = useFormContext();
 
   const [imageUrls, setImageUrls] = useState<Array<string>>();
 
-  const {
-    title,
-    raw: content,
-    tags,
-    channelId,
-    isDraft,
-    draftKey,
-  } = getValues();
+  const { title, raw: content, tags, channelId, isDraft } = getValues();
+  const draftKey: string | undefined = watch('draftKey');
   const shortUrls = getPostShortUrl(content) ?? [];
   const images = postData.images;
 

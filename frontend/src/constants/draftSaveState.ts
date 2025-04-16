@@ -1,6 +1,7 @@
 // global constant to Prevent multiple saves drafts at the same time
 export const draftSaveManager = (() => {
   let isSaving = false;
+  let canStartAutoSave = false;
 
   const startSaving = () => {
     isSaving = true;
@@ -14,5 +15,22 @@ export const draftSaveManager = (() => {
 
   const isDraftSaving = () => isSaving;
 
-  return { startSaving, finishSaving, isDraftSaving };
+  const canStartAutoSaving = () => {
+    canStartAutoSave = true;
+  };
+
+  const disableCanStartAutoSaving = () => {
+    canStartAutoSave = false;
+  };
+
+  const isCanStartAutoSave = () => canStartAutoSave;
+
+  return {
+    startSaving,
+    finishSaving,
+    isDraftSaving,
+    canStartAutoSaving,
+    disableCanStartAutoSaving,
+    isCanStartAutoSave,
+  };
 })();

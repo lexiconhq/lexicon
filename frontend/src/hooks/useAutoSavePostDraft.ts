@@ -19,6 +19,7 @@ type UseAutoSavePostDraftProps = {
   getValues: UseFormGetValues<NewPostForm>;
   topicId?: number;
   replyToPostId?: number;
+  skip?: boolean;
 };
 
 /**
@@ -32,6 +33,7 @@ type UseAutoSavePostDraftProps = {
  * @param {UseFormGetValues<NewPostForm>} params.getValues - retrieve form values.
  * @param {number} [params.topicId] - Optional topic ID for replies.
  * @param {number} [params.replyToPostId] - Optional post ID when replying to a specific message.
+ * @param {boolean} params.skip - optional skip condition if do not want to run debounce
  *
  * @returns {Function} - A debounced function that saves the post draft when invoked.
  */
@@ -42,10 +44,16 @@ export function useAutoSavePostDraft({
   getValues,
   topicId,
   replyToPostId,
+  skip,
 }: UseAutoSavePostDraftProps) {
   const debounceSaveDraft = useDebouncedCallback(() => {
-    // return if already start save from saveAndDiscardPostDraftAlert
-    if (draftSaveManager.isDraftSaving()) {
+    // return if already start save from saveAndDiscardPostDraftAlert and change scene
+
+    if (
+      draftSaveManager.isDraftSaving() ||
+      !draftSaveManager.isCanStartAutoSave() ||
+      skip
+    ) {
       return;
     }
 

@@ -1,3 +1,4 @@
+export * from './useAutoSaveManager';
 export * from './useAutoSavePostDraft';
 export * from './useGetUrlEmoji';
 export * from './useKASVWorkaround';

@@ -51,6 +51,7 @@ import {
   useStorage,
 } from '../helpers';
 import {
+  useAutoSaveManager,
   useAutoSavePostDraft,
   useCreateAndUpdatePostDraft,
   useDeletePostDraft,
@@ -236,6 +237,8 @@ export default function NewMessage() {
     type: PostDraftType.NewPrivateMessage,
   });
 
+  useAutoSaveManager();
+
   useEffect(() => {
     setModal(true);
   }, [setModal]);
@@ -369,6 +372,10 @@ export default function NewMessage() {
 
   const sendMessage = handleSubmit(() => {
     const { title, raw } = getValues();
+
+    // Make sure auto save draft not save draft when create message
+
+    debounceSaveDraft.cancel();
 
     const updatedContentWithPoll = combineContentWithPollContent({
       content: raw,

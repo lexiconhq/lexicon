@@ -34,6 +34,7 @@ import {
   formatExtensions,
   getHyperlink,
   getReplacedImageUploadStatus,
+  goBackWithoutSaveDraftAlert,
   insertHyperlink,
   insertImageUploadStatus,
   mentionHelper,
@@ -43,6 +44,7 @@ import {
   useStorage,
 } from '../helpers';
 import {
+  useAutoSaveManager,
   useAutoSavePostDraft,
   useCreateAndUpdatePostDraft,
   useDeletePostDraft,
@@ -180,7 +182,10 @@ export default function PostReply() {
     type: PostDraftType.PostReply,
     topicId,
     replyToPostId,
+    skip: !!editPostId,
   });
+
+  useAutoSaveManager();
 
   useEffect(() => {
     const { isDraft } = getValues();
@@ -304,17 +309,24 @@ export default function PostReply() {
         }
         e.preventDefault();
 
-        saveAndDiscardPostDraftAlert({
-          deletePostDraft,
-          createPostDraft,
-          event: e,
-          navigation,
-          getValues,
-          resetForm: reset,
-          draftType: PostDraftType.PostReply,
-          topicId,
-          replyToPostId,
-        });
+        // make sure not show save draft alert when edit post
+        !editPostId
+          ? saveAndDiscardPostDraftAlert({
+              deletePostDraft,
+              createPostDraft,
+              event: e,
+              navigation,
+              getValues,
+              resetForm: reset,
+              draftType: PostDraftType.PostReply,
+              topicId,
+              replyToPostId,
+            })
+          : goBackWithoutSaveDraftAlert({
+              resetForm: reset,
+              event: e,
+              navigation,
+            });
       }),
     [
       postValidity,
@@ -329,6 +341,7 @@ export default function PostReply() {
       formState.dirtyFields.raw,
       replyToPostId,
       formState.dirtyFields.polls,
+      editPostId,
     ],
   );
 

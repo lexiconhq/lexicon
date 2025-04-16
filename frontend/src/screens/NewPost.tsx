@@ -41,6 +41,7 @@ import {
   formatExtensions,
   getHyperlink,
   getReplacedImageUploadStatus,
+  goBackWithoutSaveDraftAlert,
   insertHyperlink,
   insertImageUploadStatus,
   mentionHelper,
@@ -51,6 +52,7 @@ import {
   useStorage,
 } from '../helpers';
 import {
+  useAutoSaveManager,
   useAutoSavePostDraft,
   useCreateAndUpdatePostDraft,
   useDeletePostDraft,
@@ -191,6 +193,7 @@ export default function NewPost() {
     }
   }, 1500);
 
+  useAutoSaveManager();
   const kasv = useKASVWorkaround();
 
   const newPostRef = useRef<TextInputType>(null);
@@ -274,6 +277,7 @@ export default function NewPost() {
     createPostDraft,
     getValues,
     type: PostDraftType.NewTopic,
+    skip: !!(editPostId || editTopicId),
   });
 
   useEffect(() => {
@@ -402,15 +406,18 @@ export default function NewPost() {
         }
         e.preventDefault();
 
-        saveAndDiscardPostDraftAlert({
-          deletePostDraft,
-          createPostDraft,
-          event: e,
-          navigation,
-          getValues,
-          resetForm,
-          draftType: PostDraftType.NewTopic,
-        });
+        // make sure not show save draft alert when edit post
+        !editPostId || !editTopicId
+          ? saveAndDiscardPostDraftAlert({
+              deletePostDraft,
+              createPostDraft,
+              event: e,
+              navigation,
+              getValues,
+              resetForm,
+              draftType: PostDraftType.NewTopic,
+            })
+          : goBackWithoutSaveDraftAlert({ event: e, navigation, resetForm });
       }),
     [
       postValidity,
@@ -426,6 +433,8 @@ export default function NewPost() {
       selectedTags,
       isDraft,
       dirtyFields,
+      editPostId,
+      editTopicId,
     ],
   );
 
