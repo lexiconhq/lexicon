@@ -22,6 +22,7 @@ artifacts/
 
 #firebase
 google-services.json
+encoded-google-services*
 
 android/
 

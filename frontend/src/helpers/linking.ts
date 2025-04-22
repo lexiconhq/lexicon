@@ -1,10 +1,16 @@
 import {
+  ChatOrThreadRoute,
   DeepRoutes,
   FIRST_POST_NUMBER,
   PostOrMessageDetailRoute,
 } from '../constants';
 import { reset } from '../navigation/NavigationService';
-import { MessageDetailParams, Routes } from '../types';
+import {
+  ChatChannelDetailParams,
+  MessageDetailParams,
+  Routes,
+  ThreadParams,
+} from '../types';
 
 import { parseInt } from './parser';
 
@@ -69,6 +75,68 @@ export function getValidDetailParams(params: Array<string>):
   return { topicId, postNumber, outcome: 'valid-params' };
 }
 
+/**
+ * Parses chat-related deep link parameters.
+ *
+ * This function is used for deep linking into chat details or thread details.
+ * It expects the path parameters with the leading route already stripped off.
+ *
+ * The expected formats are:
+ * - `/c/:channelId/:messageId` (direct chat message)
+ * - `/c/:channelId/:threadId/:messageId` (message inside a thread)
+ *
+ * If `channelId` or `messageId` are missing or invalid, it returns `undefined`.
+ *
+ * If `threadId` is missing, it assumes the format is `/c/:channelId/:messageId`
+ * and returns `threadId` as `undefined`.
+ */
+export function getValidChatDetailParams(params: Array<string>):
+  | {
+      channelId: number;
+      messageId: number;
+      threadId?: number;
+    }
+  | undefined {
+  const [, ...otherParams] = params;
+  if (otherParams.length < 2 || otherParams.length > 3) {
+    return;
+  }
+  const parsedParams = otherParams.map((param) => parseInt(param));
+
+  const [channelId, firstParam, secondParam] = parsedParams;
+
+  if (!channelId || channelId <= 0) {
+    return;
+  }
+
+  if (otherParams.length === 2) {
+    // Format: /:channelId/:messageId
+    if (!firstParam || firstParam <= 0) {
+      return;
+    }
+
+    return {
+      channelId,
+      messageId: firstParam,
+    };
+  }
+
+  if (otherParams.length === 3) {
+    // Format: /:channelId/:threadId/:messageId
+    if (!firstParam || firstParam <= 0 || !secondParam || secondParam <= 0) {
+      return;
+    }
+
+    return {
+      channelId,
+      threadId: firstParam,
+      messageId: secondParam,
+    };
+  }
+
+  return;
+}
+
 export function navigatePostOrMessageDetail(
   route: PostOrMessageDetailRoute,
   pathParams: Array<string>,
@@ -90,18 +158,19 @@ export function navigatePostOrMessageDetail(
   return;
 }
 
-type postOrMessageDetailPathToRoutesParams = {
+type PostOrMessageDetailPathToRoutesParams = {
   route: PostOrMessageDetailRoute;
   pathParams: Array<string>;
   isTablet?: boolean;
   isTabletLandscape?: boolean;
 };
+
 export function postOrMessageDetailPathToRoutes({
   route,
   pathParams,
   isTablet,
   isTabletLandscape,
-}: postOrMessageDetailPathToRoutesParams): Routes {
+}: PostOrMessageDetailPathToRoutesParams): Routes {
   const detailParams = getValidDetailParams(pathParams);
   if (!detailParams) {
     return route === DeepRoutes['message-detail']
@@ -128,6 +197,88 @@ export function postOrMessageDetailPathToRoutes({
       {
         name: 'PostDetail',
         params: { topicId, postNumber, source: 'deeplink' },
+      },
+    ];
+  }
+}
+
+type ChatOrThreadPathToRoutesParams = Pick<
+  PostOrMessageDetailPathToRoutesParams,
+  'pathParams'
+> & {
+  route: ChatOrThreadRoute;
+};
+
+export function navigateChatOrThread({
+  route,
+  pathParams,
+}: ChatOrThreadPathToRoutesParams) {
+  let navigationRoutes = chatOrThreadPathToRoutes({
+    route,
+    pathParams,
+  });
+
+  reset({
+    index: navigationRoutes.length - 1,
+    routes: navigationRoutes,
+  });
+
+  return;
+}
+
+/**
+ * Generates a navigation route based on the given chat or thread path parameters.
+ *
+ * This function determines whether the user should be navigated to a chat channel
+ * or a specific thread within a chat channel, based on the provided `route` and `pathParams`.
+ *
+ * @param {Object} param0 - The input parameters.
+ * @param {DeepRoutes} param0.route - The deep link route name (e.g., 'thread-detail' or 'chat-detail').
+ * @param {string[]} param0.pathParams - The extracted path parameters from the deep link.
+ * @returns {Routes} An array of navigation routes leading to the appropriate screen.
+ *
+ * If the `pathParams` are invalid, it defaults to navigating to the Chat tab.
+ * If `route` is 'thread-detail' and `threadId` is present, it navigates to `ThreadDetail`.
+ * Otherwise, it navigates only to `ChatChannelDetail`.
+ */
+
+export function chatOrThreadPathToRoutes({
+  route,
+  pathParams,
+}: ChatOrThreadPathToRoutesParams): Routes {
+  const detailParams = getValidChatDetailParams(pathParams);
+  if (!detailParams) {
+    // If the parameters are invalid, navigate to the Chat tab as the default fallback
+    return [{ name: 'TabNav', state: { routes: [{ name: 'Chat' }] } }];
+  }
+  const { messageId, threadId, channelId } = detailParams;
+  const channelParams: ChatChannelDetailParams = {
+    channelId,
+    lastMessageId: messageId,
+  };
+  // If the route is for a thread and threadId exists, navigate to ThreadDetail
+  if (route === DeepRoutes['thread-detail'] && threadId) {
+    const threadParams: ThreadParams = {
+      channelId,
+      threadId,
+      threadTargetMessageId: messageId,
+    };
+
+    return [
+      // Navigate to the Chat tab first
+      { name: 'TabNav', state: { routes: [{ name: 'Chat' }] } },
+      // Then navigate to the ChatChannelDetail screen
+      { name: 'ChatChannelDetail', params: channelParams },
+      // Finally, open the specific ThreadDetail screen
+      { name: 'ThreadDetail', params: threadParams },
+    ];
+  } else {
+    // If it's not a thread, just navigate to the ChatChannelDetail screen
+    return [
+      { name: 'TabNav', state: { routes: [{ name: 'Chat' }] } },
+      {
+        name: 'ChatChannelDetail',
+        params: channelParams,
       },
     ];
   }

@@ -78,7 +78,7 @@ export function PollOptionItem(props: PollOptionItemProps) {
           />
           {usersVoters && usersVoters.length > 0 && (
             <StackedAvatars
-              size="xs"
+              size="xxs"
               avatars={usersVoters.map(({ avatar }) => avatar)}
               style={styles.stackedAvatars}
               onPress={() => {

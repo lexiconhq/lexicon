@@ -16,10 +16,15 @@ import {
   DEEP_LINK_SCREEN_CONFIG,
   EXPO_PREFIX,
   handleUrl,
+  isChatOrThread,
   isRouteAvailable,
   onSubscribe,
 } from '../constants';
-import { isRouteBesidePost, postOrMessageDetailPathToRoutes } from '../helpers';
+import {
+  chatOrThreadPathToRoutes,
+  isRouteBesidePost,
+  postOrMessageDetailPathToRoutes,
+} from '../helpers';
 import { useInitialLoad } from '../hooks/useInitialLoad';
 import { useUpdateApp } from '../hooks/useUpdateApp';
 import { makeStyles, useColorScheme } from '../theme';
@@ -132,16 +137,18 @@ const createLinkingConfig = (params: CreateLinkingConfigParams) => {
         }
       }
 
-      let routes = postOrMessageDetailPathToRoutes({
-        route,
-        pathParams,
-        isTablet,
-        isTabletLandscape,
-      });
+      const routes = isChatOrThread(route)
+        ? chatOrThreadPathToRoutes({ route, pathParams })
+        : postOrMessageDetailPathToRoutes({
+            route,
+            pathParams,
+            isTablet,
+            isTabletLandscape,
+          });
 
       return {
         routes,
-        index: routes.length - 1,
+        index: Math.max(routes.length - 1, 0), // Ensures valid index
       };
     },
   };

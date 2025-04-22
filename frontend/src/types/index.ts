@@ -1,3 +1,4 @@
+export * from './chat';
 import { ApolloClient, NormalizedCacheObject } from '@apollo/client';
 
 export * from './ContentState';

@@ -9,6 +9,8 @@ import { ObjectValues, RootStackParamList } from '../types';
 export enum DeepRoutes {
   'message-detail' = 'message-detail',
   'post-detail' = 'post-detail',
+  'chat-detail' = 'chat-detail',
+  'thread-detail' = 'thread-detail',
 }
 
 export type DeepLinkRoute = ObjectValues<typeof DeepRoutes>;
@@ -21,8 +23,13 @@ export type PostOrMessageDetailRoute = Extract<
   'message-detail' | 'post-detail'
 >;
 
+export type ChatOrThreadRoute = Extract<
+  DeepLinkRoute,
+  'chat-detail' | 'thread-detail'
+>;
+
 export function isRouteAvailable(route: string): route is DeepLinkRoute {
-  return isPostOrMessageDetail(route);
+  return isPostOrMessageDetail(route) || isChatOrThread(route);
 }
 
 export function isPostOrMessageDetail(
@@ -31,6 +38,12 @@ export function isPostOrMessageDetail(
   return (
     route === DeepRoutes['message-detail'] ||
     route === DeepRoutes['post-detail']
+  );
+}
+
+export function isChatOrThread(route: string): route is ChatOrThreadRoute {
+  return (
+    route === DeepRoutes['chat-detail'] || route === DeepRoutes['thread-detail']
   );
 }
 
@@ -50,5 +63,12 @@ export const DEEP_LINK_SCREEN_CONFIG: PathConfigMap<RootStackParamList> = {
   },
   PostDetail: {
     path: `${DeepRoutes['post-detail']}/t/:slug/:topicId/:postNumber?`,
+  },
+
+  ChatChannelDetail: {
+    path: `${DeepRoutes['chat-detail']}/c/:channelId/:messageId`,
+  },
+  ThreadDetail: {
+    path: `${DeepRoutes['thread-detail']}/c/:channelId/:threadId/:messageId`,
   },
 };

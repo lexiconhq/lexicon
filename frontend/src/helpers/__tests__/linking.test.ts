@@ -1,6 +1,7 @@
 import {
-  getValidDetailParams,
   extractPathname,
+  getValidChatDetailParams,
+  getValidDetailParams,
   isRouteBesidePost,
 } from '../linking';
 
@@ -42,4 +43,41 @@ it('should check is route post detail or not', () => {
   expect(isRouteBesidePost('message-detail')).toBeTruthy();
 
   expect(isRouteBesidePost('random-detail')).toBeTruthy();
+});
+
+describe('getValidChatDetailParams', () => {
+  it('should return channelId and messageId for valid 2-segment URLs', () => {
+    expect(getValidChatDetailParams(['c', '12', '34'])).toEqual({
+      channelId: 12,
+      messageId: 34,
+    });
+  });
+
+  it('should return channelId, threadId, and messageId for valid 3-segment URLs', () => {
+    expect(getValidChatDetailParams(['c', '12', '56', '78'])).toEqual({
+      channelId: 12,
+      threadId: 56,
+      messageId: 78,
+    });
+  });
+
+  it('should return undefined for invalid numbers', () => {
+    expect(getValidChatDetailParams(['c', 'abc', '34'])).toBeFalsy();
+    expect(getValidChatDetailParams(['c', '-1', '34'])).toBeFalsy();
+  });
+
+  it('should return undefined for missing parameters', () => {
+    expect(getValidChatDetailParams(['c', '12'])).toBeFalsy();
+    expect(getValidChatDetailParams(['c'])).toBeFalsy();
+    expect(getValidChatDetailParams([])).toBeFalsy();
+  });
+
+  it('should return undefined for too many parameters', () => {
+    expect(getValidChatDetailParams(['c', '12', '34', '56', '78'])).toBeFalsy();
+  });
+
+  it('should return undefined if any parameter is NaN', () => {
+    expect(getValidChatDetailParams(['c', '12', 'notANumber'])).toBeFalsy();
+    expect(getValidChatDetailParams(['c', '12', '34', 'NaN'])).toBeFalsy();
+  });
 });

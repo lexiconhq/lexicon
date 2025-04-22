@@ -18,6 +18,7 @@ const config: CodegenConfig = {
           PathBuilder: 'unknown',
           DeleteEmailOutput: 'string',
           ChangePasswordOutput: 'string',
+          MarkReadChatOutput: 'string',
           SetPrimaryEmailOutput: 'string',
           DeletePostDraftOutput: 'string',
           File: 'ReactNativeFile',

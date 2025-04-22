@@ -180,6 +180,23 @@ type LoginParams = {
   isActivateAccount?: boolean;
 };
 
+export type ChatChannelDetailParams = {
+  lastMessageId?: number;
+  channelId: number;
+  channelTitle?: string;
+  memberCount?: number;
+  threadEnabled?: boolean;
+  targetMessageId?: number;
+};
+
+export type ThreadParams = {
+  channelId: number;
+  threadId: number;
+} & ( // Ensure that only one of threadFirstMessageId or threadTargetMessageId is provided
+  | { threadFirstMessageId: number; threadTargetMessageId?: never }
+  | { threadTargetMessageId: number; threadFirstMessageId?: never }
+);
+
 type EditPollsListParams = {
   messageTopicId: number;
 };
@@ -223,11 +240,14 @@ export type RootStackParamList = {
   EditPollsList: EditPollsListParams;
   AuthenticationWebView: undefined;
   Welcome: undefined;
+  ChatChannelDetail: ChatChannelDetailParams;
+  ThreadDetail: ThreadParams;
 };
 
 export type TabParamList = {
   Home: undefined | HomeProps;
   Profile: undefined;
+  Chat: undefined;
   Draft: undefined;
 };
 

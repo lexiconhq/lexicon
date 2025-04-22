@@ -4,6 +4,10 @@ import { View, ViewProps } from 'react-native';
 import { makeStyles, useTheme } from '../theme';
 
 const dotVariant = {
+  extraLarge: {
+    size: 12,
+    padding: 4,
+  },
   large: {
     size: 10,
     padding: 3,

@@ -2,7 +2,8 @@ export const AVATAR_ICON_SIZES = {
   l: 96,
   m: 52,
   s: 40,
-  xs: 28,
+  xs: 36,
+  xxs: 28,
 };
 
 export const AVATAR_IMAGE_SIZES = {
@@ -16,7 +17,8 @@ export const AVATAR_LETTER_SIZES = {
   l: 72,
   m: 36,
   s: 28,
-  xs: 16,
+  xs: 24,
+  xxs: 16,
 };
 
 export const EMOJI_SIZES = {

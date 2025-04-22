@@ -59,6 +59,24 @@ export default function Notifications() {
     navigate('UserInformation', userInformationParams);
   };
 
+  const navToChat = (
+    chatChannelDetailParams: Omit<
+      RootStackParamList['ChatChannelDetail'],
+      'memberCount' | 'threadEnabled'
+    >,
+  ) => {
+    const { channelId, channelTitle } = chatChannelDetailParams;
+    navigate('ChatChannelDetail', {
+      channelId,
+      channelTitle,
+    });
+  };
+  const navToThread = (
+    threadDetailParams: RootStackParamList['ThreadDetail'],
+  ) => {
+    navigate('ThreadDetail', threadDetailParams);
+  };
+
   const [page, setPage] = useState<number>(1);
   const [isLoadMore, setIsLoadMore] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string>('');
@@ -116,6 +134,8 @@ export default function Notifications() {
     navToPostDetail,
     navToMessageDetail,
     navToUserInformation,
+    navToChat,
+    navToThread,
   );
 
   useEffect(() => {

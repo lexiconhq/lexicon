@@ -16,6 +16,7 @@ type Props<T> = {
   width: number;
   labelExtractor: (item: T) => string;
   onItemPress: (item: T, index: number) => void;
+  valuePaddingScene?: number; // value padding left or right inside scene which used to calculate IOS_SEGMENT_WIDTH
 };
 
 const ios = Platform.OS === 'ios';
@@ -24,7 +25,14 @@ export function SegmentedControl<T>(props: Props<T>) {
   const styles = useStyles();
   const { spacing } = useTheme();
 
-  const { values, selectedIndex, width, labelExtractor, onItemPress } = props;
+  const {
+    values,
+    selectedIndex,
+    width,
+    labelExtractor,
+    onItemPress,
+    valuePaddingScene,
+  } = props;
 
   const positionValue = useRef(new Animated.Value(0)).current;
 
@@ -44,7 +52,8 @@ export function SegmentedControl<T>(props: Props<T>) {
   // SPACING.xxl (24) is coming from the padding inside the Home Screen (Left and Right)
   // SPACING.s (4) is coming from the initial (left) padding of the Segmented Control container
   const IOS_SEGMENT_WIDTH =
-    (width - (spacing.xxl * 2 + spacing.s)) / values.length;
+    (width - ((valuePaddingScene || spacing.xxl) * 2 + spacing.s)) /
+    values.length;
 
   return (
     <View style={styles.container}>
@@ -73,6 +82,7 @@ export function SegmentedControl<T>(props: Props<T>) {
       {values.map((value, index) => (
         <TouchableOpacity
           key={index}
+          testID={`Channel:SegmentControl:${index}`}
           style={[styles.item, selectedIndex === index && styles.itemChosen]}
           onPress={() => onSegmentSelected(value, index)}
           disabled={selectedIndex === index}

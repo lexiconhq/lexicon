@@ -185,7 +185,7 @@ export default function PostReply() {
     skip: !!editPostId,
   });
 
-  useAutoSaveManager();
+  useAutoSaveManager({ debounceSaveDraft });
 
   useEffect(() => {
     const { isDraft } = getValues();
@@ -321,6 +321,7 @@ export default function PostReply() {
               draftType: PostDraftType.PostReply,
               topicId,
               replyToPostId,
+              debounceSaveDraft,
             })
           : goBackWithoutSaveDraftAlert({
               resetForm: reset,
@@ -342,6 +343,7 @@ export default function PostReply() {
       replyToPostId,
       formState.dirtyFields.polls,
       editPostId,
+      debounceSaveDraft,
     ],
   );
 
@@ -554,6 +556,7 @@ export default function PostReply() {
                 );
                 onChange(text);
                 debounced(text, currentUploadToken);
+
                 debounceSaveDraft();
 
                 let currentPostValidity; // temp variable to get the value of existingPostIsValid or newPostIsValid helper

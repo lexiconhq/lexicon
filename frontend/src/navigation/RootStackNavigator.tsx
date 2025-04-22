@@ -7,6 +7,7 @@ import {
   AuthenticationWebView,
   ChangePassword,
   Channels,
+  ChatChannelDetail,
   DarkMode,
   EditPollsList,
   EditProfile,
@@ -33,6 +34,7 @@ import {
   SelectUser,
   StackAvatarModal,
   Tags,
+  ThreadDetails,
   Troubleshoot,
   UserInformation,
   Welcome,
@@ -115,6 +117,11 @@ export default function RootStackNavigator(props: RootStackNavigatorProps) {
                   component={MessageDetail}
                   options={{ title: t('Message') }}
                 />
+                <RootStack.Screen
+                  name="ChatChannelDetail"
+                  component={ChatChannelDetail}
+                  options={{ title: '' }}
+                />
                 {!isTablet && (
                   <>
                     <RootStack.Screen
@@ -191,7 +198,12 @@ export default function RootStackNavigator(props: RootStackNavigatorProps) {
         />
       </RootStack.Group>
       <RootStack.Group
-        screenOptions={{ ...navHeader, ...navModal, presentation: 'modal' }}
+        screenOptions={{
+          ...navHeader,
+          ...navModal,
+          presentation: 'modal',
+          headerBackTestID: 'HeaderBackButton',
+        }}
       >
         {token && (
           <>
@@ -254,6 +266,16 @@ export default function RootStackNavigator(props: RootStackNavigatorProps) {
               name="Poll"
               component={Poll}
               options={{ ...navModal }}
+            />
+            <RootStack.Screen
+              name="ThreadDetail"
+              component={ThreadDetails}
+              options={{
+                ...navModal,
+                title: t('Thread'),
+                headerShown: true,
+                ...navNoShadow,
+              }}
             />
             <RootStack.Screen
               name="EditPollsList"

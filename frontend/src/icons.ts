@@ -25,6 +25,7 @@ import ExpandLess from '../assets/icons/ExpandLess.svg';
 import ExpandMore from '../assets/icons/ExpandMore.svg';
 import Folder from '../assets/icons/Folder.svg';
 import Home from '../assets/icons/Home.svg';
+import Information from '../assets/icons/Information.svg';
 import ItalicText from '../assets/icons/ItalicText.svg';
 import KeyboardHide from '../assets/icons/KeyboardHide.svg';
 import Lexicon from '../assets/icons/Lexicon.svg';
@@ -56,6 +57,7 @@ import Triangle from '../assets/icons/Triangle.svg';
 import Unreachable from '../assets/icons/Unreachable.svg';
 import Views from '../assets/icons/Views.svg';
 import WarningCircle from '../assets/icons/WarningCircle.svg';
+import ChatBubble from '../assets/icons/chatBubble.svg';
 
 export const Icons = {
   Add,
@@ -82,6 +84,7 @@ export const Icons = {
   ExpandMore,
   Folder,
   Home,
+  Information,
   KeyboardHide,
   Lexicon,
   Likes,
@@ -116,6 +119,7 @@ export const Icons = {
   QuoteText,
   SideBar,
   SideBarAndroid,
+  ChatBubble,
 };
 
 export type IconName = keyof typeof Icons;

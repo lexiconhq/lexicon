@@ -17,9 +17,12 @@ import { NO_CHANNEL_FILTER, discourseHost, errorTypes } from '../constants';
 import { defaultArgsListPostDraft } from '../constants/postDraft';
 import {
   appendPagination,
+  appendPaginationTypeField,
   decodeToken,
+  getLatestApolloId,
   getTopicDetailOutputCacheBehavior,
   handleDuplicates,
+  mergeReferenceData,
   prependAppendPagination,
   replaceDataPagination,
   showLogoutAlert,
@@ -85,18 +88,7 @@ const cache = new InMemoryCache({
     TopicsOutput: {
       keyFields: [],
       fields: {
-        users: {
-          merge: (existing, incoming) => {
-            if (!existing || !incoming) {
-              return incoming || existing;
-            }
-            return handleDuplicates({
-              oldArray: existing,
-              newArray: incoming,
-              newArrayIs: 'appended',
-            });
-          },
-        },
+        users: appendPaginationTypeField(),
         topicList: {
           /**
            * TODO: refactor this merge function and standarize other pagination approaches
@@ -140,8 +132,113 @@ const cache = new InMemoryCache({
         },
       },
     },
+    GetChatChannelsOutput: {
+      keyFields: [],
+      fields: {
+        channels: {
+          keyArgs: (_, context) => {
+            if (!context.variables || !context.variables.status) {
+              return '';
+            }
+
+            let { filter, status } = context.variables;
+            return `${filter ?? ''}-${status}`;
+          },
+          merge: (existing, incoming, { variables }) => {
+            if (!variables) {
+              return incoming;
+            }
+
+            if (!existing || !incoming) {
+              return incoming || existing || undefined;
+            }
+            let mergedChannels: Readonly<Array<Reference>> = [];
+            if (variables.offset > 0) {
+              mergedChannels = handleDuplicates({
+                newArray: incoming,
+                oldArray: existing,
+                newArrayIs: 'appended',
+              });
+            } else {
+              mergedChannels = handleDuplicates({
+                newArray: incoming,
+                oldArray: existing,
+                newArrayIs: 'prepended',
+              });
+            }
+            return mergedChannels;
+          },
+        },
+      },
+    },
     UserActions: {
       keyFields: ['postId', 'topicId', 'actionType'],
+    },
+    ChatChannelMessages: {
+      keyFields: [],
+      fields: {
+        messages: {
+          keyArgs: (_, context) => {
+            if (!context.variables || !context.variables.channelId) {
+              return '';
+            }
+
+            let { channelId } = context.variables;
+            return `channel-${channelId}`;
+          },
+          merge: (existing, incoming) => {
+            // NOTE: We should not reverse exisiting data because it is already reversed in the previous iteration
+            if (!incoming) {
+              return existing;
+            }
+            if (!existing) {
+              return incoming ? [...incoming].reverse() : undefined;
+            }
+
+            const reversedIncoming = [...incoming].reverse();
+            let lastExisting = getLatestApolloId(existing);
+            let lastIncoming = getLatestApolloId(reversedIncoming);
+
+            if (!lastExisting || !lastIncoming) {
+              return existing;
+            }
+
+            return mergeReferenceData({
+              existing,
+              incoming: reversedIncoming,
+              lastExisting,
+              lastIncoming,
+              reverse: true,
+            });
+          },
+        },
+        canLoadMorePast: {
+          keyArgs: (_, context) => {
+            if (!context.variables || !context.variables.channelId) {
+              return '';
+            }
+
+            let { channelId } = context.variables;
+            return `channel-${channelId}`;
+          },
+          merge: (existing, incoming, { variables }) => {
+            return variables?.isPolling ? existing : incoming;
+          },
+        },
+      },
+    },
+    GetThreadMessagesOutput: {
+      keyFields: [],
+      fields: {
+        messages: prependAppendPagination((_, context) => {
+          if (!context.variables || !context.variables.threadId) {
+            return '';
+          }
+
+          let { threadId, channelId } = context.variables;
+          return `${channelId}-${threadId}`;
+        }, true),
+      },
     },
     Query: {
       fields: {

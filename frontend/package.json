@@ -22,7 +22,8 @@
     "tests:ios:pod:install": "cd ios && rm -rf insertyourappname.xcworkspace && rm -f Podfile.lock && pod install --repo-update && cd ..",
     "tests:ios:test": "yarn graphql:generate && detox test --configuration ios.sim.debug --cleanup --record-logs all --loglevel verbose --record-videos failing",
     "android": "expo run:android",
-    "ios": "expo run:ios"
+    "ios": "expo run:ios",
+    "encode:google-service": "cat google-services.json | base64 > encoded-google-services.txt"
   },
   "dependencies": {
     "@apollo/client": "^3.7.0",

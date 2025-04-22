@@ -1,6 +1,13 @@
 import { aboutPatcher } from './about';
 import { categoryListPatcher } from './categoryList';
 import { changeProfileOutputPatcher } from './changeProfileOutput';
+import { chatChannelMessagesOutputPatcher } from './chatChannelMessages';
+import {
+  channelDetailOutputPatcher,
+  getChannelsOutputPatcher,
+} from './getChatChannelsOutput';
+import { getThreadDetailOutputPatcher } from './getThreadDetailOutput';
+import { getThreadMessagesOutputPatcher } from './getThreadMessagesOutput';
 import { lookupUrlOutputPatcher } from './lookupUrls';
 import { pollActionPatcher } from './pollActionOutput';
 import { PostPatcher } from './post';
@@ -41,4 +48,9 @@ export const typePatchers = {
   UploadOutput: uploadOutputPatcher,
   UserActions: userActionsPatcher,
   UserUnreadNotifications: userUnreadNotificationsPatcher,
+  ChatChannelMessages: chatChannelMessagesOutputPatcher,
+  GetChatChannelsOutput: getChannelsOutputPatcher,
+  GetThreadMessagesOutput: getThreadMessagesOutputPatcher,
+  GetThreadDetailOutput: getThreadDetailOutputPatcher,
+  ChatChannelDetailOutput: channelDetailOutputPatcher,
 };

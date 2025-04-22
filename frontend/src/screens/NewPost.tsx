@@ -193,7 +193,6 @@ export default function NewPost() {
     }
   }, 1500);
 
-  useAutoSaveManager();
   const kasv = useKASVWorkaround();
 
   const newPostRef = useRef<TextInputType>(null);
@@ -279,6 +278,8 @@ export default function NewPost() {
     type: PostDraftType.NewTopic,
     skip: !!(editPostId || editTopicId),
   });
+
+  useAutoSaveManager({ debounceSaveDraft });
 
   useEffect(() => {
     const { raw } = getValues();
@@ -416,6 +417,7 @@ export default function NewPost() {
               getValues,
               resetForm,
               draftType: PostDraftType.NewTopic,
+              debounceSaveDraft,
             })
           : goBackWithoutSaveDraftAlert({ event: e, navigation, resetForm });
       }),
@@ -435,6 +437,7 @@ export default function NewPost() {
       dirtyFields,
       editPostId,
       editTopicId,
+      debounceSaveDraft,
     ],
   );
 

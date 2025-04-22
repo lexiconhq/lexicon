@@ -10,6 +10,7 @@ import {
 } from '../generatedAPI/server';
 
 import { Poll, PollsVotes, User } from './Post';
+import { ChatMessageUpload, Thread } from './api';
 
 let ChannelRecord = runtypes.Record({
   id: runtypes.Number,
@@ -153,3 +154,20 @@ export type StackAvatarUser = {
   name: string;
   username: string;
 };
+
+export type ChatMessageContent = {
+  id: number;
+  time: string;
+  threadId?: number | null;
+  thread?: Thread;
+  mentionedUsers: Array<Omit<User, 'avatar'>>;
+  user: User;
+  replyCount?: number | null;
+  uploads: Array<ChatMessageUpload>;
+  markdownContent: string;
+};
+
+export type ThreadDetailFirstContent = Omit<
+  ChatMessageContent,
+  'replyCount' | 'uploads' | 'threadId' | 'thread'
+>;
