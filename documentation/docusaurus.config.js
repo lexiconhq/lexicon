@@ -71,9 +71,14 @@ module.exports = {
             '2.2.0',
             '3.0.0',
             '3.1.0',
+            '3.2.0',
           ],
-          lastVersion: '3.1.0',
+          lastVersion: '3.2.0',
           versions: {
+            '3.2.0': {
+              path: 'version-3.2.0',
+              banner: 'none',
+            },
             '3.1.0': {
               path: 'version-3.1.0',
               banner: 'none',

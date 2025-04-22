@@ -14,6 +14,7 @@ type NotificationTypename =
   | 'AdminMessageNotification'
   | 'AdminMessageInvitation'
   | 'InviteeAccept'
+  | 'ChatNotification'
   | 'UnknownNotification';
 
 function getNotificationTypename(
@@ -30,6 +31,8 @@ function getNotificationTypename(
       return 'AdminMessageInvitation';
     case item.displayUsername != null:
       return 'InviteeAccept';
+    case item.chatChannelId != null:
+      return 'ChatNotification';
     default:
       return 'UnknownNotification';
   }
@@ -40,6 +43,13 @@ export function notificationHandler(
   navToPostDetail: (params: RootStackParamList['PostDetail']) => void,
   navToMessageDetail: (params: RootStackParamList['MessageDetail']) => void,
   navToUserInformation: (params: RootStackParamList['UserInformation']) => void,
+  navToChat: (
+    params: Omit<
+      RootStackParamList['ChatChannelDetail'],
+      'memberCount' | 'threadEnabled'
+    >,
+  ) => void,
+  navToThread: (params: RootStackParamList['ThreadDetail']) => void,
 ): Array<NotificationDataType> {
   let tempNotification: Array<NotificationDataType> = [];
 
@@ -95,6 +105,22 @@ export function notificationHandler(
         return navToUserInformation({
           username: data.displayUsername || '',
         });
+      } else if (
+        typename === 'ChatNotification' &&
+        data.chatChannelId &&
+        data.chatMessageId
+      ) {
+        return data.chatThreadId
+          ? navToThread({
+              channelId: data.chatChannelId,
+              threadId: data.chatThreadId,
+              threadTargetMessageId: data.chatMessageId,
+            })
+          : navToChat({
+              channelId: data.chatChannelId,
+              channelTitle: data.chatChannelTitle || '',
+              targetMessageId: data.chatMessageId,
+            });
       } else if (
         notificationType === NotificationType.PostApproved &&
         topicId
@@ -155,8 +181,7 @@ export function notificationHandler(
         switch (notificationType) {
           // TODO : Do more research about more notificationTypes
           case NotificationType.Mention:
-          case NotificationType.GroupMention:
-          case NotificationType.ChatMention: {
+          case NotificationType.GroupMention: {
             message = t('Mentioned you in ') + topicTitle;
             break;
           }
@@ -279,6 +304,25 @@ export function notificationHandler(
           id,
           name: data.displayUsername || '',
           message: `${data.displayUsername} accepted your invitation.`,
+          createdAt,
+          seen,
+          notificationType,
+          onPress,
+        });
+        break;
+      }
+      case 'ChatNotification': {
+        const { chatChannelTitle, mentionedByUsername } = data;
+        switch (notificationType) {
+          case NotificationType.ChatMention: {
+            message = t('Mentioned you in ') + chatChannelTitle;
+            break;
+          }
+        }
+        tempNotification.push({
+          id,
+          name: mentionedByUsername || '',
+          message,
           createdAt,
           seen,
           notificationType,

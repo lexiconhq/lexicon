@@ -37,3 +37,11 @@ export const UserIcon = z.object({
 });
 
 export type UserIcon = z.infer<typeof UserIcon>;
+
+export const User = z.object({
+  id: z.number(),
+  username: z.string(),
+  name: z.optional(z.nullable(z.string())),
+  avatar: z.string(),
+});
+export type User = z.infer<typeof User>;

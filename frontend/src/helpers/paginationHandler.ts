@@ -158,8 +158,35 @@ export function appendPagination<T extends Reference>(
   };
 }
 
+/**
+ * This function is used to append pagination for a type field function.
+ * @param keyArgs - The key arguments for caching.
+ * @returns An array combining existing and incoming data.
+ */
+export function appendPaginationTypeField<T extends Reference>(
+  keyArgs: KeyArgs = [],
+) {
+  return {
+    keyArgs,
+    merge: (
+      existing: Readonly<Array<T>> | undefined,
+      incoming: Readonly<Array<T>>,
+    ) => {
+      if (!existing || !incoming) {
+        return incoming || existing || undefined;
+      }
+      return handleDuplicates({
+        newArray: incoming,
+        oldArray: existing,
+        newArrayIs: 'appended',
+      });
+    },
+  };
+}
+
 export function prependAppendPagination<T extends Reference>(
   keyArgs: KeyArgs = [],
+  priorityExisting?: boolean,
 ): FieldPolicy<Array<T>> {
   return {
     keyArgs,
@@ -173,7 +200,10 @@ export function prependAppendPagination<T extends Reference>(
         existing.length === 0 ||
         incoming.length === 0
       ) {
-        return incoming || existing || null;
+        return (
+          (priorityExisting ? existing || incoming : incoming || existing) ||
+          null
+        );
       }
 
       /**
@@ -238,6 +268,7 @@ type MergeReferenceDataParam<T extends Reference> = {
   incoming: Readonly<Array<T>>;
   lastExisting?: number;
   lastIncoming?: number;
+  reverse?: boolean;
   mockAlert?: (error: string) => void;
 };
 export function mergeReferenceData<T extends Reference>({
@@ -245,6 +276,7 @@ export function mergeReferenceData<T extends Reference>({
   incoming,
   lastExisting,
   lastIncoming,
+  reverse,
   mockAlert,
 }: MergeReferenceDataParam<T>) {
   let mergedTopics: Readonly<Array<T>> = [];
@@ -266,13 +298,13 @@ export function mergeReferenceData<T extends Reference>({
       mergedTopics = handleDuplicates({
         newArray: incoming,
         oldArray: existing,
-        newArrayIs: 'appended',
+        newArrayIs: reverse ? 'prepended' : 'appended',
       });
     } else {
       mergedTopics = handleDuplicates({
         newArray: incoming,
         oldArray: existing,
-        newArrayIs: 'prepended',
+        newArrayIs: reverse ? 'appended' : 'prepended',
       });
     }
   }

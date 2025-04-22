@@ -49,19 +49,29 @@ jobs:
       - name: Generate files
         run: yarn generate
 
-      - name: Cache Detox build
-        id: cache-detox-build
-        uses: buildjet/cache@v4
+      # Restore Detox build cache
+      - name: Restore cached Detox build
+        id: cache-detox-restore
+        uses: buildjet/cache/restore@v4
         with:
-          path: frontend/android
           key: ${{ runner.os }}-detox-build-${{ inputs.expo_version }}
+          path: frontend/android
 
       - name: Expo prebuild android and build detox
-        if: steps.cache-detox-build.outputs.cache-hit != 'true'
+        if: steps.cache-detox-restore.outputs.cache-hit != 'true'
         run: |
           cd frontend
           npx expo prebuild --platform android
           yarn tests:android:build
+
+      # Save Detox build cache
+      - name: Save Detox build cache
+        id: cache-detox-save
+        if: always() && steps.cache-detox-restore.outputs.cache-hit != 'true'
+        uses: buildjet/cache/save@v4
+        with:
+          key: ${{ steps.cache-detox-restore.outputs.cache-primary-key }}
+          path: frontend/android
 
       - name: Setup Detox
         run: |

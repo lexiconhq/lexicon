@@ -169,6 +169,11 @@ type NotificationDataType {
   badgeSlug: String
   badgeTitle: Boolean
   text: String
+  chatMessageId: Int
+  chatChannelId: Int
+  chatThreadId: Int
+  mentionedByUsername: String
+  chatChannelTitle: String
 }
 
 type NotificationDetail {
@@ -661,6 +666,12 @@ enum TopPeriodEnum {
   YEARLY
 }
 
+enum ChatChannelStatus {
+  closed
+  open
+  all
+}
+
 input DeletePushNotificationsSubscribeInput {
   pushNotificationsToken: String
 }
@@ -709,6 +720,33 @@ type UploadOutput {
   width: Int!
 }
 
+type GetChatChannelsOutput {
+  channels: [ChannelList!]!
+  meta: MetaChat
+}
+
+type ChatChannelDetailOutput {
+  channel: ChannelList!
+}
+
+type ChannelList {
+  id: Int!
+  title: String!
+  status: String!
+  description: String
+  color: String!
+  canJoinChannel: Boolean!
+  lastMessageId: Int
+  lastReadMessageId: Int
+  isFollowingChannel: Boolean!
+  threadingEnabled: Boolean!
+  membershipsCount: Int!
+}
+
+type MetaChat {
+  loadMoreUrl: String
+}
+
 input UploadInput {
   file: File!
   token: Int
@@ -740,6 +778,70 @@ input LeaveMessageInput {
 # This is just empty input for bodyKey post without input
 input EmptyInput {
   _placeholder: String
+}
+
+type ChatMessageUpload {
+  id: Int!
+  url: String!
+}
+
+type ChatMessage {
+  id: Int!
+  time: String!
+  user: UserIcon!
+  mentionedUsers: [UserIcon!]!
+  threadId: Int
+  replyCount: Int
+  markdownContent: String!
+  uploads: [ChatMessageUpload!]!
+}
+
+type ChatChannelMessages {
+  messages: [ChatMessage!]!
+  canLoadMorePast: Boolean!
+  canLoadMoreFuture: Boolean!
+}
+
+enum DirectionPagination {
+  past
+  future
+}
+
+type MetaThread {
+  targetMessageId: Int
+  canLoadMoreFuture: Boolean!
+  canLoadMorePast: Boolean!
+}
+
+type GetThreadMessagesOutput {
+  messages: [ChatMessage!]!
+  meta: MetaThread!
+}
+
+type ReplyChatOutput {
+  messageId: Int!
+}
+
+type CreateThreadOutput {
+  id: Int!
+  lastMessageId: Int!
+}
+
+type OriginalMessage {
+  id: Int!
+  time: String!
+  user: UserIcon!
+  mentionedUsers: [UserIcon!]!
+  markdownContent: String!
+}
+
+type ThreadDetail {
+  id: Int!
+  originalMessage: OriginalMessage
+}
+
+type GetThreadDetailOutput {
+  thread: ThreadDetail!
 }
 
 interface BasePostDraft {
@@ -874,6 +976,27 @@ type Query {
     username: String
   ): TopicsOutput!
   postQuery(postId: Int!): Post!
+  getChatChannelMessages(
+    channelId: Int!
+    pageSize: Int!
+    targetMessageId: Int
+    direction: DirectionPagination
+  ): ChatChannelMessages!
+  getChatChannelDetail(channelId: Int!): ChatChannelDetailOutput!
+  getChatChannels(
+    limit: Int
+    offset: Int
+    status: ChatChannelStatus
+    filter: String
+  ): GetChatChannelsOutput
+  getThreadMessages(
+    channelId: Int!
+    threadId: Int!
+    limit: Int
+    direction: DirectionPagination
+    targetMessageId: Int
+  ): GetThreadMessagesOutput!
+  getThreadDetail(channelId: Int!, threadId: Int!): GetThreadDetailOutput!
   checkPostDraft(draftKey: String!): CheckPostDraftResult!
   listPostDrafts(page: Int!): [ListPostDraftsResult!]!
 }
@@ -936,6 +1059,10 @@ type EditPostOutput {
   post: Post!
 }
 
+type JoinLeaveChannelOutput {
+  chatChannelId: Int!
+}
+
 input EditUserStatusInput {
   description: String!
   emoji: String!
@@ -947,6 +1074,19 @@ input EditTopicInput {
   featureLink: String
   tags: [String!]
   title: String
+}
+
+input MarkReadChatInput {
+  messageId: Int!
+}
+
+input ReplyChatInput {
+  message: String!
+  threadId: Int
+}
+
+input CreateThreadInput {
+  originalMessageId: Int!
 }
 
 input CreatePostDraftDataInput {
@@ -1026,6 +1166,20 @@ type Mutation {
     pollName: String!
     postId: Int!
   ): PollVoteOutput!
+  joinChannel(
+    channelId: Int!
+    joinChannelInput: EmptyInput
+  ): JoinLeaveChannelOutput!
+  leaveChannel(channelId: Int!): JoinLeaveChannelOutput!
+  markReadChat(
+    channelId: Int!
+    markReadChatInput: MarkReadChatInput!
+  ): MarkReadChatOutput!
+  replyChat(channelId: Int!, replyChatInput: ReplyChatInput!): ReplyChatOutput!
+  createThread(
+    channelId: Int!
+    createThreadInput: CreateThreadInput
+  ): CreateThreadOutput!
   deletePostDraft(draftKey: String!, sequence: Int!): DeletePostDraftOutput!
   createAndUpdatePostDraftRest(
     createAndUpdatePostDraftInputRest: CreateAndUpdatePostDraftInputRest!
@@ -1044,3 +1198,4 @@ scalar BodyBuilder
 scalar ChangePasswordOutput
 scalar DeletePostDraftOutput
 scalar File
+scalar MarkReadChatOutput

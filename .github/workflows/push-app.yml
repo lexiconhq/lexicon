@@ -1,0 +1,75 @@
+name: Push App Mobile
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: 'EAS Submit Profile based on environment. (see eas.json for the profiles)'
+        type: choice
+        required: true
+        options:
+          - test
+          - preview
+          - production
+        default: 'preview'
+      branch:
+        description: 'name branch at EAS'
+        required: true
+        type: string
+      message:
+        description: 'Push Message Here'
+        required: true
+        type: string
+
+jobs:
+  push:
+    name: EAS PUSH APP MOBILE
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: yarn
+
+      - name: Check for EXPO_TOKEN
+        run: |
+          if [ -z "${{ secrets.EXPO_TOKEN }}" ]; then
+            echo "You must provide an EXPO_TOKEN secret linked to this project's Expo account in this repo's secrets. Learn more: https://docs.expo.dev/eas-update/github-actions"
+            exit 1
+          fi
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v3
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-frontend-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-frontend-
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Manually generate type
+        run: yarn graphql:generate
+
+      - name: Update branch
+        run: eas update --branch ${{inputs.branch}} --message "${{inputs.message}}"
+
+      - name: EAS channel
+        run: eas channel:edit ${{inputs.channel}} --branch ${{inputs.branch}}

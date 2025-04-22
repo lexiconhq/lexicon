@@ -7,8 +7,8 @@ import React, {
   useState,
 } from 'react';
 
-import { isPostOrMessageDetail } from '../constants';
-import { navigatePostOrMessageDetail } from '../helpers';
+import { isChatOrThread, isPostOrMessageDetail } from '../constants';
+import { navigateChatOrThread, navigatePostOrMessageDetail } from '../helpers';
 
 import { useDevice } from './DeviceProvider';
 
@@ -42,6 +42,8 @@ export function RedirectProvider({ children }: Props) {
         isTablet,
         isTabletLandscape,
       );
+    } else if (isChatOrThread(route)) {
+      navigateChatOrThread({ route, pathParams });
     }
   }, [isTablet, isTabletLandscape, redirectPath]);
 

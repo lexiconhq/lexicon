@@ -237,7 +237,7 @@ export default function NewMessage() {
     type: PostDraftType.NewPrivateMessage,
   });
 
-  useAutoSaveManager();
+  useAutoSaveManager({ debounceSaveDraft });
 
   useEffect(() => {
     setModal(true);
@@ -354,6 +354,7 @@ export default function NewMessage() {
           getValues,
           resetForm,
           draftType: PostDraftType.NewPrivateMessage,
+          debounceSaveDraft,
         });
       }),
     [
@@ -367,16 +368,15 @@ export default function NewMessage() {
       dirtyFields.title,
       dirtyFields.raw,
       dirtyFields.polls,
+      debounceSaveDraft,
     ],
   );
 
   const sendMessage = handleSubmit(() => {
     const { title, raw } = getValues();
-
     // Make sure auto save draft not save draft when create message
 
     debounceSaveDraft.cancel();
-
     const updatedContentWithPoll = combineContentWithPollContent({
       content: raw,
       polls: polls || [],

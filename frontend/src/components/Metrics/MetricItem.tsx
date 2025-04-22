@@ -1,6 +1,10 @@
 import React from 'react';
 
-import { IconWithLabel, IconWithLabelProps } from '../../core-ui';
+import {
+  ActivityIndicator,
+  IconWithLabel,
+  IconWithLabelProps,
+} from '../../core-ui';
 import { formatCount } from '../../helpers';
 import { IconName } from '../../icons';
 import { makeStyles, useTheme } from '../../theme';
@@ -18,11 +22,16 @@ const metricTypes: MetricTypes = {
     icon: 'Replies',
     label: { singular: 'No Replies', plural: 'Replies' },
   },
+  Thread: {
+    icon: 'Replies',
+    label: { singular: 'Reply', plural: 'Replies' },
+  },
 };
 
 type Props = Omit<IconWithLabelProps, 'label' | 'icon'> & {
   type: keyof typeof metricTypes;
   count: number;
+  isLoading?: boolean;
 };
 
 const metricLabel = (count: number, { singular, plural }: Label): string => {
@@ -45,12 +54,15 @@ export function MetricItem(props: Props) {
     type,
     color = colors.textLighter,
     fontStyle,
+    isLoading,
     ...otherProps
   } = props;
 
   const { icon, label } = metricTypes[type];
 
-  return (
+  return isLoading ? (
+    <ActivityIndicator size={'small'} />
+  ) : (
     <IconWithLabel
       icon={icon}
       size="m"

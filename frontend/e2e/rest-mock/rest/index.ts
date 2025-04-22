@@ -1,5 +1,6 @@
 export * from './aboutHandler';
 export * from './categoriesHandler';
+export * from './chatHandler';
 export * from './draftHandler';
 export * from './messagesHandler';
 export * from './notificationsHandler';

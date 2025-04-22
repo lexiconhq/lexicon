@@ -3,6 +3,9 @@ import AddEmail from './AddEmail';
 import AuthenticationWebView from './AuthenticationWebView';
 import ChangePassword from './ChangePassword';
 import { Channels } from './Channels';
+import ChannelChat from './Chat/ChannelChat';
+import ChatChannelDetail from './Chat/ChatChannelDetail';
+import ThreadDetails from './Chat/ThreadDetails';
 import EditProfile from './EditProfile';
 import EditUSerStatus from './EditUserStatus/EditUserStatus';
 import EmailAddress from './EmailAddress/EmailAddress';
@@ -41,7 +44,9 @@ export {
   AddEmail,
   AuthenticationWebView,
   ChangePassword,
+  ChannelChat,
   Channels,
+  ChatChannelDetail,
   DarkMode,
   EditPollsList,
   EditProfile,
@@ -71,6 +76,7 @@ export {
   SelectUser,
   StackAvatarModal,
   Tags,
+  ThreadDetails,
   Troubleshoot,
   UserInformation,
   Welcome,

@@ -43,8 +43,8 @@ import {
   UploadTypeEnum,
 } from '../../generatedAPI/server';
 import {
-  LeaveMessageError,
   combineDataMarkdownPollAndImageList,
+  compareTime,
   convertResultUploadIntoImageFormContext,
   createReactNativeFile,
   deletePoll,
@@ -56,6 +56,7 @@ import {
   getPollChoiceLabel,
   imagePickerHandler,
   insertHyperlink,
+  LeaveMessageError,
   mentionHelper,
   messageDetailHandler,
   messageInvalidAccessAlert,
@@ -109,11 +110,6 @@ type OnScrollInfo = {
   highestMeasuredFrameIndex: number;
   averageItemLength: number;
 };
-
-enum Operation {
-  'USER',
-  'CHAT',
-}
 
 /**
  * Index starts with 0, while count starts with 1,
@@ -308,7 +304,7 @@ export default function MessageDetail() {
     topicId: id,
   });
 
-  useAutoSaveManager();
+  useAutoSaveManager({ debounceSaveDraft });
 
   useEffect(() => {
     const isImageUrlEmpty = imageList?.find(({ url }) => url === '');
@@ -547,22 +543,22 @@ export default function MessageDetail() {
     return;
   };
 
-  const compareTime = (currIndex: number) => {
-    if (currIndex === 0) {
-      return true;
-    }
-    const currContentTime = data
-      ? data.contents[currIndex].time
-      : new Date().toDateString();
-    const prevContentTime = data
-      ? data.contents[currIndex - 1].time
-      : new Date().toDateString();
+  // const compareTime = (currIndex: number) => {
+  //   if (currIndex === 0) {
+  //     return true;
+  //   }
+  //   const currContentTime = data
+  //     ? data.contents[currIndex].time
+  //     : new Date().toDateString();
+  //   const prevContentTime = data
+  //     ? data.contents[currIndex - 1].time
+  //     : new Date().toDateString();
 
-    const time = new Date(currContentTime);
-    const prevTime = new Date(prevContentTime);
+  //   const time = new Date(currContentTime);
+  //   const prevTime = new Date(prevContentTime);
 
-    return (time.getTime() - prevTime.getTime()) / (1000 * 60) > 15;
-  };
+  //   return Math.abs(time.getTime() - prevTime.getTime()) / (1000 * 60) > 15;
+  // };
 
   const isPrev = (currIndex: number) => {
     if (data) {
@@ -576,20 +572,15 @@ export default function MessageDetail() {
     return false;
   };
 
-  const settings = (operation: Operation, currIndex: number) => {
+  const settings = (currIndex: number) => {
     if (currIndex === -1) {
-      return operation === Operation.USER;
+      return true;
     }
-    const isPrevUser = isPrev(currIndex);
-    if (!isPrevUser) {
-      return operation === Operation.USER;
+    if (!isPrev(currIndex)) {
+      return true;
+    } else {
+      return compareTime({ data: data?.contents, currIndex }).isNewTimestamp;
     }
-    if (isPrevUser) {
-      return operation === Operation.USER
-        ? compareTime(currIndex)
-        : !compareTime(currIndex);
-    }
-    return false;
   };
 
   const onPressLink = () => {
@@ -636,6 +627,7 @@ export default function MessageDetail() {
           resetForm,
           draftType: PostDraftType.PrivateMessageReply,
           topicId: id,
+          debounceSaveDraft,
         });
       }),
     [
@@ -648,6 +640,7 @@ export default function MessageDetail() {
       resetForm,
       id,
       dirtyFields.imageMessageReplyList,
+      debounceSaveDraft,
     ],
   );
 
@@ -741,16 +734,19 @@ export default function MessageDetail() {
       user = participants.find((member) => member.username === item.username);
     }
 
-    const newTimestamp = compareTime(index);
+    const { isNewTimestamp } = compareTime({
+      data: data?.contents,
+      currIndex: index,
+    });
     const isPrevUser = isPrev(index);
-    const currSettings = settings(Operation.USER, index);
+    const currSettings = settings(index);
     const senderUsername = user?.username || '';
 
     return (
       <MessageItem
         content={item}
         sender={user}
-        newTimestamp={newTimestamp}
+        newTimestamp={isNewTimestamp}
         isPrev={isPrevUser}
         settings={currSettings}
         onPressAvatar={() => onPressAvatar(senderUsername)}

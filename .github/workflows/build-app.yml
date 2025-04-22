@@ -1,0 +1,84 @@
+name: Build App
+
+# In Lexicon, when building the app, we always push a new commit with an updated version. Therefore, providing an app version input is not required.
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Select Platform to build'
+        type: choice
+        required: true
+        options:
+          - ios
+          - android
+        default: 'android'
+      eas-build-profile:
+        description: 'EAS Build Profile based on environment. (see eas.json for the profiles)'
+        type: choice
+        required: true
+        options:
+          - test
+          - preview
+          - production
+        default: 'preview'
+
+jobs:
+  build-app:
+    name: EAS BUILD
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: yarn
+
+      - name: Check for EXPO_TOKEN
+        run: |
+          if [ -z "${{ secrets.EXPO_TOKEN }}" ]; then
+            echo "You must provide an EXPO_TOKEN secret linked to this project's Expo account in this repo's secrets. Learn more: https://docs.expo.dev/eas-update/github-actions"
+            exit 1
+          fi
+
+      - name: Validate Google Service JSON
+        if: inputs.platform == 'android'
+        run: |
+          if [ -z "${{ secrets.PLAYSTORE_SECRET_JSON_BASE64 }}" ]; then
+            echo "GOOGLE_SERVICES_JSON secret is missing."
+            exit 1
+          else
+            echo "${{ secrets.PLAYSTORE_SECRET_JSON_BASE64 }}" | base64 --decode > ./google-services.json
+          fi
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v3
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-frontend-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-frontend-
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Manually generate type
+        run: yarn graphql:generate
+
+      - name: Build App
+        run: eas build --platform ${{inputs.platform}} --profile ${{inputs.eas-build-profile}} --non-interactive --no-wait

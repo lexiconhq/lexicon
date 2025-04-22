@@ -15,6 +15,7 @@ const imageVideoTagRegex =
 const emojiBBCodeRegex = /(?<=^|\s):\w+:(?:t\d+:)?/g;
 const emojiImageTagRegex = /<img.*?class="emoji.*? alt="(.*?)">/g;
 const emojiTitleRegex = /title="([^"]+)"/g;
+const emojiUrlWithoutHttps = /src=["'](\/[^ ]*\.(?:jpe?g|png|gif|heic|heif))/;
 
 const userActivityContentRegex =
   /(?:<img[^>]*src(?:set)?="(.+?)"(?:[^>]*title="([^"]*)")?(?:[^>]*class="([^"]*)")?[^>]*>)|(?:<a[^>]* href="((https?:)?\/\/[^ ]*\.(?:jpe?g|png|gif|heic|heif|mov|mp4|webm|avi|wmv|flv|webp))"([^>]*?)title="([^"]*)"\s*>(\[.*?\])?<\/a>)|(?:<a[^>]* class="mention" href="\/u\/([^"]+)">@(.*?)<\/a>)|(?:<a[^>]* href="([^"]+)"[^>]*>(.*?)<\/a>)/g;
@@ -120,6 +121,11 @@ type EmojiResult = { emojiUrl: string; emojiTitle: string };
  * Input: "<img src="https://kflounge-staging.kfox.io/images/emoji/twitter/smile.png?v=12" title=":smile:" class="emoji only-emoji" alt=":smile:" loading="lazy" width="20" height="20">"
  * Output: [{emojiUrl: "https://kflounge-staging.kfox.io/images/emoji/twitter/smile.png",emojiTitle: ":smile:"}]
  *
+ * In some cases, such as live chat messages, emoji image URLs may not include a host.
+ * Example:
+ * **Input:**
+ * `<img src="/images/emoji/twitter/grinning.png?v=12" title=":grinning:" class="emoji only-emoji" alt=":grinning:" loading="lazy" width="20" height="20">`
+ *
  * @param {string} content - The input string containing img tags for emoji images.
  * @returns {Array<{emojiUrl: string, emojiTitle: string}>} - An array of objects, each with properties for the URL and name of an emoji.
  */
@@ -131,7 +137,13 @@ export function getEmojiImageUrls(
 
   let maybeEmojiResults =
     emojiTags?.map((item) => {
-      const emojiUrl = item.match(imageUrlRegex)?.[0];
+      let emojiUrl =
+        item.match(imageUrlRegex)?.[0] || item.match(emojiUrlWithoutHttps)?.[1];
+
+      // condition if show emoji from live chat without host
+      if (emojiUrl && !emojiUrl.startsWith('http')) {
+        emojiUrl = `${discourseHost}${emojiUrl}`;
+      }
       const emojiTitle = item.match(emojiTitleRegex)?.[0];
       if (!emojiUrl || !emojiTitle) {
         return undefined;
@@ -160,7 +172,6 @@ export function generateMarkdownContent(raw: string, cooked: string) {
     const emojiUrls = getEmojiImageUrls(cooked);
     raw = raw.replace(emojiBBCodeRegex, (name: string) => {
       let url = emojiUrls.find((value) => value?.emojiTitle.includes(name));
-
       return url?.emojiUrl ? `![emoji-${name}](${url.emojiUrl})` : name;
     });
   }

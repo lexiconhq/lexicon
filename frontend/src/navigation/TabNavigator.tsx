@@ -12,6 +12,7 @@ import { currentScreenVar } from '../constants';
 import { Icon, Text } from '../core-ui';
 import { useKeyboardListener } from '../hooks';
 import {
+  ChannelChat as ChannelChatScene,
   Home as HomeScene,
   PostDraft,
   Profile as ProfileScene,
@@ -27,11 +28,14 @@ import ProfileStackNavigator from './ProfileStackNavigator';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
-function TabBar({ state, navigation: { navigate } }: BottomTabBarProps) {
+function TabBar({
+  state,
+  navigation: { navigate },
+  token,
+}: BottomTabBarProps & { token: boolean }) {
   const insets = useSafeAreaInsets();
   const styles = useStyles();
   const { colors } = useTheme();
-  const useAuthResults = useAuth();
   const { isTabletLandscape } = useDevice();
   const { isKeyboardVisible } = useKeyboardListener();
 
@@ -45,7 +49,6 @@ function TabBar({ state, navigation: { navigate } }: BottomTabBarProps) {
     >
       {state.routes.map((route: { name: string }, index: number) => {
         const onPress = async () => {
-          const token = !useAuthResults.isLoading && useAuthResults.token;
           if (state.index === 0 && state.index === index) {
             navigate(route.name, { backToTop: true });
           } else {
@@ -66,6 +69,8 @@ function TabBar({ state, navigation: { navigate } }: BottomTabBarProps) {
             testID={
               route.name === 'Profile'
                 ? 'Tab:Profile'
+                : route.name === 'Chat'
+                ? 'Tab:Chat'
                 : route.name === 'Draft'
                 ? 'Tab:Draft'
                 : 'Tab:Home'
@@ -81,6 +86,8 @@ function TabBar({ state, navigation: { navigate } }: BottomTabBarProps) {
                 name={
                   route.name === 'Home'
                     ? 'Home'
+                    : route.name === 'Chat'
+                    ? 'ChatBubble'
                     : route.name === 'Draft'
                     ? 'Draft'
                     : 'Person'
@@ -94,7 +101,7 @@ function TabBar({ state, navigation: { navigate } }: BottomTabBarProps) {
                 color={state.index === index ? 'activeTab' : 'inactiveTab'}
                 size="xs"
               >
-                {route.name}
+                {route.name === 'Chat' ? 'Live Chat' : route.name}
               </Text>
             </View>
           </TouchableOpacity>
@@ -106,9 +113,9 @@ function TabBar({ state, navigation: { navigate } }: BottomTabBarProps) {
 
 export default function TabNavigator() {
   const { isTablet, isPortrait } = useDevice();
-  let currentScreen = useReactiveVar(currentScreenVar);
   const useAuthResults = useAuth();
-  const token = !useAuthResults.isLoading && useAuthResults.token;
+  const token = !useAuthResults.isLoading && !!useAuthResults.token;
+  let currentScreen = useReactiveVar(currentScreenVar);
 
   useEffect(() => {
     const checkScreenOrientation = async () => {
@@ -146,14 +153,24 @@ export default function TabNavigator() {
   return (
     <Tab.Navigator
       initialRouteName="Home"
-      tabBar={(props) => <TabBar {...props} />}
+      tabBar={(props) => <TabBar token={token} {...props} />}
     >
       <Tab.Screen
         name="Home"
         component={HomeScene}
         options={{ headerShown: false }}
       />
-      {token && <Tab.Screen name="Draft" component={PostDraft} />}
+      {token && (
+        <>
+          <Tab.Screen
+            name="Chat"
+            component={ChannelChatScene}
+            options={{ headerShown: false }}
+          />
+          <Tab.Screen name="Draft" component={PostDraft} />
+        </>
+      )}
+
       {!isTablet ? (
         <Tab.Screen
           name="Profile"

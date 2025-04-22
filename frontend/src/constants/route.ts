@@ -1,5 +1,5 @@
-import * as Notifications from 'expo-notifications';
 import * as Linking from 'expo-linking';
+import * as Notifications from 'expo-notifications';
 
 import { DiscourseNotificationData, NotificationType } from '../types';
 
@@ -19,9 +19,13 @@ export const handleUrl = (response: Notifications.NotificationResponse) => {
     type,
     discourse_url: discourseUrl,
     is_pm: isPm,
+    is_chat: isChat,
+    is_thread: isThread,
   } = notificationResult.data;
 
-  const sceneUrl = isPm
+  const sceneUrl = isChat
+    ? `${isThread ? 'thread' : 'chat'}-detail${discourseUrl}`
+    : isPm
     ? `message-detail${discourseUrl}`
     : `post-detail${discourseUrl}`;
 

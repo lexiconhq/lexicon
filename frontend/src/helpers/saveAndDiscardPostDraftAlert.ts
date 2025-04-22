@@ -1,6 +1,7 @@
 import { EventArg, NavigationAction } from '@react-navigation/native';
 import { UseFormGetValues, UseFormReset } from 'react-hook-form';
 import { Alert } from 'react-native';
+import { DebouncedState } from 'use-debounce';
 
 import {
   draftSaveManager,
@@ -33,6 +34,7 @@ type SaveDraftAlertInput = {
   draftType: PostDraftType;
   topicId?: number;
   replyToPostId?: number;
+  debounceSaveDraft: DebouncedState<() => void>;
 };
 
 export function saveAndDiscardPostDraftAlert(input: SaveDraftAlertInput) {
@@ -46,6 +48,7 @@ export function saveAndDiscardPostDraftAlert(input: SaveDraftAlertInput) {
     draftType,
     topicId,
     replyToPostId,
+    debounceSaveDraft,
   } = input;
 
   const isNewTopic = draftType === PostDraftType.NewTopic;
@@ -133,6 +136,7 @@ export function saveAndDiscardPostDraftAlert(input: SaveDraftAlertInput) {
   const handleDiscardDraft = () => {
     let { sequence, isDraft, draftKey } = getValues();
     if (typeof sequence === 'number' && isDraft && draftKey) {
+      debounceSaveDraft.cancel();
       deletePostDraft({
         variables: { draftKey, sequence },
         refetchQueries: refetchQueriesPostDraft,

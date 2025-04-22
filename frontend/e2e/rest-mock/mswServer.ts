@@ -6,6 +6,7 @@ import { MOCK_SERVER_PORT } from '../global';
 import {
   aboutHandler,
   categoriesHandler,
+  chatHandler,
   draftHandler,
   messagesHandler,
   notificationsHandler,
@@ -23,8 +24,6 @@ import {
 export const handlers = [
   // http.get('http://localhost:8929/user/:username', (req) => {
   //   let data = new URL(req.request.url);
-  //   console.log('data >>>', data.searchParams.get('filter'));
-  //   console.log('username >>>', req);
   //   return HttpResponse.json({
   //     firstName: 'John',
   //     lastName: 'Maverick',
@@ -42,6 +41,7 @@ export const handlers = [
   ...topicsHandler,
   ...pollHandler,
   ...messagesHandler,
+  ...chatHandler,
   ...draftHandler,
 ];
 

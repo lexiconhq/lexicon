@@ -76,6 +76,7 @@ export const draftHandler = [
   http.delete<DraftKeyParam>('/drafts/:draftKey.json', (req) => {
     let uri = new URL(req.request.url);
     let draftKey = uri.searchParams.get('draft_key') || '';
+
     if (!draftKey) {
       throw new Error('Draft key empty');
     }

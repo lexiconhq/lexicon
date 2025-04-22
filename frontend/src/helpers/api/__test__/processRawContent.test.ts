@@ -7,6 +7,10 @@ import {
   userActivityMarkdownContent,
 } from '..';
 
+jest.mock('../../../constants', () => ({
+  discourseHost: 'https://mocked-discourse-url.com',
+}));
+
 describe('getCompleteImageUrls return image urls from html tags', () => {
   it('should return the last url from srcset in img tag if any', () => {
     expect(
@@ -167,6 +171,9 @@ describe('generate emoji url from image tag', () => {
     const content3 =
       '<img src="https://kflounge-staging.kfox.io/images/emoji/twitter/high_heel.png?v=12" class="emoji only-emoji" alt=":high_heel:" loading="lazy" width="20" height="20">';
 
+    const content4 =
+      '<img src="/images/emoji/twitter/grinning.png?v=12" title=":grinning:" class="emoji only-emoji" alt=":grinning:" test="/images/emoji/twitter/grinning.png" loading="lazy" width="20" height="20">';
+
     expect(getEmojiImageUrls(content)).toEqual([
       {
         emojiTitle: ':smile:',
@@ -187,6 +194,13 @@ describe('generate emoji url from image tag', () => {
       },
     ]);
     expect(getEmojiImageUrls(content3)).toEqual([]);
+    expect(getEmojiImageUrls(content4)).toEqual([
+      {
+        emojiTitle: ':grinning:',
+        emojiUrl:
+          'https://mocked-discourse-url.com/images/emoji/twitter/grinning.png',
+      },
+    ]);
   });
 });
 

@@ -2,6 +2,7 @@ import { Apollo } from '../../types';
 
 import { changePasswordOutputResponseTransformer } from './changePasswordOutput';
 import { checkPostDraftResultResponseTransformer } from './CheckPostDraftResult';
+import { joinLeaveChannelOutputResponseTransform } from './JoinLeaveChannelOutput';
 import { listPostDraftsResultResponseTransformer } from './ListPostDraftsResult';
 import { postCookedResponseTransform, postRawResponseTransform } from './Post';
 import { replyingToOutputResponseTransform } from './ReplyingToOutput';
@@ -82,6 +83,14 @@ export const responseTransformers: Record<string, ResponseTransformer> = {
   UserActions: createResponseTransformer(userActionsResponseTransform, 'json'),
   SearchTagOutput: createResponseTransformer(
     searchTagOutputResponseTransform,
+    'json',
+  ),
+  JoinLeaveChannelOutput: createResponseTransformer(
+    joinLeaveChannelOutputResponseTransform,
+    'json',
+  ),
+  MarkReadChatOutput: createResponseTransformer(
+    successResponseTransform,
     'json',
   ),
   CheckPostDraftResult: createResponseTransformer(

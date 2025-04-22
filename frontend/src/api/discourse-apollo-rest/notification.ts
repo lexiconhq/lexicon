@@ -31,6 +31,11 @@ export const NOTIFICATION = gql`
           badgeSlug
           badgeTitle
           text
+          chatMessageId
+          chatChannelId
+          chatThreadId
+          mentionedByUsername
+          chatChannelTitle
         }
       }
       totalRowsNotifications
