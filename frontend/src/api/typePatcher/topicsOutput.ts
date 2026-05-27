@@ -2,6 +2,7 @@ import { RestLink } from 'apollo-link-rest';
 
 import { UserIcon } from '../../generatedAPI/server';
 import { getTopicAuthorUserId } from '../../helpers/api';
+import { normalizeTopicTags } from '../../helpers/normalizeTopicTags';
 import { Topic } from '../../types/api';
 import { getNormalizedUrlTemplate } from '../discourse-apollo-rest/utils';
 
@@ -29,6 +30,7 @@ export const topicsOutputPatcher: RestLink.FunctionalTypePatcher = (
     });
     return {
       ...topic,
+      tags: normalizeTopicTags(topic.tags),
       posters: postersWithUser,
       authorUserId: getTopicAuthorUserId(posters) ?? null,
     };

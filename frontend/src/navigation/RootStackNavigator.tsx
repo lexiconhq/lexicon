@@ -1,47 +1,42 @@
 import { createStackNavigator } from '@react-navigation/stack';
 import React from 'react';
+import { Platform } from 'react-native';
 
 import {
-  Activity,
-  AddEmail,
   AuthenticationWebView,
-  ChangePassword,
   Channels,
   ChatChannelDetail,
   DarkMode,
   EditPollsList,
-  EditProfile,
-  EditUSerStatus,
-  EmailAddress,
   EmojiPicker,
   FlagPost,
   Hyperlink,
   ImagePreview,
   MessageDetail,
-  Messages,
   NewMessage,
   NewPoll,
   NewPost,
-  Notifications,
   Poll,
   PostDetail,
   PostImagePreview,
   PostPreview,
   PostReply,
-  Preferences,
   PushNotifications,
   Search,
   SelectUser,
   StackAvatarModal,
   Tags,
   ThreadDetails,
+  AdditionalResourceDetail,
+  AdditionalResources,
+  BlockedUsers,
+  HiddenWords,
   Troubleshoot,
   UserInformation,
   Welcome,
 } from '../screens';
 import { useTheme } from '../theme';
 import { RootStackParamList } from '../types';
-import { useDevice } from '../utils';
 import { AuthContextProps } from '../utils/AuthProvider';
 
 import TabNavigator from './TabNavigator';
@@ -55,8 +50,7 @@ export default function RootStackNavigator(props: RootStackNavigatorProps) {
   const {
     authProps: { loginRequired, token },
   } = props;
-  const { navHeader, navModal, navNoShadow, shadow } = useTheme();
-  const { isTablet } = useDevice();
+  const { navHeader, navModal, navNoShadow, shadow, colors } = useTheme();
 
   return (
     <RootStack.Navigator>
@@ -65,6 +59,7 @@ export default function RootStackNavigator(props: RootStackNavigatorProps) {
           ...navHeader,
           presentation: 'card',
           headerBackTestID: 'HeaderBackButton',
+          cardStyle: { backgroundColor: colors.background },
         }}
       >
         {
@@ -122,55 +117,6 @@ export default function RootStackNavigator(props: RootStackNavigatorProps) {
                   component={ChatChannelDetail}
                   options={{ title: '' }}
                 />
-                {!isTablet && (
-                  <>
-                    <RootStack.Screen
-                      name="Messages"
-                      component={Messages}
-                      options={{ title: t('Messages') }}
-                    />
-                    <RootStack.Screen
-                      name="AddEmail"
-                      component={AddEmail}
-                      options={{ title: t('New Email Address') }}
-                    />
-                    <RootStack.Screen
-                      name="ChangePassword"
-                      component={ChangePassword}
-                      options={{ title: t('Change Password') }}
-                    />
-                    <RootStack.Screen
-                      name="EditProfile"
-                      component={EditProfile}
-                      options={{ title: '' }}
-                    />
-                    <RootStack.Screen
-                      name="EmailAddress"
-                      component={EmailAddress}
-                      options={{ title: t('Email Address') }}
-                    />
-                    <RootStack.Screen
-                      name="EditUserStatus"
-                      component={EditUSerStatus}
-                      options={{ title: '' }}
-                    />
-                    <RootStack.Screen
-                      name="Preferences"
-                      component={Preferences}
-                      options={{ title: t('Preferences') }}
-                    />
-                    <RootStack.Screen
-                      name="Notifications"
-                      component={Notifications}
-                      options={{ title: t('Notifications') }}
-                    />
-                    <RootStack.Screen
-                      name="Activity"
-                      component={Activity}
-                      options={{ title: t('Activity') }}
-                    />
-                  </>
-                )}
               </>
             )
           )
@@ -196,6 +142,26 @@ export default function RootStackNavigator(props: RootStackNavigatorProps) {
           component={UserInformation}
           options={{ title: '' }}
         />
+        <RootStack.Screen
+          name="BlockedUsers"
+          component={BlockedUsers}
+          options={{ title: t('Blocked Users') }}
+        />
+        <RootStack.Screen
+          name="HiddenWords"
+          component={HiddenWords}
+          options={{ title: t('Hidden Words') }}
+        />
+        <RootStack.Screen
+          name="AdditionalResources"
+          component={AdditionalResources}
+          options={{ title: t('Additional Resources') }}
+        />
+        <RootStack.Screen
+          name="AdditionalResourceDetail"
+          component={AdditionalResourceDetail}
+          options={{ title: '' }}
+        />
       </RootStack.Group>
       <RootStack.Group
         screenOptions={{
@@ -203,15 +169,26 @@ export default function RootStackNavigator(props: RootStackNavigatorProps) {
           ...navModal,
           presentation: 'modal',
           headerBackTestID: 'HeaderBackButton',
+          cardStyle: { backgroundColor: colors.background },
         }}
       >
+        <RootStack.Screen
+          name="PushNotificationsPreferences"
+          component={PushNotifications}
+          options={{ title: t('Push Notification'), ...navModal }}
+        />
+        <RootStack.Screen
+          name="DarkMode"
+          component={DarkMode}
+          options={{ title: t('Dark Mode'), ...navModal }}
+        />
+        <RootStack.Screen
+          name="FlagPost"
+          component={FlagPost}
+          options={{ title: t('Report'), ...navModal }}
+        />
         {token && (
           <>
-            <RootStack.Screen
-              name="FlagPost"
-              component={FlagPost}
-              options={{ title: t('Flag'), ...navModal }}
-            />
             <RootStack.Screen
               name="NewMessage"
               component={NewMessage}
@@ -238,19 +215,24 @@ export default function RootStackNavigator(props: RootStackNavigatorProps) {
               options={{ title: t('Select User'), ...navModal, ...navNoShadow }}
             />
             <RootStack.Screen
-              name="PushNotificationsPreferences"
-              component={PushNotifications}
-              options={{ title: t('Push Notification'), ...navModal }}
-            />
-            <RootStack.Screen
               name="EmojiPicker"
               component={EmojiPicker}
-              options={{ ...navModal }}
-            />
-            <RootStack.Screen
-              name="DarkMode"
-              component={DarkMode}
-              options={{ title: t('Dark Mode'), ...navModal }}
+              options={{
+                ...navModal,
+                cardStyle: { backgroundColor: colors.background },
+                ...(Platform.OS === 'ios' && {
+                  transitionSpec: {
+                    open: {
+                      animation: 'timing',
+                      config: { duration: 250 },
+                    },
+                    close: {
+                      animation: 'timing',
+                      config: { duration: 200 },
+                    },
+                  },
+                }),
+              }}
             />
             <RootStack.Screen
               name="Tags"
@@ -313,7 +295,12 @@ export default function RootStackNavigator(props: RootStackNavigatorProps) {
         <RootStack.Screen
           name="AuthenticationWebView"
           component={AuthenticationWebView}
-          options={{ ...navModal }}
+          options={{
+            ...navModal,
+            ...(Platform.OS === 'ios' && Platform.isPad
+              ? { presentation: 'fullScreenModal' }
+              : {}),
+          }}
         />
       </RootStack.Group>
     </RootStack.Navigator>

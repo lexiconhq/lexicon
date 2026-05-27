@@ -47,6 +47,10 @@ export let PushNotificationsPreferences = Record({
 
 export let SelectedHomeChannelId = Number;
 
+export let LocallyBlockedUsernames = Array(String);
+export let PendingServerBlockSync = Array(String);
+export let HiddenWords = Array(String);
+
 let [StorageProvider, useStorage] = createCachedStorage(
   {
     colorScheme: (value) => ColorScheme.check(value),
@@ -58,6 +62,9 @@ let [StorageProvider, useStorage] = createCachedStorage(
     userStatus: (value) => UserStatus.check(value),
     poll: (value) => PollSetting.check(value),
     homeChannelId: (value) => SelectedHomeChannelId.check(value),
+    locallyBlockedUsernames: (value) => LocallyBlockedUsernames.check(value),
+    pendingServerBlockSync: (value) => PendingServerBlockSync.check(value),
+    hiddenWords: (value) => HiddenWords.check(value),
   },
   '@Cached/',
 );

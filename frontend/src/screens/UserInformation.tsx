@@ -1,9 +1,12 @@
+import { useReactiveVar } from '@apollo/client';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { View } from 'react-native';
 
 import {
+  BlockedUserContent,
+  HiddenWordsContent,
   CustomHeader,
   LoadingOrError,
   Markdown,
@@ -13,10 +16,19 @@ import {
   UserStatus,
 } from '../components';
 import { Avatar, Button, Text } from '../core-ui';
-import { errorHandler, getImage, useStorage } from '../helpers';
+import {
+  errorHandler,
+  getImage,
+  shouldHidePostByHiddenWords,
+  useBlockUserActions,
+  useStorage,
+} from '../helpers';
+import { navigate as rootNavigate } from '../navigation/NavigationService';
 import { useActivity, useProfile } from '../hooks';
 import { makeStyles } from '../theme';
 import { NewPostForm, StackNavProp, StackRouteProp } from '../types';
+import { tokenVar } from '../reactiveVars';
+import { useHiddenWords } from '../utils';
 
 export default function UserInformation() {
   const styles = useStyles();
@@ -29,7 +41,16 @@ export default function UserInformation() {
   const { reset: resetForm } = useFormContext<NewPostForm>();
 
   const storage = useStorage();
+  const token = useReactiveVar(tokenVar);
   const currentUser = storage.getItem('user')?.username;
+  const {
+    canBlockUsername,
+    isBlocked,
+    promptBlock,
+    promptUnblock,
+    isUpdating,
+  } = useBlockUserActions();
+  const { hiddenWords, profileMatchesHiddenWords } = useHiddenWords();
 
   const [show, setShow] = useState<boolean>();
   const [refreshing, setRefreshing] = useState(false);
@@ -38,34 +59,60 @@ export default function UserInformation() {
     data: profileData,
     loading: profileLoading,
     error: profileError,
+    refetch: refetchProfile,
   } = useProfile(
     {
-      variables: { username },
+      variables: { username, skipNotifications: !token },
     },
     'HIDE_ALERT',
   );
 
-  const name = profileData?.profile.user.name || '';
-  const userImage = getImage(profileData?.profile.user.avatar || '', 'xl');
-  const bio = profileData?.profile.user.bioRaw;
+  const profileUser = profileData?.profile.user;
+  const userIsBlocked =
+    isBlocked(username) || profileUser?.ignored === true;
+  const profileHiddenByWords = profileUser
+    ? profileMatchesHiddenWords(profileUser)
+    : false;
+  const canManageBlock = canBlockUsername(username);
+
+  const name = profileUser?.name || '';
+  const userImage = getImage(profileUser?.avatar || '', 'xl');
+  const bio = profileUser?.bioRaw;
   const splittedBio = bio ? bio.split(/\r\n|\r|\n/) : [''];
   const statusUser = profileData && profileData.profile?.user.status;
 
   const { data, loading, error, networkStatus, refetch, fetchMore } =
     useActivity({ variables: { username: username, offset: 0 } }, 'HIDE_ALERT');
 
-  const activities = data?.activity ?? [];
+  const visibleActivities = useMemo(() => {
+    const activities = data?.activity ?? [];
+    if (userIsBlocked || profileHiddenByWords) {
+      return [];
+    }
+    return activities.filter(
+      (activity) =>
+        !shouldHidePostByHiddenWords(
+          {
+            title: activity.title,
+            content: activity.markdownContent || activity.excerpt || '',
+            username: activity.username,
+          },
+          hiddenWords,
+        ),
+    );
+  }, [data?.activity, hiddenWords, profileHiddenByWords, userIsBlocked]);
 
   const onEndReached = (distanceFromEnd: number) => {
-    if (distanceFromEnd === 0) {
+    if (distanceFromEnd === 0 || userIsBlocked) {
       return;
     }
-    fetchMore({ variables: { offset: activities.length } });
+    fetchMore({ variables: { offset: data?.activity?.length ?? 0 } });
   };
 
   const onRefresh = () => {
     setRefreshing(true);
     refetch();
+    refetchProfile();
     setRefreshing(false);
   };
 
@@ -73,13 +120,25 @@ export default function UserInformation() {
     setShow(false);
   };
 
-  const onPressNewMessage = async () => {
+  const onPressMessage = () => {
+    if (!token) {
+      rootNavigate('Welcome');
+      return;
+    }
     resetForm({
       messageTargetSelectedUsers: [username],
       messageUsersList: [{ name, username, avatar: userImage }],
       draftKey: '',
     });
     navigate('NewMessage');
+  };
+
+  const onPressBlock = () => {
+    promptBlock(username);
+  };
+
+  const onPressUnblock = () => {
+    promptUnblock(username);
   };
 
   if (error || profileError) {
@@ -92,8 +151,10 @@ export default function UserInformation() {
   }
 
   if (
+    !userIsBlocked &&
+    !profileHiddenByWords &&
     (loading || profileLoading || (data && data.activity?.length !== 0)) &&
-    activities.length < 1
+    (data?.activity ?? []).length < 1
   ) {
     return <LoadingOrError loading />;
   }
@@ -136,34 +197,72 @@ export default function UserInformation() {
             />
           )}
           <View style={styles.buttonContainer}>
-            {currentUser !== username && (
-              <Button content={t('Message')} onPress={onPressNewMessage} />
+            {currentUser !== username && !userIsBlocked && (
+              <Button
+                content={token ? t('Message') : t('Sign-In To Message')}
+                onPress={onPressMessage}
+                style={styles.actionButton}
+              />
             )}
-            {
-              // TODO: This LoC is meant for the next phase
-              /* <View style={styles.buttonDivider} />
-        <Button
-          content={t('Badges')}
-          style={styles.whiteButton}
-          textColor="textNormal"
-          disabled
-        /> */
-            }
+            {canManageBlock && (
+              <Button
+                content={userIsBlocked ? t('Unblock') : t('Block')}
+                outline={userIsBlocked}
+                onPress={userIsBlocked ? onPressUnblock : onPressBlock}
+                disabled={isUpdating}
+                style={styles.actionButton}
+              />
+            )}
           </View>
         </View>
-        <Text variant={'semiBold'} style={styles.activityText}>
-          {t('Activity')}
-        </Text>
+        {!userIsBlocked && !profileHiddenByWords ? (
+          <Text variant={'semiBold'} style={styles.activityText}>
+            {t('Activity')}
+          </Text>
+        ) : null}
       </>
     );
   };
 
+  if (userIsBlocked) {
+    return (
+      <View style={styles.container}>
+        <Header />
+        <BlockedUserContent
+          username={username}
+          showUnblock={canManageBlock}
+          onUnblock={onPressUnblock}
+          isUpdating={isUpdating}
+        />
+        <ShowImageModal
+          show={show || false}
+          userImage={{ uri: userImage }}
+          onPressCancel={onPressCancel}
+        />
+      </View>
+    );
+  }
+
+  if (profileHiddenByWords) {
+    return (
+      <View style={styles.container}>
+        <Header />
+        <HiddenWordsContent />
+        <ShowImageModal
+          show={show || false}
+          userImage={{ uri: userImage }}
+          onPressCancel={onPressCancel}
+        />
+      </View>
+    );
+  }
+
   let content;
-  if (activities.length !== 0) {
+  if (visibleActivities.length !== 0) {
     content = (
       <PostList
         ListHeaderComponent={<Header />}
-        data={activities}
+        data={visibleActivities}
         onRefresh={onRefresh}
         refreshing={networkStatus === 4 || refreshing}
         scrollEventThrottle={16}
@@ -229,16 +328,15 @@ const useStyles = makeStyles(({ colors, spacing }) => ({
     flexDirection: 'row',
     marginVertical: spacing.xl,
     marginTop: spacing.m,
+    paddingHorizontal: spacing.xl,
+    flexWrap: 'wrap',
+    justifyContent: 'center',
   },
-  // TODO: This LoC is meant for the next phase
-  // buttonDivider: {
-  //   paddingRight: spacing.l,
-  // },
-  // whiteButton: {
-  //   backgroundColor: colors.background,
-  //   borderWidth: 1,
-  //   borderColor: colors.border,
-  // },
+  actionButton: {
+    minWidth: 120,
+    marginHorizontal: spacing.s,
+    marginBottom: spacing.s,
+  },
   activityText: {
     paddingLeft: spacing.xl,
     paddingVertical: spacing.xl,

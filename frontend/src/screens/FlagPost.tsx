@@ -1,5 +1,5 @@
 import { useNavigation, useRoute } from '@react-navigation/native';
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Platform, ScrollView, View } from 'react-native';
 
 import {
@@ -9,6 +9,16 @@ import {
   ModalHeader,
 } from '../components';
 import { Button, Divider, RadioButton, Text, TextInput } from '../core-ui';
+import {
+  errorHandlerAlert,
+  flagTypeRequiresMessage,
+  findFlagTypeById,
+  LoginError,
+  normalizeFlagTypeId,
+  NOTIFY_MODERATORS_FLAG_ID,
+  NOTIFY_USER_FLAG_ID,
+  useStorage,
+} from '../helpers';
 import { useFlagPost, useSiteSettings } from '../hooks';
 import { makeStyles } from '../theme';
 import { RootStackNavProp, RootStackRouteProp } from '../types';
@@ -17,39 +27,61 @@ const htmlRegex = /(<([^>]+)>)/gi;
 
 export default function FlagPost() {
   const styles = useStyles();
+  const storage = useStorage();
+  const currentUserId = storage.getItem('user')?.id;
 
   const { topicFlagTypes = [], postActionTypes = [] } = useSiteSettings();
 
   const ios = Platform.OS === 'ios';
 
-  const FLAG_NOTIFY_MODERATORS = 7;
-  const FLAG_NOTIFY_USERS = 6;
-
-  const notifyModeratorsFlag = topicFlagTypes.find(
-    (flag) => flag.id === FLAG_NOTIFY_MODERATORS,
+  const notifyModeratorsFlag = useMemo(
+    () =>
+      findFlagTypeById(topicFlagTypes, NOTIFY_MODERATORS_FLAG_ID) ??
+      findFlagTypeById(postActionTypes, NOTIFY_MODERATORS_FLAG_ID),
+    [postActionTypes, topicFlagTypes],
   );
 
-  const messageAuthorFlag = postActionTypes.find(
-    (flag) => flag.id === FLAG_NOTIFY_USERS,
+  const messageAuthorFlag = useMemo(
+    () => findFlagTypeById(postActionTypes, NOTIFY_USER_FLAG_ID),
+    [postActionTypes],
   );
 
   const { goBack } = useNavigation<RootStackNavProp<'FlagPost'>>();
+  const navigation = useNavigation<RootStackNavProp<'FlagPost'>>();
 
   const {
-    params: { postId, isPost, flaggedAuthor },
+    params: { postId, topicId, isPost = false, flaggedAuthor },
   } = useRoute<RootStackRouteProp<'FlagPost'>>();
 
   const [checked, setChecked] = useState<number>();
   const [flagMessage, setFlagMessage] = useState<string>();
 
-  const isNotifyModeratorsSelected = checked === notifyModeratorsFlag?.id;
-  const isMessageAuthorSelected = checked === messageAuthorFlag?.id;
+  useEffect(() => {
+    if (!currentUserId) {
+      errorHandlerAlert(LoginError, navigation.navigate);
+      goBack();
+    }
+  }, [currentUserId, goBack, navigation.navigate]);
+
+  const selectedFlagId = checked != null ? normalizeFlagTypeId(checked) : undefined;
+  const requiresMessage =
+    selectedFlagId != null &&
+    flagTypeRequiresMessage(
+      selectedFlagId,
+      isPost,
+      topicFlagTypes,
+      postActionTypes,
+    );
+
+  const isNotifyModeratorsSelected =
+    selectedFlagId === NOTIFY_MODERATORS_FLAG_ID;
+  const isMessageAuthorSelected = selectedFlagId === NOTIFY_USER_FLAG_ID;
 
   const { flag, loading } = useFlagPost({
     onCompleted: () => {
       Alert.alert(
-        t('The post has been flagged successfully'),
-        t('Please wait until the admin process the request'),
+        t('Your report was submitted'),
+        t('Moderators will review it. Thank you for helping keep the community safe.'),
         [
           {
             text: t('Got it'),
@@ -62,112 +94,111 @@ export default function FlagPost() {
   });
 
   const onSubmit = () => {
-    if (checked) {
-      flag({
-        variables: {
-          flagPostInput: {
-            id: postId,
-            postActionTypeId: checked,
-            message: flagMessage,
-          },
-        },
-      });
+    if (!checked || !currentUserId) {
+      return;
     }
+
+    if (requiresMessage && !flagMessage?.trim()) {
+      Alert.alert(
+        t('Message required'),
+        t('Please add details so moderators can understand your report.'),
+        [{ text: t('Got it') }],
+      );
+      return;
+    }
+
+    flag({
+      variables: {
+        flagPostInput: {
+          id: isPost ? topicId : postId,
+          postActionTypeId: normalizeFlagTypeId(checked),
+          message: flagMessage?.trim() || undefined,
+          flagTopic: isPost,
+        },
+      },
+    });
   };
+
+  const flagOptions = isPost
+    ? topicFlagTypes
+    : postActionTypes.filter((flagType) => flagType.isFlag === true);
+
+  if (!currentUserId) {
+    return null;
+  }
 
   return (
     <View style={styles.container}>
       {ios ? (
         <ModalHeader
-          title={t('Flag')}
+          title={t('Report')}
           left={<HeaderItem left label={t('Cancel')} onPressItem={goBack} />}
           right={
             <HeaderItem
-              label={t('Report')}
+              label={t('Submit')}
               onPressItem={onSubmit}
-              disabled={!checked}
+              disabled={!checked || loading}
               loading={loading}
             />
           }
         />
       ) : (
-        <CustomHeader title={t('Flag')} noShadow />
+        <CustomHeader title={t('Report')} noShadow />
       )}
       <KeyboardTextAreaScrollView>
         <View style={styles.textContainer}>
-          <Text>{t('Please tell us why you want to flag this post.')}</Text>
+          <Text>
+            {isPost
+              ? t('Please tell us why you are reporting this post.')
+              : t('Please tell us why you are reporting this comment.')}
+          </Text>
         </View>
         <ScrollView contentContainerStyle={styles.radioGroup}>
-          {isPost
-            ? topicFlagTypes.map(({ id, name, description }) => (
-                <View key={id}>
-                  <RadioButton
-                    selected={checked === id}
-                    onPress={() => setChecked(id)}
-                    disabled={loading}
-                    checkCircleIcon
-                  >
-                    <Text style={styles.headerText} variant="bold">
-                      {name}
-                    </Text>
-                    {isNotifyModeratorsSelected && checked === id ? (
-                      <TextInput
-                        placeholder={t(
-                          'Let the author know specifically what are you concerned about, and provide relevant links and examples where possible',
-                        )}
-                        multiline={true}
-                        onChangeText={(text) => {
-                          setFlagMessage(text);
-                        }}
-                      />
-                    ) : (
-                      <Text>{description.replace(htmlRegex, '')}</Text>
-                    )}
-                  </RadioButton>
-                  <Divider />
-                </View>
-              ))
-            : postActionTypes
-                .filter((flagType) => {
-                  return flagType.isFlag === true;
-                })
-                .map(({ id, name, description }) => (
-                  <View key={id}>
-                    <RadioButton
-                      selected={checked === id}
-                      onPress={() => setChecked(id)}
-                      disabled={loading}
-                      checkCircleIcon
-                    >
-                      <Text style={styles.headerText} variant="bold">
-                        {name.replace('@%{username}', `${flaggedAuthor}`)}
-                      </Text>
-                      {(isNotifyModeratorsSelected ||
-                        isMessageAuthorSelected) &&
-                      checked === id ? (
-                        <TextInput
-                          placeholder={t(
-                            'Let the author know specifically what are you concerned about, and provide relevant links and examples where possible',
-                          )}
-                          multiline={true}
-                          onChangeText={(text) => {
-                            setFlagMessage(text);
-                          }}
-                        />
-                      ) : (
-                        <Text>{description.replace(htmlRegex, '')}</Text>
+          {flagOptions.length === 0 ? (
+            <Text color="lightTextDarker">
+              {t('Reporting is not available right now. Please try again later.')}
+            </Text>
+          ) : (
+            flagOptions.map(({ id, name, description }) => (
+              <View key={id}>
+                <RadioButton
+                  selected={checked === id}
+                  onPress={() => setChecked(id)}
+                  disabled={loading}
+                  checkCircleIcon
+                >
+                  <Text style={styles.headerText} variant="bold">
+                    {isPost
+                      ? name
+                      : name.replace('@%{username}', `${flaggedAuthor ?? ''}`)}
+                  </Text>
+                  {(isNotifyModeratorsSelected || isMessageAuthorSelected) &&
+                  checked === id ? (
+                    <TextInput
+                      placeholder={t(
+                        'Describe the issue and include links or examples when possible',
                       )}
-                    </RadioButton>
-                    <Divider />
-                  </View>
-                ))}
+                      multiline={true}
+                      onChangeText={(text) => {
+                        setFlagMessage(text);
+                      }}
+                    />
+                  ) : (
+                    <Text>{description.replace(htmlRegex, '')}</Text>
+                  )}
+                </RadioButton>
+                <Divider />
+              </View>
+            ))
+          )}
         </ScrollView>
         {!ios && (
           <Button
-            content={t('Flag Post')}
+            content={t('Submit report')}
             style={styles.submitButton}
             onPress={onSubmit}
             loading={loading}
+            disabled={!checked || flagOptions.length === 0}
             large
           />
         )}

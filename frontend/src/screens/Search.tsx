@@ -19,7 +19,14 @@ import {
 } from '../components';
 import { DEFAULT_CHANNEL } from '../constants';
 import { Icon, Text } from '../core-ui';
-import { errorHandler, getImage, useStorage } from '../helpers';
+import {
+  errorHandler,
+  filterPostsByBlockedUsernames,
+  filterPostsByHiddenWords,
+  getImage,
+  useStorage,
+} from '../helpers';
+import { useBlockedUsers, useHiddenWords } from '../utils';
 import { useSearchPost, useSiteSettings } from '../hooks';
 import { makeStyles, useTheme } from '../theme';
 import { Post, StackNavProp } from '../types';
@@ -32,6 +39,8 @@ export default function Search() {
 
   const storage = useStorage();
   const channels = storage.getItem('channels');
+  const { blockedUsernames } = useBlockedUsers();
+  const { hiddenWords } = useHiddenWords();
 
   const { minSearchLength = 3 } = useSiteSettings();
   const maxPostsPerPage = 50;
@@ -40,7 +49,7 @@ export default function Search() {
 
   const [searchValue, setSearchValue] = useState('');
   const [page, setPage] = useState(1);
-  const [posts, setPosts] = useState<Array<Post>>([]);
+  const [allPosts, setAllPosts] = useState<Array<Post>>([]);
   const [hasOlderPosts, setHasOlderPosts] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -87,7 +96,7 @@ export default function Search() {
             });
           },
         );
-        const currentPostIds = posts.map((post) => post.id);
+        const currentPostIds = allPosts.map((post) => post.id);
         const incomingPostIds = tempPosts.map((post) => post.id);
         if (
           JSON.stringify(currentPostIds) === JSON.stringify(incomingPostIds) ||
@@ -97,7 +106,7 @@ export default function Search() {
         } else {
           setHasOlderPosts(true);
         }
-        setPosts(tempPosts);
+        setAllPosts(tempPosts);
       } else {
         setHasOlderPosts(false);
       }
@@ -119,12 +128,21 @@ export default function Search() {
         });
       }, 500);
     } else {
-      setPosts([]);
+      setAllPosts([]);
       setLoading(false);
     }
     return () => clearTimeout(fetchSearch);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [skipSearchStatus, setPosts, page, searchValue]);
+  }, [skipSearchStatus, page, searchValue]);
+
+  const posts = useMemo(
+    () =>
+      filterPostsByHiddenWords(
+        filterPostsByBlockedUsernames(allPosts, blockedUsernames),
+        hiddenWords,
+      ),
+    [allPosts, blockedUsernames, hiddenWords],
+  );
 
   const count = posts.length;
 

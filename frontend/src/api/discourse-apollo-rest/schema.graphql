@@ -684,6 +684,7 @@ input FlagPostInput {
   postActionTypeId: Int!
   id: Int!
   message: String
+  flagTopic: Boolean
 }
 
 input LikePostInput {
@@ -1107,6 +1108,15 @@ input CreateAndUpdatePostDraftInputRest {
   forceSave: Boolean!
 }
 
+input IgnoreUserInput {
+  notification_level: String!
+  expiring_at: String
+}
+
+type IgnoreUserOutput {
+  success: Boolean
+}
+
 type Mutation {
   addEmail(addEmailInput: AddEmailInput!, username: String!): String!
   changePassword(
@@ -1135,6 +1145,10 @@ type Mutation {
   editTopic(topicId: Int!, topicInput: EditTopicInput!): BasicTopic!
   editUserStatus(editUserStatusInput: EditUserStatusInput): String!
   flagPost(flagPostInput: FlagPostInput!): Post!
+  ignoreUser(
+    username: String!
+    ignoreUserInput: IgnoreUserInput!
+  ): IgnoreUserOutput!
   leaveMessage(leaveMessageInput: LeaveMessageInput!, topicId: Int!): String!
   logout(pushNotificationsToken: String): String!
   markRead(markReadInput: MarkReadInput): String!

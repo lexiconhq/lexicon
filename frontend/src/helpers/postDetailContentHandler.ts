@@ -2,7 +2,9 @@ import { DEFAULT_CHANNEL } from '../constants';
 import { ActionSummary as ActionsSummaryServer } from '../generatedAPI/server';
 import { Channel, Post, Topic, TopicDetail, User } from '../types';
 
+import { formatPostTitle } from './formatPostTitle';
 import { getImage } from './getUserImage';
+import { normalizeTopicTags } from './normalizeTopicTags';
 
 export enum ActionsSummaryType {
   Bookmark = 1,
@@ -85,13 +87,13 @@ export function postDetailContentHandler({
 
   const topic: Topic = {
     id,
-    title: title || 'Untitled',
+    title: formatPostTitle(title || 'Untitled'),
     firstPostId: postStream?.stream ? postStream?.stream[0] : 0,
     canEditTopic: details?.canEdit ?? false,
     replyCount: postsCount ? postsCount - 1 : 0,
     likeCount: likeCount ?? 0,
     viewCount: views ?? 0,
-    selectedTag: tags ?? [],
+    selectedTag: normalizeTopicTags(tags),
     selectedChannelId: categoryId ?? DEFAULT_CHANNEL.id,
   };
 

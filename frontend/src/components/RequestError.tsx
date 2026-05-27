@@ -83,7 +83,7 @@ export function RequestError(props: Props) {
         props: {
           onMoreInfoPress: () => {
             Toast.hide();
-            navigate(['Troubleshoot', { type: currentNetworkStatus }]);
+            navigate('Troubleshoot', { type: currentNetworkStatus });
           },
         },
       });

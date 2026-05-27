@@ -50,6 +50,7 @@ export * from './rest/profile/useChangePassword';
 export * from './rest/profile/useEmail';
 export * from './rest/profile/useNotification';
 export * from './rest/profile/useProfile';
+export * from './rest/profile/useIgnoreUser';
 
 export * from './rest/site/useAbout';
 export * from './rest/site/useChannels';

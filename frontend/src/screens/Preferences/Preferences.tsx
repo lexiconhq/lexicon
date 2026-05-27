@@ -1,54 +1,27 @@
-import React from 'react';
-import { ScrollView, View } from 'react-native';
 import { useNavigation } from '@react-navigation/core';
+import React, { useEffect } from 'react';
+import { View } from 'react-native';
 
-import { FIXED_COLOR_SCHEME } from '../../constants';
-import MenuItem from '../Profile/components/MenuItem';
 import { makeStyles } from '../../theme';
 import { StackNavProp } from '../../types';
-import { useDevice } from '../../utils';
 
+/**
+ * Legacy route kept for deep links. Settings live on the Profile tab menu.
+ */
 export default function Preferences() {
   const styles = useStyles();
+  const { goBack } = useNavigation<StackNavProp<'Preferences'>>();
 
-  const navigation = useNavigation<StackNavProp<'Preferences'>>();
-  const { navigate } = navigation;
-  const { isTablet } = useDevice();
+  useEffect(() => {
+    goBack();
+  }, [goBack]);
 
-  const hasFixedColorScheme = FIXED_COLOR_SCHEME !== 'no-preference';
-
-  return (
-    <View style={styles.container}>
-      <ScrollView>
-        <View style={styles.bodyContainer}>
-          <View style={[styles.menuContainer, !isTablet && styles.marginTop]}>
-            {!hasFixedColorScheme && (
-              <MenuItem
-                title={t('Dark Mode')}
-                iconName="Dark"
-                onPress={() => navigate('DarkMode')}
-              />
-            )}
-            <MenuItem
-              title={t('Push Notifications')}
-              iconName="NotificationActive"
-              onPress={() => navigate('PushNotificationsPreferences')}
-            />
-          </View>
-        </View>
-      </ScrollView>
-    </View>
-  );
+  return <View style={styles.container} />;
 }
 
-const useStyles = makeStyles(({ colors, spacing }) => ({
+const useStyles = makeStyles(({ colors }) => ({
   container: {
     flex: 1,
     backgroundColor: colors.background,
   },
-  bodyContainer: {
-    backgroundColor: colors.backgroundDarker,
-  },
-  menuContainer: { backgroundColor: colors.background },
-  marginTop: { marginTop: spacing.m },
 }));

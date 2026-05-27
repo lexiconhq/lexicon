@@ -6,3 +6,5 @@ export * from './useMutation';
 export * from './useQuery';
 export * from './RedirectProvider';
 export * from './DeviceProvider';
+export { useBlockedUsers } from './BlockedUsersProvider';
+export { useHiddenWords } from './HiddenWordsProvider';

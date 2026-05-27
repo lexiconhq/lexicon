@@ -1,6 +1,7 @@
 import { RestLink } from 'apollo-link-rest';
 
 import { FIRST_POST_NUMBER, LIKE_ACTION_ID } from '../../constants';
+import { normalizeTopicTags } from '../../helpers/normalizeTopicTags';
 import { Participant } from '../../generatedAPI/server';
 import { Post } from '../../types/api';
 import { getNormalizedUrlTemplate } from '../discourse-apollo-rest/utils';
@@ -28,6 +29,10 @@ export const topicDetailOutputPatcher: RestLink.FunctionalTypePatcher = (
         };
       },
     );
+  }
+
+  if (Array.isArray(data.tags)) {
+    data.tags = normalizeTopicTags(data.tags);
   }
 
   const firstPostOfData = data.postStream.posts[0];

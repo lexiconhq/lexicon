@@ -349,8 +349,8 @@ export default function ChatChannelDetail() {
     return options;
   };
 
-  const actionItemOnPress = (btnIndex: number) => {
-    if (btnIndex === 0) {
+  const actionItemOnPress = (_btnIndex: number, label: string) => {
+    if (label === t('Leave Channel')) {
       return Alert.alert(
         t('Leave Channel?'),
         t('Are you sure you want to leave this channel?'),

@@ -225,14 +225,12 @@ export default function PostDraft() {
     fetchMore({ variables: { page: nextPage } });
   };
 
-  const actionItemOnPress = (btnIndex: number) => {
-    switch (btnIndex) {
-      case 0: {
-        return navToEditPost();
-      }
-      case 1: {
-        return deleteDraft();
-      }
+  const actionItemOnPress = (_btnIndex: number, label: string) => {
+    if (label === t('Edit Draft')) {
+      return navToEditPost();
+    }
+    if (label === t('Delete Draft')) {
+      return deleteDraft();
     }
   };
 

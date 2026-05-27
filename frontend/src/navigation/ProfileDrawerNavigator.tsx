@@ -4,9 +4,15 @@ import {
   createDrawerNavigator,
 } from '@react-navigation/drawer';
 import React, { useState } from 'react';
-import { Platform, TouchableOpacity, View } from 'react-native';
+import { Linking, Platform, TouchableOpacity, View } from 'react-native';
 
 import { Markdown, UserStatus } from '../components';
+import {
+  DISCORD_INVITE_URL,
+  FIXED_COLOR_SCHEME,
+  TELEGRAM_COMMUNITY_URL,
+} from '../constants';
+import { SIDE_BAR_WIDTH } from '../constants/layout';
 import { Avatar, Divider, IconWithLabel, Text } from '../core-ui';
 import { getImage, navigateInProfile, useStorage } from '../helpers';
 import { useLogout, useProfile, useSiteSettings } from '../hooks';
@@ -14,14 +20,18 @@ import { IconName } from '../icons';
 import {
   Activity,
   AddEmail,
+  AdditionalResourceDetail,
+  AdditionalResources,
+  BlockedUsers,
+  HiddenWords,
   ChangePassword,
   EditProfile,
   EditUSerStatus,
   EmailAddress,
   Messages,
   Notifications,
-  Preferences,
 } from '../screens';
+import { navigate } from './NavigationService';
 import { makeStyles, useTheme } from '../theme';
 import { RootStackParamList, UserDetail } from '../types';
 import { useAuth } from '../utils/AuthProvider';
@@ -73,7 +83,6 @@ function DrawerItem(props: DrawerItemProps) {
 function DrawerContent({ state }: DrawerContentComponentProps) {
   const styles = useStyles();
   const { colors } = useTheme();
-
   const storage = useStorage();
   const username = storage.getItem('user')?.username || '';
 
@@ -100,6 +109,8 @@ function DrawerContent({ state }: DrawerContentComponentProps) {
     },
   });
   const [splittedBio, setSplittedBio] = useState<Array<string>>();
+
+  const hasFixedColorScheme = FIXED_COLOR_SCHEME !== 'no-preference';
 
   const { allowUserStatus, enableLexiconPushNotifications } = useSiteSettings({
     fetchPolicy: 'network-only',
@@ -144,7 +155,11 @@ function DrawerContent({ state }: DrawerContentComponentProps) {
   };
 
   return (
-    <DrawerContentScrollView style={styles.drawerContent}>
+    <View style={styles.drawerRoot}>
+      <DrawerContentScrollView
+        style={styles.drawerScroll}
+        contentContainerStyle={styles.drawerScrollContent}
+      >
       <View style={styles.headerContainer}>
         <Avatar src={userImage} size="l" label={username[0]} />
         <Text variant="semiBold" size="l" style={styles.usernameText}>
@@ -206,12 +221,6 @@ function DrawerContent({ state }: DrawerContentComponentProps) {
       <Divider />
       <View style={styles.menuContainer}>
         <DrawerItem
-          label={t('Notifications')}
-          icon="Notifications"
-          onPress={() => navigateInProfile('Notifications', undefined)}
-          active={isActive('Notifications')}
-        />
-        <DrawerItem
           label={t('Messages')}
           icon="Mail"
           onPress={() => navigateInProfile('Messages', undefined)}
@@ -238,28 +247,81 @@ function DrawerContent({ state }: DrawerContentComponentProps) {
           onPress={() => navigateInProfile('EmailAddress', undefined)}
           active={isActive('EmailAddress')}
         />
+      </View>
+      <Divider />
+      <View style={styles.menuContainer}>
         <DrawerItem
-          label={t('Preferences')}
-          icon="Settings"
-          onPress={() => navigateInProfile('Preferences', undefined)}
-          active={isActive('Preferences')}
+          label={t('Notifications')}
+          icon="Notifications"
+          onPress={() => navigateInProfile('Notifications', undefined)}
+          active={isActive('Notifications')}
+        />
+        {!hasFixedColorScheme ? (
+          <DrawerItem
+            label={t('Dark Mode')}
+            icon="Dark"
+            onPress={() => navigate('DarkMode')}
+          />
+        ) : null}
+        <DrawerItem
+          label={t('Push Notifications')}
+          icon="NotificationActive"
+          onPress={() => navigate('PushNotificationsPreferences')}
+        />
+        <DrawerItem
+          label={t('Blocked users')}
+          icon="RemoveCircle"
+          onPress={() => navigateInProfile('BlockedUsers', undefined)}
+          active={isActive('BlockedUsers')}
+        />
+        <DrawerItem
+          label={t('Additional Resources')}
+          icon="Information"
+          onPress={() => navigateInProfile('AdditionalResources', undefined)}
+          active={isActive('AdditionalResources')}
+        />
+        <DrawerItem
+          label={t('Discord')}
+          icon="Discord"
+          onPress={() => Linking.openURL(DISCORD_INVITE_URL)}
+        />
+        <DrawerItem
+          label={t('Telegram')}
+          icon="Telegram"
+          onPress={() => Linking.openURL(TELEGRAM_COMMUNITY_URL)}
         />
       </View>
       <Divider />
       <View style={styles.menuContainer}>
         <DrawerItem label={t('Log Out')} icon="Power" onPress={onLogout} />
       </View>
-    </DrawerContentScrollView>
+      </DrawerContentScrollView>
+    </View>
   );
 }
 
 export default function ProfileDrawerNavigator() {
-  const { navHeader } = useTheme();
+  const { navHeader, colors } = useTheme();
   return (
     <ProfileDrawer.Navigator
+      initialRouteName="Notifications"
       defaultStatus="open"
       drawerContent={(props) => <DrawerContent {...props} />}
-      screenOptions={{ drawerType: 'permanent', ...navHeader }}
+      screenOptions={{
+        drawerType: 'permanent',
+        ...navHeader,
+        drawerStyle: {
+          width: SIDE_BAR_WIDTH,
+          borderRightWidth: 1,
+          borderRightColor: colors.border,
+        },
+        drawerContentContainerStyle: { paddingTop: 0 },
+        sceneContainerStyle: {
+          backgroundColor: colors.background,
+          flex: 1,
+        },
+        safeAreaInsets: { top: 0, bottom: 0, left: 0, right: 0 },
+      }}
     >
       <ProfileDrawer.Screen
         name="Notifications"
@@ -292,9 +354,27 @@ export default function ProfileDrawerNavigator() {
         options={{ title: t('New Email Address') }}
       />
       <ProfileDrawer.Screen
-        name="Preferences"
-        component={Preferences}
-        options={{ title: t('Preferences'), headerLeft: () => undefined }}
+        name="BlockedUsers"
+        component={BlockedUsers}
+        options={{ title: t('Blocked Users'), headerLeft: () => undefined }}
+      />
+      <ProfileDrawer.Screen
+        name="HiddenWords"
+        component={HiddenWords}
+        options={{ title: t('Hidden Words'), headerLeft: () => undefined }}
+      />
+      <ProfileDrawer.Screen
+        name="AdditionalResources"
+        component={AdditionalResources}
+        options={{
+          title: t('Additional Resources'),
+          headerLeft: () => undefined,
+        }}
+      />
+      <ProfileDrawer.Screen
+        name="AdditionalResourceDetail"
+        component={AdditionalResourceDetail}
+        options={{ title: '', headerLeft: () => undefined }}
       />
       <ProfileDrawer.Screen
         name="EditProfile"
@@ -311,7 +391,16 @@ export default function ProfileDrawerNavigator() {
 }
 
 const useStyles = makeStyles(({ spacing, colors }) => ({
-  drawerContent: { marginTop: spacing.xxl },
+  drawerRoot: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  drawerScroll: {
+    flex: 1,
+  },
+  drawerScrollContent: {
+    flexGrow: 1,
+  },
   drawerItemContainer: {
     flex: 1,
     flexDirection: 'row',

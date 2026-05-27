@@ -4,13 +4,16 @@ import React from 'react';
 import {
   Activity,
   AddEmail,
+  AdditionalResourceDetail,
+  AdditionalResources,
+  BlockedUsers,
+  HiddenWords,
   ChangePassword,
   EditProfile,
   EditUSerStatus,
   EmailAddress,
   Messages,
   Notifications,
-  Preferences,
   Profile,
 } from '../screens';
 import { useTheme } from '../theme';
@@ -19,7 +22,7 @@ import { RootStackParamList } from '../types';
 const ProfileStack = createStackNavigator<RootStackParamList>();
 
 export default function ProfileStackNavigator() {
-  const { navHeader } = useTheme();
+  const { navHeader, colors } = useTheme();
 
   return (
     <ProfileStack.Navigator
@@ -27,6 +30,7 @@ export default function ProfileStackNavigator() {
         ...navHeader,
         presentation: 'card',
         headerBackTestID: 'HeaderBackButton',
+        cardStyle: { backgroundColor: colors.background },
       }}
       initialRouteName="ProfileScreen"
     >
@@ -66,9 +70,24 @@ export default function ProfileStackNavigator() {
         options={{ title: '' }}
       />
       <ProfileStack.Screen
-        name="Preferences"
-        component={Preferences}
-        options={{ title: t('Preferences') }}
+        name="BlockedUsers"
+        component={BlockedUsers}
+        options={{ title: t('Blocked Users') }}
+      />
+      <ProfileStack.Screen
+        name="HiddenWords"
+        component={HiddenWords}
+        options={{ title: t('Hidden Words') }}
+      />
+      <ProfileStack.Screen
+        name="AdditionalResources"
+        component={AdditionalResources}
+        options={{ title: t('Additional Resources') }}
+      />
+      <ProfileStack.Screen
+        name="AdditionalResourceDetail"
+        component={AdditionalResourceDetail}
+        options={{ title: '' }}
       />
       <ProfileStack.Screen
         name="Notifications"

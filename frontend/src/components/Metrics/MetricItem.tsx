@@ -32,6 +32,7 @@ type Props = Omit<IconWithLabelProps, 'label' | 'icon'> & {
   type: keyof typeof metricTypes;
   count: number;
   isLoading?: boolean;
+  label?: string;
 };
 
 const metricLabel = (count: number, { singular, plural }: Label): string => {
@@ -55,10 +56,12 @@ export function MetricItem(props: Props) {
     color = colors.textLighter,
     fontStyle,
     isLoading,
+    label: labelOverride,
     ...otherProps
   } = props;
 
   const { icon, label } = metricTypes[type];
+  const displayLabel = labelOverride ?? metricLabel(count, label);
 
   return isLoading ? (
     <ActivityIndicator size={'small'} />
@@ -66,7 +69,7 @@ export function MetricItem(props: Props) {
     <IconWithLabel
       icon={icon}
       size="m"
-      label={metricLabel(count, label)}
+      label={displayLabel}
       color={color}
       fontStyle={[styles.text, fontStyle]}
       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}

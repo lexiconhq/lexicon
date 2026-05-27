@@ -61,12 +61,16 @@ export function LoadingOrErrorView(props: Props) {
   );
 }
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles(({ colors }) => ({
   container: {
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
+    backgroundColor: colors.backgroundDarker,
   },
-  scrollViewContentStyle: { flex: 1 },
+  scrollViewContentStyle: {
+    flex: 1,
+    backgroundColor: colors.backgroundDarker,
+  },
 }));

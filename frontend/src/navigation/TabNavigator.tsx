@@ -4,29 +4,63 @@ import {
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs';
 import * as ScreenOrientation from 'expo-screen-orientation';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Platform, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { currentScreenVar } from '../constants';
+import { navigateToProfileTab } from '../helpers/navigateInProfile';
 import { Icon, Text } from '../core-ui';
+import { ProfileNavigatorParamList } from '../types';
 import { useKeyboardListener } from '../hooks';
 import {
   ChannelChat as ChannelChatScene,
   Home as HomeScene,
   PostDraft,
-  Profile as ProfileScene,
 } from '../screens';
+import ProfileGuest from '../screens/Profile/ProfileGuest';
 import { makeStyles, useTheme } from '../theme';
 import { TabParamList } from '../types';
 import { useDevice } from '../utils';
 import { useAuth } from '../utils/AuthProvider';
 
-import { navigate } from './NavigationService';
+import { navigationRef } from './NavigationService';
 import ProfileDrawerNavigator from './ProfileDrawerNavigator';
 import ProfileStackNavigator from './ProfileStackNavigator';
 
 const Tab = createBottomTabNavigator<TabParamList>();
+
+function ProfileTabScreen() {
+  const { isTabletLandscape } = useDevice();
+
+  return (
+    <View
+      key={isTabletLandscape ? 'profile-drawer' : 'profile-stack'}
+      style={{ flex: 1 }}
+    >
+      {isTabletLandscape ? (
+        <ProfileDrawerNavigator />
+      ) : (
+        <ProfileStackNavigator />
+      )}
+    </View>
+  );
+}
+
+function isProfileTabActive(): boolean {
+  if (!navigationRef.isReady()) {
+    return false;
+  }
+
+  const rootState = navigationRef.getRootState();
+  const tabRoute = rootState.routes[rootState.index];
+  if (tabRoute.name !== 'TabNav' || !tabRoute.state) {
+    return false;
+  }
+
+  const activeTab = tabRoute.state.routes[tabRoute.state.index ?? 0];
+  return activeTab.name === 'Profile';
+}
 
 function TabBar({
   state,
@@ -49,13 +83,14 @@ function TabBar({
     >
       {state.routes.map((route: { name: string }, index: number) => {
         const onPress = async () => {
+          if (route.name === 'Profile' && isTabletLandscape) {
+            navigateToProfileTab('ProfileScreen');
+            return;
+          }
+
           if (state.index === 0 && state.index === index) {
             navigate(route.name, { backToTop: true });
           } else {
-            if (route.name === 'Profile' && !token) {
-              navigate('Welcome');
-              return;
-            }
             navigate(route.name, { backToTop: false });
           }
         };
@@ -112,24 +147,37 @@ function TabBar({
 }
 
 export default function TabNavigator() {
-  const { isTablet, isPortrait } = useDevice();
+  const { isTablet, isTabletLandscape } = useDevice();
+  const { colors } = useTheme();
   const useAuthResults = useAuth();
   const token = !useAuthResults.isLoading && !!useAuthResults.token;
   let currentScreen = useReactiveVar(currentScreenVar);
 
   useEffect(() => {
+    if (!isTablet) {
+      return;
+    }
+
     const checkScreenOrientation = async () => {
       const currentOrientation = await ScreenOrientation.getOrientationAsync();
       let { screen, params } = currentScreen;
 
-      if (
-        currentOrientation === 1 ||
-        currentOrientation === 3 ||
-        currentOrientation === 4
-      ) {
-        if (screen !== 'ProfileScreen') {
-          navigate([screen, params]);
-        }
+      const isLandscape =
+        currentOrientation === ScreenOrientation.Orientation.LANDSCAPE_LEFT ||
+        currentOrientation === ScreenOrientation.Orientation.LANDSCAPE_RIGHT;
+
+      if (isLandscape) {
+        navigateToProfileTab(
+          screen as keyof ProfileNavigatorParamList,
+          params as ProfileNavigatorParamList[keyof ProfileNavigatorParamList],
+        );
+      } else if (screen !== 'ProfileScreen') {
+        navigateToProfileTab(
+          screen as keyof ProfileNavigatorParamList,
+          params as ProfileNavigatorParamList[keyof ProfileNavigatorParamList],
+        );
+      } else {
+        navigateToProfileTab('ProfileScreen');
       }
     };
 
@@ -148,12 +196,14 @@ export default function TabNavigator() {
     return () => {
       subscription.remove();
     };
-  }, [currentScreen]);
+  }, [currentScreen, isTablet]);
 
   return (
     <Tab.Navigator
       initialRouteName="Home"
       tabBar={(props) => <TabBar token={token} {...props} />}
+      sceneContainerStyle={{ backgroundColor: colors.background }}
+      detachInactiveScreens={false}
     >
       <Tab.Screen
         name="Home"
@@ -171,22 +221,16 @@ export default function TabNavigator() {
         </>
       )}
 
-      {!isTablet ? (
+      {!token ? (
         <Tab.Screen
           name="Profile"
-          component={ProfileScene}
-          options={{ headerShown: false }}
-        />
-      ) : isPortrait ? (
-        <Tab.Screen
-          name="Profile"
-          component={ProfileStackNavigator}
+          component={ProfileGuest}
           options={{ headerShown: false }}
         />
       ) : (
         <Tab.Screen
           name="Profile"
-          component={ProfileDrawerNavigator}
+          component={ProfileTabScreen}
           options={{ headerShown: false }}
         />
       )}

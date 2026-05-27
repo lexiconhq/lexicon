@@ -13,13 +13,18 @@ import {
 import { currentScreenVar } from '../../constants';
 import { Avatar, Button, Divider, IconWithLabel, Text } from '../../core-ui';
 import { getImage, navigateInProfile, useStorage } from '../../helpers';
+import {
+  useBlockedUsers,
+  useDevice,
+  useHiddenWords,
+} from '../../utils';
 import { useLazyProfile, useLogout, useSiteSettings } from '../../hooks';
 import { makeStyles, useTheme } from '../../theme';
 import { StackNavProp, UserDetail } from '../../types';
-import { useDevice } from '../../utils';
 import { useAuth } from '../../utils/AuthProvider';
 
 import MenuItem from './components/MenuItem';
+import ProfileCommunityMenu from './components/ProfileCommunityMenu';
 
 export default function Profile() {
   const styles = useStyles();
@@ -68,15 +73,10 @@ export default function Profile() {
   });
 
   useEffect(() => {
-    // NOTE: We use the 'state' listener for tablets because,
-    // in tablet view, changing screen orientation doesn't trigger the 'focus' event,
-    // which results in the profile data not getting re-fetched. Meanwhile, with the 'state' event,
-    // because we use different navigators for portrait (Stack Navigator) and
-    // landscape (Drawer Navigator) modes, it gets triggered when changing screen orientation.
-    // We added a condition to only fetch the profile data when it is currently on the Profile screen.
-    // We do not use 'state' for phones because of the different navigation structure.
-    // On tablets, the Profile screen is inside a Stack Navigator using 'ProfileScreen',
-    // whereas on phones, it is inside a Tab Navigator using the name 'Profile'.
+    // On phones and tablet portrait, profile menus live in ProfileStackNavigator.
+    // On tablet landscape, profile menus live in ProfileDrawerNavigator.
+    // We use the 'state' listener for tablets because changing screen orientation
+    // doesn't trigger the 'focus' event reliably when switching navigators.
 
     let unsubscribe;
     if (isTablet) {
@@ -87,12 +87,12 @@ export default function Profile() {
             screen: 'ProfileScreen',
             params: undefined,
           });
-          getProfile();
+          getProfile({ fetchPolicy: 'cache-first' });
         }
       });
     } else {
       unsubscribe = navigation.addListener('focus', () => {
-        getProfile();
+        getProfile({ fetchPolicy: 'cache-first' });
       });
     }
 
@@ -109,6 +109,10 @@ export default function Profile() {
 
   const userImage = getImage(data?.profile.user.avatar || '', 'xl');
   const useAuthResults = useAuth();
+  const { blockedUsernamesList } = useBlockedUsers();
+  const { hiddenWordsList } = useHiddenWords();
+  const blockedCount = blockedUsernamesList.length;
+  const hiddenWordsCount = hiddenWordsList.length;
 
   const onLogout = async () => {
     logout({
@@ -137,7 +141,13 @@ export default function Profile() {
   return (
     <>
       <CustomHeader title={t('Profile')} />
-      <View style={[styles.container, !isTablet && styles.flex]}>
+      <View
+        style={[
+          styles.container,
+          !isTablet && styles.flex,
+          !isTablet && styles.phoneRoot,
+        ]}
+      >
         {!isTablet && <View style={styles.statusBar} />}
 
         <ScrollView
@@ -278,13 +288,6 @@ export default function Profile() {
               }
             >
               <MenuItem
-                title={t('Notifications')}
-                iconName="Notifications"
-                indicator={haveNotification}
-                onPress={() => navigateInProfile('Notifications', undefined)}
-              />
-              <Divider style={styles.dividerList} />
-              <MenuItem
                 title={t('Messages')}
                 iconName="Mail"
                 onPress={() => navigateInProfile('Messages', undefined)}
@@ -302,6 +305,18 @@ export default function Profile() {
                 isTablet ? styles.tabletMenuContainer : styles.menuContainer
               }
             >
+              <ProfileCommunityMenu
+                showNotifications
+                haveNotification={haveNotification}
+                blockedCount={blockedCount}
+                hiddenWordsCount={hiddenWordsCount}
+              />
+            </View>
+            <View
+              style={
+                isTablet ? styles.tabletMenuContainer : styles.menuContainer
+              }
+            >
               <MenuItem
                 title={t('Password & Security')}
                 iconName="Lock"
@@ -312,12 +327,6 @@ export default function Profile() {
                 title={t('Linked Accounts')}
                 iconName="Admin"
                 onPress={() => navigateInProfile('EmailAddress', undefined)}
-              />
-              <Divider style={styles.dividerList} />
-              <MenuItem
-                title={t('Preferences')}
-                iconName="Settings"
-                onPress={() => navigateInProfile('Preferences', undefined)}
               />
             </View>
             <View
@@ -355,6 +364,9 @@ export default function Profile() {
 
 const useStyles = makeStyles(({ colors, spacing }) => ({
   flex: { flex: 1 },
+  phoneRoot: {
+    backgroundColor: colors.background,
+  },
   container: {
     flexGrow: 1,
     backgroundColor: colors.backgroundDarker,
@@ -436,5 +448,10 @@ const useStyles = makeStyles(({ colors, spacing }) => ({
 
   loadingContainer: {
     backgroundColor: colors.background,
+  },
+  blockedCount: {
+    paddingHorizontal: spacing.xxl,
+    paddingBottom: spacing.l,
+    fontSize: 14,
   },
 }));

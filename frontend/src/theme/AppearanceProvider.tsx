@@ -7,7 +7,7 @@ import React, {
   useState,
 } from 'react';
 
-import { FIXED_COLOR_SCHEME } from '../constants';
+import { DEFAULT_COLOR_SCHEME, FIXED_COLOR_SCHEME } from '../constants';
 import {
   ColorScheme,
   filterColorScheme,
@@ -30,11 +30,20 @@ export function AppearanceProvider({ children }: Props) {
   const storage = useStorage();
   // TODO: Use Recoil for this?
   const fixedColorScheme = filterColorScheme(FIXED_COLOR_SCHEME);
-  const cachedColorScheme = filterColorScheme(storage.getItem('colorScheme'));
+  const storedColorScheme = storage.getItem('colorScheme');
 
-  const [colorScheme, setColorSchemeState] = useState(
-    () => fixedColorScheme || cachedColorScheme || getSystemColorScheme(),
-  );
+  const [colorScheme, setColorSchemeState] = useState(() => {
+    if (fixedColorScheme) {
+      return fixedColorScheme;
+    }
+    if (storedColorScheme === 'no-preference') {
+      return getSystemColorScheme();
+    }
+    if (storedColorScheme === 'light' || storedColorScheme === 'dark') {
+      return storedColorScheme;
+    }
+    return DEFAULT_COLOR_SCHEME;
+  });
 
   const setColorScheme = useCallback(
     (colorScheme: ColorScheme) => {

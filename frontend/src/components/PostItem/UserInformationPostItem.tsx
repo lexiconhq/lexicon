@@ -5,7 +5,13 @@ import {
   UserActionFragment,
   UserActionFragmentDoc,
 } from '../../generatedAPI/server';
-import { findChannelByCategoryId, getImage, useStorage } from '../../helpers';
+import {
+  findChannelByCategoryId,
+  getImage,
+  shouldHidePostByHiddenWords,
+  useStorage,
+} from '../../helpers';
+import { useHiddenWords } from '../../utils';
 
 import { PostItem, PostItemProps } from './PostItem';
 
@@ -17,6 +23,7 @@ const LIKED_ACTION_TYPE = 1;
 
 function BaseUserInformationPostItem(props: Props) {
   const storage = useStorage();
+  const { hiddenWords } = useHiddenWords();
 
   const { topicId, postId, actionType, currentUser, style } = props;
 
@@ -62,6 +69,19 @@ function BaseUserInformationPostItem(props: Props) {
 
   let avatar = getImage(avatarTemplate);
   let isLiked = actionType === LIKED_ACTION_TYPE;
+
+  if (
+    shouldHidePostByHiddenWords(
+      {
+        title,
+        content: content || excerpt,
+        username,
+      },
+      hiddenWords,
+    )
+  ) {
+    return null;
+  }
 
   return (
     <PostItem

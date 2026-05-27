@@ -37,9 +37,9 @@
   "submit": {
     "base": {
       "ios": {
-        "appleId": "<insert your apple ID>",
-        "ascAppId": "<insert your App Store connect ID>",
-        "appleTeamId": "<insert your apple team ID>"
+        "appleId": "josh@joshuniverse.com",
+        "ascAppId": "6474010400",
+        "appleTeamId": "2KBC7HA7QC"
       },
       "android": {
         "serviceAccountKeyPath": "./playstore_secret.json"

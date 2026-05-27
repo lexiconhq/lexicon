@@ -1,15 +1,19 @@
 import React from 'react';
 import {
   Platform,
+  StyleSheet,
   TouchableOpacity,
   TouchableOpacityProps,
 } from 'react-native';
 
 import { Text } from '../../core-ui';
-import { makeStyles } from '../../theme';
+import { Color, makeStyles, useTheme } from '../../theme';
+
+export type ActionSheetItemVariant = 'default' | 'destructive' | 'cancel';
 
 type Props = TouchableOpacityProps & {
   label: string;
+  variant?: ActionSheetItemVariant;
   isTop?: boolean;
   isBottom?: boolean;
   isCancelOption?: boolean;
@@ -20,10 +24,12 @@ export { Props as ActionSheetItemProps };
 const ios = Platform.OS === 'ios';
 
 export function ActionSheetItem(props: Props) {
+  const { colors } = useTheme();
   const styles = useStyles();
 
   const {
     label,
+    variant = 'default',
     onPress,
     disabled = false,
     isTop = false,
@@ -32,25 +38,49 @@ export function ActionSheetItem(props: Props) {
     style,
   } = props;
 
+  const resolvedVariant: ActionSheetItemVariant = isCancelOption
+    ? 'cancel'
+    : variant;
+
+  const labelColor: Color =
+    resolvedVariant === 'destructive'
+      ? 'error'
+      : resolvedVariant === 'cancel'
+      ? 'textNormal'
+      : 'primary';
+
+  const labelVariant =
+    resolvedVariant === 'destructive' || resolvedVariant === 'cancel'
+      ? 'semiBold'
+      : 'normal';
+
   return (
     <TouchableOpacity
       onPress={onPress}
-      activeOpacity={0.9}
+      activeOpacity={0.7}
       style={[
         styles.container,
-        style,
-        disabled && styles.disabled,
-        ios && [
+        resolvedVariant === 'cancel'
+          ? styles.cancelContainer
+          : styles.actionContainer,
+        ios && resolvedVariant !== 'cancel' && [
           isTop && styles.topRadius,
           isBottom && styles.bottomRadius,
-          isCancelOption && styles.cancelButton,
+          !isBottom && styles.itemSeparator,
         ],
+        ios &&
+          resolvedVariant === 'cancel' && [
+            styles.cancelRadius,
+            { backgroundColor: colors.background },
+          ],
+        style,
+        disabled && styles.disabled,
       ]}
     >
       <Text
         size="l"
-        color={ios ? 'primary' : 'pureBlack'}
-        variant={!isCancelOption ? 'normal' : 'bold'}
+        color={labelColor}
+        variant={labelVariant}
         style={disabled && styles.disabled}
       >
         {label}
@@ -61,30 +91,43 @@ export function ActionSheetItem(props: Props) {
 
 const useStyles = makeStyles(({ colors, spacing }) => ({
   container: {
-    backgroundColor: colors.lightActionSheetBackground,
     width: '100%',
-    padding: spacing.xl,
-    justifyContent: ios ? 'center' : 'flex-start',
-    alignItems: ios ? 'center' : 'flex-start',
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: colors.grey,
-    elevation: 5,
+    paddingVertical: spacing.l,
+    paddingHorizontal: spacing.xl,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: 52,
+  },
+  actionContainer: {
+    backgroundColor: colors.background,
+    borderColor: colors.border,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+  },
+  itemSeparator: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
+  },
+  cancelContainer: {
+    borderWidth: 0,
+    marginTop: spacing.s,
   },
   disabled: {
-    opacity: 0.9,
+    opacity: 0.45,
   },
   topRadius: {
+    borderTopWidth: 1,
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
   },
   bottomRadius: {
+    borderBottomWidth: 1,
     borderBottomLeftRadius: 12,
     borderBottomRightRadius: 12,
   },
-  cancelButton: {
-    backgroundColor: colors.pureWhite,
+  cancelRadius: {
     borderRadius: 12,
-    marginTop: spacing.m,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
 }));

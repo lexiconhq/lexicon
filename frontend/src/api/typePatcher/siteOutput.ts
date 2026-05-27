@@ -1,17 +1,23 @@
 import { RestLink } from 'apollo-link-rest';
 
 import { discourseHost, UNCATEGORIZED_CATEGORY_ID } from '../../constants';
+import { normalizeFlagTypeId } from '../../helpers/reportPost';
+
+function normalizeFlagTypes(
+  flagTypes: Array<{ id: string | number; nameKey: string }> | undefined,
+) {
+  return (flagTypes ?? [])
+    .filter((flag) => flag.id != null && flag.nameKey != null)
+    .map((flag) => ({
+      ...flag,
+      id: normalizeFlagTypeId(flag.id),
+    }));
+}
 
 export const siteOutputPatcher: RestLink.FunctionalTypePatcher = (data) => {
-  const topicFlagTypes = data.topicFlagTypes.filter(
-    (flag: { id: string; nameKey: string }) =>
-      flag.id != null && flag.nameKey != null,
-  );
+  const topicFlagTypes = normalizeFlagTypes(data.topicFlagTypes);
 
-  const postActionTypes = data.postActionTypes.filter(
-    (flag: { id: string; nameKey: string }) =>
-      flag.id != null && flag.nameKey != null,
-  );
+  const postActionTypes = normalizeFlagTypes(data.postActionTypes);
 
   return {
     ...data,
