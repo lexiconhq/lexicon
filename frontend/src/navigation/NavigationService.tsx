@@ -9,17 +9,21 @@ import { RootStackParamList, RootStackRouteName } from '../types';
 export const navigationRef = createNavigationContainerRef<RootStackParamList>();
 
 export function navigate(
-  params:
-    | [screen: RootStackRouteName]
-    | [
-        screen: RootStackRouteName,
-        params: RootStackParamList[RootStackRouteName],
-      ],
+  screen: RootStackRouteName,
+  params?: RootStackParamList[RootStackRouteName],
 ) {
-  if (navigationRef.isReady()) {
-    navigationRef.navigate(...params);
+  if (!navigationRef.isReady()) {
+    return;
   }
+
+  if (params !== undefined) {
+    navigationRef.navigate(screen, params);
+    return;
+  }
+
+  navigationRef.navigate(screen);
 }
+
 export function reset(
   params:
     | PartialState<NavigationState<RootStackParamList>>

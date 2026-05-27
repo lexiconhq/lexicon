@@ -63,6 +63,7 @@ export default function AppNavigator() {
             })}
             theme={darkMode ? DarkTheme : DefaultTheme}
             ref={navigationRef}
+            detachInactiveScreens={false}
           >
             <RootStackNavigator authProps={auth} />
           </NavigationContainer>

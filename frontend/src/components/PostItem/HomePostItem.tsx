@@ -3,9 +3,16 @@ import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 
 import { TopicFragment, TopicFragmentDoc } from '../../generatedAPI/server';
-import { transformTopicToPost, useStorage } from '../../helpers';
-import { makeStyles } from '../../theme';
+import { Icon } from '../../core-ui';
+import {
+  transformTopicToPost,
+  useBlockUserActions,
+  useStorage,
+} from '../../helpers';
+import { makeStyles, useTheme } from '../../theme';
 import { StackNavProp } from '../../types';
+import { shouldHideTopicByHiddenWords } from '../../helpers';
+import { useBlockedUsers, useHiddenWords } from '../../utils';
 import { MetricsProp } from '../Metrics/Metrics';
 
 import { PostItem, PostItemProps } from './PostItem';
@@ -15,14 +22,27 @@ type Props = Pick<
   PostItemProps,
   'prevScreen' | 'isHidden' | 'topicId' | 'style'
 > &
-  Pick<MetricsProp, 'onPressReply'>;
+  Pick<MetricsProp, 'onPressReply'> & {
+    /** Bumps when hidden words change so memoized items re-filter. */
+    hiddenWordsRevision?: number;
+  };
 
 function BaseHomePostItem(props: Props) {
+  const { hiddenWordsRevision: _hiddenWordsRevision, ...itemProps } = props;
   const { navigate } = useNavigation<StackNavProp<'TabNav'>>();
   const storage = useStorage();
   const styles = useStyles();
-
-  const { topicId, prevScreen, isHidden = false, onPressReply, style } = props;
+  const { colors } = useTheme();
+  const { isBlocked } = useBlockedUsers();
+  const { hiddenWords } = useHiddenWords();
+  const {
+    topicId,
+    prevScreen,
+    isHidden = false,
+    onPressReply,
+    style,
+  } = itemProps;
+  const { canBlockUsername, toggleBlock } = useBlockUserActions();
 
   const cacheTopicResult = useFragment_experimental<
     TopicFragment,
@@ -46,10 +66,23 @@ function BaseHomePostItem(props: Props) {
   }
 
   let channelsData = storage.getItem('channels');
+  const topicPost = transformTopicToPost({
+    ...cacheTopic,
+    channels: channelsData ?? [],
+  });
+
+  if (
+    isBlocked(topicPost.username) ||
+    topicPost.freqPosters?.some((poster) => isBlocked(poster.username)) ||
+    shouldHideTopicByHiddenWords(topicPost, hiddenWords)
+  ) {
+    return null;
+  }
+
   let {
     title,
     avatar,
-    username,
+    username: topicAuthorUsername,
     channel,
     tags,
     viewCount,
@@ -63,9 +96,19 @@ function BaseHomePostItem(props: Props) {
     content,
     imageUrls,
     pinned,
-  } = transformTopicToPost({ ...cacheTopic, channels: channelsData ?? [] });
+  } = topicPost;
 
+  const username = topicAuthorUsername;
   const isCreator = username === storage.getItem('user')?.username;
+
+  const authorActions = canBlockUsername(topicAuthorUsername) ? (
+    <Icon
+      name="More"
+      color={colors.textLighter}
+      onPress={() => toggleBlock(topicAuthorUsername)}
+      hitSlop={{ top: 15, right: 15, bottom: 15, left: 15 }}
+    />
+  ) : undefined;
 
   const onPressPost = () => {
     navigate('PostDetail', {
@@ -89,6 +132,7 @@ function BaseHomePostItem(props: Props) {
       hidden={hidden}
       createdAt={createdAt}
       username={username}
+      authorActions={authorActions}
       isLiked={isLiked}
       numberOfLines={5}
       showImageRow

@@ -11,7 +11,7 @@ import {
   StyleProp,
 } from 'react-native';
 import * as Crypto from 'expo-crypto';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import ImageView from 'react-native-image-viewing';
 
 import { getFormat } from '../helpers';

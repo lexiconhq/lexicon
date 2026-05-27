@@ -6,8 +6,10 @@ import { NO_EXCERPT_WORDING } from '../../constants';
 import { CustomImage, Icon, Text } from '../../core-ui';
 import {
   formatRelativeTime,
+  formatPostTitle,
   replaceTagsInContent,
   unescapeHTML,
+  navigateToHomeChannel,
   useStorage,
 } from '../../helpers';
 import { Color, makeStyles, useTheme } from '../../theme';
@@ -39,6 +41,7 @@ type Props = ViewProps & {
   images?: Array<string>;
   isHidden?: boolean;
   footer?: React.ReactNode;
+  authorActions?: React.ReactNode;
   mentionedUsers?: Array<string>;
   onPressViewIgnoredContent?: () => void;
   showStatus?: boolean;
@@ -78,6 +81,7 @@ function BasePostItem(props: Props) {
     mentionedUsers,
     isHidden = false,
     footer,
+    authorActions,
     onPressViewIgnoredContent = () => {},
     showStatus,
     emojiCode,
@@ -117,13 +121,17 @@ function BasePostItem(props: Props) {
     [navigate],
   );
 
+  const onPressChannel = useCallback((channelId: number) => {
+    navigateToHomeChannel(channelId);
+  }, []);
+
   const contentTitle = (
     <Text
       style={[styles.spacingBottom, styles.flex]}
       variant="semiBold"
       size="l"
     >
-      {title}
+      {formatPostTitle(title)}
     </Text>
   );
 
@@ -139,7 +147,9 @@ function BasePostItem(props: Props) {
       showStatus={showStatus}
       emojiCode={emojiCode}
       testIDStatus={testIDStatus}
-    />
+    >
+      {authorActions}
+    </Author>
   );
 
   const renderPolls = () => {
@@ -168,7 +178,13 @@ function BasePostItem(props: Props) {
 
   const mainContent = (
     <>
-      {nonclickable && <PostGroupings channel={channel} tags={tags} />}
+      {nonclickable && (
+        <PostGroupings
+          channel={channel}
+          tags={tags}
+          onPressChannel={onPressChannel}
+        />
+      )}
       {isHidden ? (
         <PostHidden
           style={styles.markdown}
@@ -228,7 +244,11 @@ function BasePostItem(props: Props) {
         {pinned && <Icon name="Pin" style={styles.pinned} />}
       </TouchableOpacity>
       {author}
-      <PostGroupings channel={channel} tags={tags} />
+      <PostGroupings
+        channel={channel}
+        tags={tags}
+        onPressChannel={onPressChannel}
+      />
       <TouchableOpacity onPress={onPressPost} delayPressIn={200}>
         {mainContent}
       </TouchableOpacity>

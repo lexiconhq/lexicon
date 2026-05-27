@@ -1,5 +1,5 @@
 import { useNavigation, useRoute } from '@react-navigation/native';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
   Alert,
@@ -20,8 +20,14 @@ import {
   formatTime,
   useStorage,
 } from '../../helpers';
+import {
+  clearEmojiSelectionHandler,
+  registerEmojiSelectionHandler,
+} from '../../helpers/emojiPickerSelection';
 import { addHour } from '../../helpers/addHour';
-import { useDeleteUserStatus, useEditUserStatus } from '../../hooks';
+import { useDeleteUserStatus } from '../../hooks/rest/user/useDeleteUserStatus';
+import { useEditUserStatus } from '../../hooks/rest/user/useEditUserStatus';
+import { navigate as rootNavigate } from '../../navigation/NavigationService';
 import { makeStyles } from '../../theme';
 import { StackNavProp, StackRouteProp } from '../../types';
 import { useDevice } from '../../utils';
@@ -36,7 +42,7 @@ type FormValues = {
 
 export default function EditUserStatus() {
   const styles = useStyles();
-  const { isTablet, isTabletLandscape, isPortrait } = useDevice();
+  const { isTablet, isTabletLandscape } = useDevice();
 
   const storage = useStorage();
   const username = storage.getItem('user')?.username || '';
@@ -66,14 +72,19 @@ export default function EditUserStatus() {
 
   const navigation = useNavigation<StackNavProp<'EditUserStatus'>>();
   const { navigate } = navigation;
-  const {
-    params: {
-      emojiText,
-      status: paramStatus,
-      emojiCode = DEFAULT_EMOJI_STATUS,
-      endDate,
-    },
-  } = useRoute<StackRouteProp<'EditUserStatus'>>();
+  const route = useRoute<StackRouteProp<'EditUserStatus'>>();
+  const { status: paramStatus, endDate } = route.params ?? {};
+
+  const [emojiCode, setEmojiCode] = useState(
+    route.params?.emojiCode ?? DEFAULT_EMOJI_STATUS,
+  );
+  const [emojiText, setEmojiText] = useState(route.params?.emojiText);
+
+  useEffect(() => {
+    return () => {
+      clearEmojiSelectionHandler();
+    };
+  }, []);
 
   const { control, handleSubmit, getValues, watch } = useForm<FormValues>({
     mode: 'onChange',
@@ -106,10 +117,10 @@ export default function EditUserStatus() {
         errorHandlerAlert(error);
       },
       onCompleted: () => {
-        if (isTablet && isPortrait) {
-          navigate('ProfileScreen');
-        } else {
+        if (isTabletLandscape) {
           navigate('TabNav', { screen: 'Profile' });
+        } else {
+          navigate('ProfileScreen');
         }
       },
       refetchQueries,
@@ -119,10 +130,10 @@ export default function EditUserStatus() {
       errorHandlerAlert(error);
     },
     onCompleted: () => {
-      if (isTablet && isPortrait) {
-        navigate('ProfileScreen');
-      } else {
+      if (isTabletLandscape) {
         navigate('TabNav', { screen: 'Profile' });
+      } else {
+        navigate('ProfileScreen');
       }
     },
     refetchQueries,
@@ -160,9 +171,13 @@ export default function EditUserStatus() {
     });
   });
 
-  const navEmojiPicker = () => {
-    navigate('EmojiPicker');
-  };
+  const navEmojiPicker = useCallback(() => {
+    registerEmojiSelectionHandler(({ emojiCode: code, emojiText: text }) => {
+      setEmojiCode(code);
+      setEmojiText(text);
+    });
+    rootNavigate('EmojiPicker');
+  }, []);
 
   const showAlert = () =>
     Alert.alert(

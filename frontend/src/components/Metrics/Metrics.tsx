@@ -1,8 +1,11 @@
+import { useReactiveVar } from '@apollo/client';
 import React, { memo, useCallback, useEffect, useState } from 'react';
 import { View, ViewProps } from 'react-native';
 import { useDebouncedCallback } from 'use-debounce';
 
 import { FIRST_POST_NUMBER } from '../../constants';
+import { navigate as rootNavigate } from '../../navigation/NavigationService';
+import { tokenVar } from '../../reactiveVars';
 import { ActivityIndicator, Divider } from '../../core-ui';
 import { getUpdatedLikeCount } from '../../helpers';
 import { useLikeTopicOrPost } from '../../hooks';
@@ -22,6 +25,8 @@ export { Props as MetricsProp };
 const DEBOUNCE_WAIT_TIME = 1000;
 
 export function Metrics(props: Props) {
+  const token = useReactiveVar(tokenVar);
+  const isLoggedIn = !!token;
   const { likedTopics } = useOngoingLikedTopic();
 
   const {
@@ -149,6 +154,17 @@ export function Metrics(props: Props) {
     });
   }, [performDebouncedLike]);
 
+  const handlePressReply = useCallback(
+    (params: { postId?: number; topicId: number }) => {
+      if (!isLoggedIn) {
+        rootNavigate('Welcome');
+        return;
+      }
+      onPressReply?.(params);
+    },
+    [isLoggedIn, onPressReply],
+  );
+
   return (
     <MetricsView
       topicId={topicId}
@@ -158,8 +174,9 @@ export function Metrics(props: Props) {
       replyCount={replyCount}
       viewCount={viewCount}
       isCreator={isCreator}
-      onPressLike={onPressLike}
-      onPressReply={onPressReply}
+      isLoggedIn={isLoggedIn}
+      onPressLike={isLoggedIn ? onPressLike : undefined}
+      onPressReply={handlePressReply}
       onPressView={onPressView}
       {...otherProps}
     />
@@ -172,6 +189,7 @@ type MetricViewProps = ViewProps & {
   replyCount: number;
   likeCount: number;
   isLiked: boolean;
+  isLoggedIn?: boolean;
   postId?: number;
   viewCount?: number;
   isCreator?: boolean;
@@ -190,6 +208,7 @@ function BaseMetricsView(props: MetricViewProps) {
     postId,
     viewCount,
     isCreator,
+    isLoggedIn = true,
     onPressReply,
     onPressLike,
     onPressView,
@@ -200,6 +219,10 @@ function BaseMetricsView(props: MetricViewProps) {
   const styles = useStyles();
   const { colors } = useTheme();
   let isLoading = !postId && !postList;
+  const likeDisabled = isCreator || !isLoggedIn;
+  const replyLabel = isLoggedIn
+    ? undefined
+    : t('Sign in to reply');
 
   return (
     <View
@@ -223,15 +246,23 @@ function BaseMetricsView(props: MetricViewProps) {
           <MetricItem
             type="Likes"
             count={likeCount}
-            onPress={onPressLike}
-            disabled={isCreator}
-            color={isLiked ? colors.liked : colors.textLighter}
+            onPress={likeDisabled ? undefined : onPressLike}
+            disabled={likeDisabled}
+            color={
+              !isLoggedIn
+                ? colors.textLight
+                : isLiked
+                ? colors.liked
+                : colors.textLighter
+            }
             style={styles.likes}
           />
           <MetricItem
             type="Replies"
             count={replyCount}
+            label={replyLabel}
             onPress={() => onPressReply?.({ postId, topicId })}
+            color={isLoggedIn ? colors.textLighter : colors.primary}
             testID="Metrics:Replies"
           />
         </>

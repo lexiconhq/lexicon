@@ -1,88 +1,141 @@
-import React, { useEffect, useState } from 'react';
-import { Platform, SafeAreaView, View } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
-import { FlashList } from '@shopify/flash-list';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import {
+  FlatList,
+  ListRenderItemInfo,
+  Platform,
+  SafeAreaView,
+  View,
+  ViewStyle,
+} from 'react-native';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
-import { Text, TextInput } from '../core-ui';
-import { makeStyles } from '../theme';
-import { EMOJI } from '../constants/emoji';
 import { CustomHeader, HeaderItem, ModalHeader } from '../components';
-import { RootStackNavProp } from '../types';
+import { FONT_SIZES, SPACING } from '../constants';
+import { Text, TextInput } from '../core-ui';
+import { completeEmojiSelection } from '../helpers/emojiPickerSelection';
+import {
+  ALL_EMOJI_ROWS,
+  EmojiItem,
+  filterEmojiRows,
+} from '../helpers/emojiSearch';
 import { generateSlug } from '../helpers/generateSlug';
+import { makeStyles } from '../theme';
+import { RootStackNavProp } from '../types';
 
-type EmojiRenderItem = {
-  id: number;
-  emoji: string;
-  name: string;
+const EMOJI_ROW_HEIGHT = SPACING.m * 2 + FONT_SIZES.xl;
+const SEARCH_DEBOUNCE_MS = 150;
+
+type EmojiPickerRowProps = {
+  row: Array<EmojiItem>;
+  onSelect: (name: string, emoji: string) => void;
+  cellStyle: ViewStyle;
+  rowStyle: ViewStyle;
 };
+
+const EmojiPickerRow = React.memo(function EmojiPickerRow(props: EmojiPickerRowProps) {
+  const { row, onSelect, cellStyle, rowStyle } = props;
+
+  return (
+    <View style={rowStyle}>
+      {row.map(({ id, name, emoji }) => (
+        <TouchableOpacity
+          key={id}
+          style={cellStyle}
+          onPress={() => onSelect(name, emoji)}
+          testID={`EmojiPicker:Button:Emoji:${name}`}
+        >
+          <Text size="xl">{emoji}</Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+});
 
 export default function EmojiPicker() {
   const styles = useStyles();
   const navigation = useNavigation<RootStackNavProp<'EmojiPicker'>>();
   const { goBack } = navigation;
-  const [emojis, setEmojis] = useState(EMOJI);
   const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [showList, setShowList] = useState(true);
   const ios = Platform.OS === 'ios';
+  const isSelectingRef = useRef(false);
 
   useEffect(() => {
-    const debounce = <T extends (args: string) => void>(
-      func: T,
-      delay: number,
-    ) => {
-      let timeoutId: NodeJS.Timeout;
-      return (args: string) => {
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-        }
-        timeoutId = setTimeout(() => {
-          func(args);
-        }, delay);
-      };
+    const timeoutId = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => {
+      clearTimeout(timeoutId);
     };
-
-    const filterEmojis = (value: string) => {
-      const filteredEmojis = EMOJI.filter(({ name }) => name.includes(value));
-      setEmojis(filteredEmojis);
-    };
-
-    const debouncedFilterEmojis = debounce(filterEmojis, 800);
-
-    debouncedFilterEmojis(query);
   }, [query]);
 
-  const Header = () =>
-    ios ? (
-      <ModalHeader
-        title={t('Emoji')}
-        left={<HeaderItem label={t('Cancel')} left onPressItem={goBack} />}
+  const emojiRows = useMemo(
+    () => (debouncedQuery ? filterEmojiRows(debouncedQuery) : ALL_EMOJI_ROWS),
+    [debouncedQuery],
+  );
+
+  const onSelectEmoji = useCallback(
+    (name: string, emoji: string) => {
+      if (isSelectingRef.current) {
+        return;
+      }
+
+      isSelectingRef.current = true;
+      setShowList(false);
+      completeEmojiSelection({ emojiCode: name, emojiText: emoji });
+      goBack();
+    },
+    [goBack],
+  );
+
+  const renderItem = useCallback(
+    ({ item }: ListRenderItemInfo<Array<EmojiItem>>) => (
+      <EmojiPickerRow
+        row={item}
+        onSelect={onSelectEmoji}
+        cellStyle={styles.cell}
+        rowStyle={styles.row}
       />
-    ) : (
-      <CustomHeader title={t('Emoji')} noShadow />
-    );
+    ),
+    [onSelectEmoji, styles.cell, styles.row],
+  );
 
-  const renderItem = ({ item }: { item: EmojiRenderItem }) => {
-    const { name, emoji } = item;
-    const { navigate } = navigation;
+  const getItemLayout = useCallback(
+    (_: ArrayLike<Array<EmojiItem>> | null | undefined, index: number) => ({
+      length: EMOJI_ROW_HEIGHT,
+      offset: EMOJI_ROW_HEIGHT * index,
+      index,
+    }),
+    [],
+  );
 
-    return (
-      <View style={styles.itemContainer}>
-        <TouchableOpacity
-          onPress={() => {
-            navigate('EditUserStatus', { emojiCode: name, emojiText: emoji });
-          }}
-          key={`emoji-${name}`}
-          testID={`EmojiPicker:Button:Emoji:${name}`}
-        >
-          <Text size="xl">{emoji}</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  };
+  const keyExtractor = useCallback(
+    (row: Array<EmojiItem>) =>
+      row.map(({ id }) => id).join('-') || 'emoji-row-empty',
+    [],
+  );
+
+  const header = ios ? (
+    <ModalHeader
+      title={t('Emoji')}
+      left={<HeaderItem label={t('Cancel')} left onPressItem={goBack} />}
+    />
+  ) : (
+    <CustomHeader title={t('Emoji')} noShadow />
+  );
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header />
+      {header}
 
       <View style={styles.bodyContainer}>
         <TextInput
@@ -94,16 +147,22 @@ export default function EmojiPicker() {
           style={styles.textInput}
           testID="EmojiPicker:TextInput:Search"
         />
-        {/* using flash list because it more faster than flatlist in this case to
-        render more than 3000 emoji */}
-        <FlashList
-          data={emojis}
-          renderItem={renderItem}
-          keyExtractor={(item) => `emoji-${item.id}`}
-          numColumns={6}
-          estimatedItemSize={EMOJI.length}
-          removeClippedSubviews={true}
-        />
+        {showList ? (
+          <FlatList
+            data={emojiRows}
+            renderItem={renderItem}
+            keyExtractor={keyExtractor}
+            getItemLayout={getItemLayout}
+            initialNumToRender={12}
+            maxToRenderPerBatch={8}
+            windowSize={5}
+            updateCellsBatchingPeriod={50}
+            keyboardShouldPersistTaps="handled"
+            style={styles.list}
+          />
+        ) : (
+          <View style={styles.list} />
+        )}
       </View>
     </SafeAreaView>
   );
@@ -117,9 +176,13 @@ const useStyles = makeStyles(({ spacing, colors }) => ({
   textInput: {
     marginBottom: spacing.m,
   },
-  itemContainer: {
-    padding: spacing.m,
+  row: {
+    flexDirection: 'row',
+    height: EMOJI_ROW_HEIGHT,
+  },
+  cell: {
     flex: 1,
+    height: EMOJI_ROW_HEIGHT,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -127,5 +190,8 @@ const useStyles = makeStyles(({ spacing, colors }) => ({
     flex: 1,
     paddingHorizontal: spacing.xxl,
     marginTop: spacing.m,
+  },
+  list: {
+    flex: 1,
   },
 }));

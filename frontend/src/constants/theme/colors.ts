@@ -2,6 +2,9 @@ import { ColorScheme } from '../../helpers';
 
 export const FIXED_COLOR_SCHEME: ColorScheme = 'no-preference';
 
+/** Used when the user has not chosen a theme (first launch). */
+export const DEFAULT_COLOR_SCHEME: ColorScheme = 'dark';
+
 export const BASE_COLORS = {
   pureBlack: '#000000',
   pureBlack40Opacity: '#00000066',
@@ -24,6 +27,8 @@ export const BASE_COLORS = {
   white60: '#ACAEB1',
   white20: '#5A5E63',
   royalBlue: '#2B6AFF',
+  brandGreen: '#33d17a',
+  brandGreen10: '#33d17a1A',
   bittersweet: '#FD6565',
   darkerGray: '#E2E2E2',
   lightGray: '#F2F2F2',
@@ -85,14 +90,14 @@ export const FUNCTIONAL_COLORS = {
   darkTransparentBackground: BASE_COLORS.transparentPureBlack,
 
   shadow: BASE_COLORS.pureBlack,
-  activeTab: BASE_COLORS.royalBlue,
+  activeTab: BASE_COLORS.brandGreen,
   inactiveTab: BASE_COLORS.brownGrey,
   error: BASE_COLORS.bittersweet,
   liked: BASE_COLORS.bittersweet,
 
-  activeSideBarAndroid: BASE_COLORS.azureBlue10,
+  activeSideBarAndroid: BASE_COLORS.brandGreen10,
 
-  primary: BASE_COLORS.royalBlue,
+  primary: BASE_COLORS.brandGreen,
   success: BASE_COLORS.green,
 
   grey: BASE_COLORS.grey,

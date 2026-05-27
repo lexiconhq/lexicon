@@ -1,5 +1,9 @@
-import React from 'react';
-import { Platform, SafeAreaView, ScrollView } from 'react-native';
+import React, { useCallback, useMemo } from 'react';
+import { FlatList, Platform } from 'react-native';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useFormContext } from 'react-hook-form';
 
@@ -11,14 +15,15 @@ import {
 } from '../../constants';
 import { useStorage } from '../../helpers';
 import { makeStyles } from '../../theme';
-import { RootStackNavProp, RootStackRouteProp } from '../../types';
+import { Channel, RootStackNavProp, RootStackRouteProp } from '../../types';
 
 import ChannelItem from './Components/ChannelItem';
 
 export default function Channels() {
   const styles = useStyles();
+  const insets = useSafeAreaInsets();
 
-  const { navigate, goBack } = useNavigation<RootStackNavProp<'Channels'>>();
+  const { goBack } = useNavigation<RootStackNavProp<'Channels'>>();
 
   const {
     params: { prevScreen },
@@ -35,18 +40,49 @@ export default function Channels() {
 
   const ios = Platform.OS === 'ios';
 
-  const onPress = (id: number) => {
+  const listData = useMemo(() => {
+    const items = channels ?? [];
     if (prevScreen === 'Home') {
-      storage.setItem('homeChannelId', id);
-      navigate('TabNav', { screen: 'Home' });
-    } else {
-      setValue('channelId', id, { shouldDirty: true });
-      navigate(prevScreen);
+      return [NO_CHANNEL_FILTER, ...items];
     }
-  };
+    return items;
+  }, [channels, prevScreen]);
+
+  const onPress = useCallback(
+    (id: number) => {
+      if (prevScreen === 'Home') {
+        storage.setItem('homeChannelId', id);
+      } else {
+        setValue('channelId', id, { shouldDirty: true });
+      }
+      goBack();
+    },
+    [goBack, prevScreen, setValue, storage],
+  );
+
+  const renderItem = useCallback(
+    ({ item }: { item: Channel }) => {
+      const { id } = item;
+      const isSelected = isNoChannelFilter(id)
+        ? isNoChannelFilter(selectedChannel ?? NO_CHANNEL_FILTER_ID)
+        : id === selectedChannel;
+
+      return (
+        <ChannelItem
+          isSelected={isSelected}
+          channel={item}
+          onPress={() => onPress(id)}
+        />
+      );
+    },
+    [onPress, selectedChannel],
+  );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { paddingTop: insets.top }]}
+      edges={['left', 'right', 'bottom']}
+    >
       {ios ? (
         <ModalHeader
           title={t('Channels')}
@@ -56,28 +92,15 @@ export default function Channels() {
         <CustomHeader title={t('Channels')} noShadow />
       )}
 
-      <ScrollView>
-        {prevScreen === 'Home' && (
-          <ChannelItem
-            isSelected={isNoChannelFilter(
-              homeSelectedChannelId || NO_CHANNEL_FILTER_ID,
-            )}
-            channel={NO_CHANNEL_FILTER}
-            onPress={() => onPress(NO_CHANNEL_FILTER.id)}
-          />
-        )}
-        {channels?.map((channel) => {
-          const { id } = channel;
-          return (
-            <ChannelItem
-              key={id}
-              isSelected={id === selectedChannel}
-              channel={channel}
-              onPress={() => onPress(id)}
-            />
-          );
-        })}
-      </ScrollView>
+      <FlatList
+        data={listData}
+        keyExtractor={(item) => String(item.id)}
+        renderItem={renderItem}
+        keyboardShouldPersistTaps="handled"
+        initialNumToRender={16}
+        maxToRenderPerBatch={12}
+        windowSize={7}
+      />
     </SafeAreaView>
   );
 }

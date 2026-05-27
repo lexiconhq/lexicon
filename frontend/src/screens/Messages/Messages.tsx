@@ -1,10 +1,9 @@
 import { useNavigation } from '@react-navigation/native';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import {
   Platform,
   RefreshControl,
-  SafeAreaView,
   VirtualizedList,
 } from 'react-native';
 
@@ -12,15 +11,21 @@ import {
   CustomHeader,
   FooterLoadingIndicator,
   LoadingOrError,
+  ProfileDrawerScene,
 } from '../../components';
 import { FIRST_POST_NUMBER, FORM_DEFAULT_VALUES } from '../../constants';
 import { FloatingButton } from '../../core-ui';
 import { MessageQuery } from '../../generatedAPI/server';
-import { errorHandler, getParticipants, useStorage } from '../../helpers';
+import {
+  errorHandler,
+  shouldHideMessageByHiddenWords,
+  getParticipants,
+  useStorage,
+} from '../../helpers';
 import { useMessageList } from '../../hooks';
 import { makeStyles, useTheme } from '../../theme';
 import { MessageParticipants, StackNavProp } from '../../types';
-import { useDevice } from '../../utils';
+import { useDevice, useHiddenWords } from '../../utils';
 
 import { MessageCard } from './Components';
 
@@ -39,13 +44,14 @@ export default function Messages() {
   const { navigate } = useNavigation<StackNavProp<'Messages'>>();
 
   const storage = useStorage();
+  const { hiddenWords } = useHiddenWords();
   const username = storage.getItem('user')?.username || '';
   const currentUserId = storage.getItem('user')?.id || '';
 
-  const [messages, setMessages] = useState<Array<MessageType>>([]);
-  const [participants, setParticipants] = useState<Array<MessageParticipants>>(
-    [],
-  );
+  const [allMessages, setAllMessages] = useState<Array<MessageType>>([]);
+  const [allParticipants, setAllParticipants] = useState<
+    Array<MessageParticipants>
+  >([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [hasOlderMessages, setHasOlderMessages] = useState(false);
@@ -86,7 +92,7 @@ export default function Messages() {
           },
         );
 
-        const currentMessageIds = messages.map((topic) => topic.id);
+        const currentMessageIds = allMessages.map((topic) => topic.id);
         const incomingMessageIds = tempMessages.map((topic) => topic.id);
         if (
           JSON.stringify(currentMessageIds) ===
@@ -104,12 +110,12 @@ export default function Messages() {
         // TODO: test this on a site with multiple pages of messages. This edge case
         // came up when there was less than one page.
         const shouldUpdateMessages =
-          (messages.length > 0 && tempMessages.length >= 0) ||
-          (messages.length < 1 && tempMessages.length > 0);
+          (allMessages.length > 0 && tempMessages.length >= 0) ||
+          (allMessages.length < 1 && tempMessages.length > 0);
 
         if (shouldUpdateMessages) {
-          setMessages(tempMessages);
-          setParticipants(tempParticipants);
+          setAllMessages(tempMessages);
+          setAllParticipants(tempParticipants);
         }
         setLoading(false);
       },
@@ -206,7 +212,7 @@ export default function Messages() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ProfileDrawerScene style={styles.container}>
       {ios && (
         <CustomHeader
           title={t('Messages')}
@@ -219,7 +225,7 @@ export default function Messages() {
       {!ios && (
         <FloatingButton onPress={onPressNewMessage} style={styles.fab} />
       )}
-    </SafeAreaView>
+    </ProfileDrawerScene>
   );
 }
 

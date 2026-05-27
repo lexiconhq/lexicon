@@ -45,11 +45,12 @@ type EditProfileParams = {
 
 type FlagPostParams = {
   postId: number;
+  topicId: number;
   isPost?: boolean;
   flaggedAuthor?: string;
 };
 
-export type HomeProps = { backToTop?: boolean };
+export type HomeProps = { backToTop?: boolean; channelId?: number };
 
 type ImagePreviewParams = {
   topicId: number;
@@ -229,6 +230,12 @@ export type RootStackParamList = {
   Notifications: undefined;
   PostDetail: PostDetailParams;
   Preferences: undefined;
+  BlockedUsers: undefined;
+  HiddenWords: undefined;
+  AdditionalResources: undefined;
+  AdditionalResourceDetail: {
+    resourceType: 'accountDeletion' | 'requestData';
+  };
   ProfileScreen: undefined;
   Search: undefined;
   UserInformation: UserInformationParams;
@@ -238,15 +245,33 @@ export type RootStackParamList = {
   Poll: PollParams;
   PostDraft: undefined;
   EditPollsList: EditPollsListParams;
-  AuthenticationWebView: undefined;
+  AuthenticationWebView: { eulaAccepted: boolean };
   Welcome: undefined;
   ChatChannelDetail: ChatChannelDetailParams;
   ThreadDetail: ThreadParams;
 };
 
+export type ProfileNavigatorParamList = Pick<
+  RootStackParamList,
+  | 'ProfileScreen'
+  | 'Notifications'
+  | 'Messages'
+  | 'Activity'
+  | 'ChangePassword'
+  | 'EmailAddress'
+  | 'AddEmail'
+  | 'EditProfile'
+  | 'EditUserStatus'
+  | 'Preferences'
+  | 'BlockedUsers'
+  | 'HiddenWords'
+  | 'AdditionalResources'
+  | 'AdditionalResourceDetail'
+>;
+
 export type TabParamList = {
   Home: undefined | HomeProps;
-  Profile: undefined;
+  Profile: NavigatorScreenParams<ProfileNavigatorParamList> | undefined;
   Chat: undefined;
   Draft: undefined;
 };

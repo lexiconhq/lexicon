@@ -3,26 +3,23 @@ import { Platform, View, ViewProps } from 'react-native';
 
 import { Icon, Text } from '../../../core-ui';
 import { makeStyles, useTheme } from '../../../theme';
-import { useDevice } from '../../../utils';
 
 type Props = ViewProps & {
   title: string;
   onPressIconSideBar: () => void;
   onPressAdd: () => void;
-  isShowIcon: boolean;
+  showSidebarToggle?: boolean;
 };
 
 export function HomeTabletNavBar(props: Props) {
   const styles = useStyles();
   const { colors } = useTheme();
-  const { isPortrait } = useDevice();
-
   const {
     title,
     onPressIconSideBar,
     onPressAdd,
+    showSidebarToggle = true,
     style,
-    isShowIcon,
     ...otherProps
   } = props;
 
@@ -30,15 +27,15 @@ export function HomeTabletNavBar(props: Props) {
 
   return (
     <View style={[styles.container, style]} {...otherProps}>
-      {isPortrait || (!isPortrait && isShowIcon) ? (
+      {showSidebarToggle ? (
         <Icon
           name={ios ? 'SideBar' : 'SideBarAndroid'}
           onPress={onPressIconSideBar}
-          color={colors.textNormal}
+          color={colors.primary}
           size="xl"
         />
       ) : (
-        <View style={styles.emptyIcon} />
+        <View style={styles.togglePlaceholder} />
       )}
       <Text style={styles.titleText} variant={'semiBold'} size="l">
         {title}
@@ -52,7 +49,7 @@ export function HomeTabletNavBar(props: Props) {
   );
 }
 
-const useStyles = makeStyles(({ colors, spacing, iconSizes }) => ({
+const useStyles = makeStyles(({ colors, spacing }) => ({
   container: {
     width: '100%',
     flexDirection: 'row',
@@ -62,10 +59,12 @@ const useStyles = makeStyles(({ colors, spacing, iconSizes }) => ({
     paddingTop: spacing.m,
   },
   titleText: {
-    paddingEnd: spacing.m,
+    flex: 1,
+    textAlign: 'center',
+    paddingHorizontal: spacing.m,
   },
-  emptyIcon: {
-    width: iconSizes.xl,
-    height: iconSizes.xl,
+  togglePlaceholder: {
+    width: 28,
+    height: 28,
   },
 }));

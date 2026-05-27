@@ -4,13 +4,17 @@ import { USER_STATUS_FRAGMENT } from './userStatus';
 
 export const PROFILE = gql`
   ${USER_STATUS_FRAGMENT}
-  query Profile($username: String!) {
+  query Profile($username: String!, $skipNotifications: Boolean! = false) {
     profile(username: $username)
       @rest(type: "ProfileOutput", path: "/users/{args.username}.json") {
       user {
+        id
         avatar: avatarTemplate
         username
         name
+        canIgnoreUser
+        ignored
+        ignoredUsernames
         websiteName
         bioRaw: bioExcerpt
         location
@@ -25,6 +29,7 @@ export const PROFILE = gql`
         }
       }
       unreadNotification
+        @skip(if: $skipNotifications)
         @rest(
           type: "UserUnreadNotifications"
           path: "/notifications.json?filter=unread&limit=30"

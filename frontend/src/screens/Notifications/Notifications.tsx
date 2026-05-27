@@ -1,11 +1,10 @@
 import { useNavigation } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActionSheetIOS,
   Modal,
   Platform,
   RefreshControl,
-  SafeAreaView,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
@@ -17,10 +16,15 @@ import {
   CustomHeader,
   FooterLoadingIndicator,
   LoadingOrError,
+  ProfileDrawerScene,
 } from '../../components';
 import { Text } from '../../core-ui';
 import { NotificationDocument } from '../../generatedAPI/server';
-import { errorHandler, notificationHandler } from '../../helpers';
+import {
+  errorHandler,
+  notificationHandler,
+  shouldHideNotificationByHiddenWords,
+} from '../../helpers';
 import { useMarkRead, useNotification } from '../../hooks';
 import { makeStyles, useTheme } from '../../theme';
 import {
@@ -28,7 +32,7 @@ import {
   RootStackParamList,
   StackNavProp,
 } from '../../types';
-import { useDevice } from '../../utils';
+import { useBlockedUsers, useDevice, useHiddenWords } from '../../utils';
 
 import NotificationItem from './components/NotificationItem';
 
@@ -40,42 +44,52 @@ export default function Notifications() {
   const ios = Platform.OS === 'ios';
 
   const { navigate } = useNavigation<StackNavProp<'Notifications'>>();
+  const { isBlocked } = useBlockedUsers();
+  const { hiddenWords } = useHiddenWords();
 
-  const navToPostDetail = (
-    postDetailParams: RootStackParamList['PostDetail'],
-  ) => {
-    navigate('PostDetail', postDetailParams);
-  };
+  const navToPostDetail = useCallback(
+    (postDetailParams: RootStackParamList['PostDetail']) => {
+      navigate('PostDetail', postDetailParams);
+    },
+    [navigate],
+  );
 
-  const navToMessageDetail = (
-    messageDetailParams: RootStackParamList['MessageDetail'],
-  ) => {
-    navigate('MessageDetail', messageDetailParams);
-  };
+  const navToMessageDetail = useCallback(
+    (messageDetailParams: RootStackParamList['MessageDetail']) => {
+      navigate('MessageDetail', messageDetailParams);
+    },
+    [navigate],
+  );
 
-  const navToUserInformation = (
-    userInformationParams: RootStackParamList['UserInformation'],
-  ) => {
-    navigate('UserInformation', userInformationParams);
-  };
+  const navToUserInformation = useCallback(
+    (userInformationParams: RootStackParamList['UserInformation']) => {
+      navigate('UserInformation', userInformationParams);
+    },
+    [navigate],
+  );
 
-  const navToChat = (
-    chatChannelDetailParams: Omit<
-      RootStackParamList['ChatChannelDetail'],
-      'memberCount' | 'threadEnabled'
-    >,
-  ) => {
-    const { channelId, channelTitle } = chatChannelDetailParams;
-    navigate('ChatChannelDetail', {
-      channelId,
-      channelTitle,
-    });
-  };
-  const navToThread = (
-    threadDetailParams: RootStackParamList['ThreadDetail'],
-  ) => {
-    navigate('ThreadDetail', threadDetailParams);
-  };
+  const navToChat = useCallback(
+    (
+      chatChannelDetailParams: Omit<
+        RootStackParamList['ChatChannelDetail'],
+        'memberCount' | 'threadEnabled'
+      >,
+    ) => {
+      const { channelId, channelTitle } = chatChannelDetailParams;
+      navigate('ChatChannelDetail', {
+        channelId,
+        channelTitle,
+      });
+    },
+    [navigate],
+  );
+
+  const navToThread = useCallback(
+    (threadDetailParams: RootStackParamList['ThreadDetail']) => {
+      navigate('ThreadDetail', threadDetailParams);
+    },
+    [navigate],
+  );
 
   const [page, setPage] = useState<number>(1);
   const [isLoadMore, setIsLoadMore] = useState(false);
@@ -89,7 +103,7 @@ export default function Notifications() {
       setErrorMsg(errorHandler(error, true));
     },
     fetchPolicy: 'cache-and-network',
-    nextFetchPolicy: loadMorePolicy ? 'cache-first' : 'no-cache',
+    nextFetchPolicy: loadMorePolicy ? 'cache-first' : 'cache-first',
   });
 
   const { markAsRead, loading: markAsReadLoading } = useMarkRead({
@@ -128,37 +142,67 @@ export default function Notifications() {
     }
   };
 
-  let rawNotifications = data?.notificationQuery.notifications ?? [];
-  let handledNotifications = notificationHandler(
-    rawNotifications,
-    navToPostDetail,
-    navToMessageDetail,
-    navToUserInformation,
-    navToChat,
-    navToThread,
+  const rawNotifications = useMemo(
+    () => data?.notificationQuery.notifications ?? [],
+    [data?.notificationQuery.notifications],
   );
 
+  const handledNotifications = useMemo(
+    () =>
+      notificationHandler(
+        rawNotifications,
+        navToPostDetail,
+        navToMessageDetail,
+        navToUserInformation,
+        navToChat,
+        navToThread,
+      ),
+    [
+      rawNotifications,
+      navToPostDetail,
+      navToMessageDetail,
+      navToUserInformation,
+      navToChat,
+      navToThread,
+    ],
+  );
+
+  const visibleNotifications = useMemo(
+    () =>
+      handledNotifications.filter(
+        (notification) =>
+          !isBlocked(notification.name) &&
+          !shouldHideNotificationByHiddenWords(notification, hiddenWords),
+      ),
+    [handledNotifications, hiddenWords, isBlocked],
+  );
+
+  const totalRowsNotifications =
+    data?.notificationQuery.totalRowsNotifications ?? 0;
+
   useEffect(() => {
-    if (
-      data?.notificationQuery.totalRowsNotifications ===
-      handledNotifications.length
-    ) {
-      setIsLoadMore(false);
-    } else {
-      setIsLoadMore(true);
-    }
-  }, [data, handledNotifications]);
+    setIsLoadMore(totalRowsNotifications !== handledNotifications.length);
+  }, [totalRowsNotifications, handledNotifications.length]);
+
+  const loadingStyle = styles.loadingContainer;
 
   if (error) {
-    return <LoadingOrError message={errorMsg} />;
+    return <LoadingOrError message={errorMsg} style={loadingStyle} />;
   }
 
-  if (handledNotifications.length < 1) {
-    if (loading) {
-      return <LoadingOrError loading />;
+  const showInitialLoading = loading && !data;
+
+  if (visibleNotifications.length < 1) {
+    if (showInitialLoading) {
+      return <LoadingOrError loading style={loadingStyle} />;
     }
-    if (data?.notificationQuery.totalRowsNotifications === 0) {
-      return <LoadingOrError message={t('No Notifications available')} />;
+    if (totalRowsNotifications === 0) {
+      return (
+        <LoadingOrError
+          message={t('No Notifications available')}
+          style={loadingStyle}
+        />
+      );
     }
   }
 
@@ -259,7 +303,7 @@ export default function Notifications() {
 
   return (
     <>
-      <SafeAreaView style={styles.container}>
+      <ProfileDrawerScene style={styles.container}>
         <CustomHeader
           title={t('Notifications')}
           rightIcon="More"
@@ -268,7 +312,7 @@ export default function Notifications() {
           hideHeaderLeft={isTabletLandscape}
         />
         <VirtualizedList
-          data={handledNotifications}
+          data={visibleNotifications}
           refreshControl={
             <RefreshControl
               refreshing={loading}
@@ -288,7 +332,7 @@ export default function Notifications() {
           }
           style={styles.notificationContainer}
         />
-      </SafeAreaView>
+      </ProfileDrawerScene>
       <TouchableOpacity>
         {!ios && data && (
           <Modal visible={showMore} animationType="fade" transparent={true}>
@@ -316,6 +360,10 @@ export default function Notifications() {
 }
 
 const useStyles = makeStyles(({ colors, spacing }) => ({
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: colors.backgroundDarker,
+  },
   container: {
     flex: 1,
     backgroundColor: colors.backgroundDarker,

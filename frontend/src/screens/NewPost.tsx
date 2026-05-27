@@ -178,6 +178,7 @@ export default function NewPost() {
   const [mentionLoading, setMentionLoading] = useState(false);
   const [mentionKeyword, setMentionKeyword] = useState('');
   const [currentUploadToken, setCurrentUploadToken] = useState(1);
+  const [editorReady, setEditorReady] = useState(false);
 
   const uploadsInProgress = imagesArray.filter((image) => !image.done).length;
 
@@ -206,6 +207,16 @@ export default function NewPost() {
   useEffect(() => {
     setModal(true);
   }, [setModal]);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      setEditorReady(true);
+    });
+
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, []);
 
   useEffect(() => {
     setUri(imageUri);
@@ -479,7 +490,8 @@ export default function NewPost() {
   return (
     <SafeAreaView style={styles.container} testID="NewPost:SafeAreaView">
       <Header />
-      <KeyboardTextAreaScrollView
+      {editorReady ? (
+        <KeyboardTextAreaScrollView
         {...kasv.props}
         bottomMenu={
           <View>
@@ -779,6 +791,9 @@ export default function NewPost() {
           />
         </>
       </KeyboardTextAreaScrollView>
+      ) : (
+        <View style={styles.container} />
+      )}
     </SafeAreaView>
   );
 }

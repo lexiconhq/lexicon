@@ -1,5 +1,5 @@
-import React from 'react';
-import { Platform, TouchableOpacity, View } from 'react-native';
+import React, { memo } from 'react';
+import { TouchableOpacity, View } from 'react-native';
 
 import { Text } from '../../../core-ui';
 import { makeStyles } from '../../../theme';
@@ -12,29 +12,20 @@ type Props = {
   isSidebar?: boolean;
 };
 
-export default function ChannelItem(props: Props) {
+function ChannelItem(props: Props) {
   const styles = useStyles();
 
   const { isSelected, channel, onPress, isSidebar } = props;
   const { id, color, name, description } = channel;
   const backgroundColor = `#${color}`;
-  const ios = Platform.OS === 'ios';
   const styleSelected = {
     title: isSidebar
-      ? ios
-        ? styles.selectedChannelNameSideBarIos
-        : styles.selectedChannelNameSideBarAndroid
+      ? styles.selectedChannelNameSideBar
       : {},
     background: isSidebar
-      ? ios
-        ? styles.selectedChannelSideBarIos
-        : styles.selectedChannelSideBarAndroid
+      ? styles.selectedChannelSideBar
       : styles.selectedChannel,
-    label: isSidebar
-      ? ios
-        ? styles.selectedChannelLabelSideBarIos
-        : styles.selectedChannelLabelSideBarAndroid
-      : {},
+    label: isSidebar ? styles.selectedChannelLabelSideBar : {},
   };
 
   return (
@@ -42,6 +33,7 @@ export default function ChannelItem(props: Props) {
       <TouchableOpacity
         style={[
           styles.channelTouchable,
+          isSidebar && styles.channelTouchableSideBar,
           isSelected && styleSelected.background,
         ]}
         onPress={onPress}
@@ -162,12 +154,10 @@ const useStyles = makeStyles(({ colors, fontSizes, spacing }) => ({
   selectedChannel: {
     backgroundColor: colors.backgroundDarker,
   },
-  selectedChannelSideBarIos: {
+  selectedChannelSideBar: {
     backgroundColor: colors.primary,
-    borderRadius: 8,
-  },
-  selectedChannelSideBarAndroid: {
-    backgroundColor: colors.activeSideBarAndroid,
-    borderRadius: 16,
+    borderRadius: 10,
   },
 }));
+
+export default memo(ChannelItem);

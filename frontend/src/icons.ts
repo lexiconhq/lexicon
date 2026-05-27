@@ -17,6 +17,7 @@ import Close from '../assets/icons/Close.svg';
 import Collapsible from '../assets/icons/Collapsible.svg';
 import Dark from '../assets/icons/Dark.svg';
 import Delete from '../assets/icons/Delete.svg';
+import Discord from '../assets/icons/Discord.svg';
 import Done from '../assets/icons/Done.svg';
 import Draft from '../assets/icons/Draft.svg';
 import Edit from '../assets/icons/Edit.svg';
@@ -52,6 +53,7 @@ import Search from '../assets/icons/Search.svg';
 import Send from '../assets/icons/Send.svg';
 import Settings from '../assets/icons/Settings.svg';
 import SideBar from '../assets/icons/SideBar.svg';
+import Telegram from '../assets/icons/Telegram.svg';
 import SideBarAndroid from '../assets/icons/SideBarAndroid.svg';
 import Triangle from '../assets/icons/Triangle.svg';
 import Unreachable from '../assets/icons/Unreachable.svg';
@@ -77,6 +79,7 @@ export const Icons = {
   Close,
   Collapsible,
   Dark,
+  Discord,
   Done,
   Draft,
   Event,
@@ -106,6 +109,7 @@ export const Icons = {
   Search,
   Send,
   Settings,
+  Telegram,
   Triangle,
   Views,
   NoConnection,

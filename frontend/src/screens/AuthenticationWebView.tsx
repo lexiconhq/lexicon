@@ -1,29 +1,41 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import Constants from 'expo-constants';
 import * as Crypto from 'expo-crypto';
-import React, { useEffect, useState } from 'react';
+import * as ScreenOrientation from 'expo-screen-orientation';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Platform, View } from 'react-native';
 import { RSA } from 'react-native-rsa-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 
 import { getNormalizedUrlTemplate } from '../api/discourse-apollo-rest/utils';
 import { CustomHeader, ModalHeader } from '../components';
 import { discourseHost } from '../constants';
-import { ActivityIndicator } from '../core-ui';
+import { ActivityIndicator, Text } from '../core-ui';
 import {
   encodeToBase64Token,
   errorHandlerAlert,
+  extractAuthPayload,
+  getAuthRedirectUrl,
   getDeviceId,
+  isAuthRedirectAwaitingPayload,
+  isAuthRedirectUrl,
   useStorage,
 } from '../helpers';
 import { useGetSiteSettings, usePushNotificationsToken } from '../hooks';
 import { makeStyles } from '../theme';
-import { StackNavProp } from '../types';
+import { StackNavProp, StackRouteProp } from '../types';
 import { Group } from '../types/api';
-import { useRedirect } from '../utils';
+import { useDevice, useRedirect } from '../utils';
 import { useAuth } from '../utils/AuthProvider';
 
 const KEY_SIZE = 4096;
+
+function createNonce(): string {
+  return Array.from(Crypto.getRandomBytes(16))
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('');
+}
 
 export default function AuthenticationWebView() {
   const styles = useStyles();
@@ -34,19 +46,30 @@ export default function AuthenticationWebView() {
   const { syncToken } = usePushNotificationsToken();
   const { reset, navigate } =
     useNavigation<StackNavProp<'AuthenticationWebView'>>();
+  const route = useRoute<StackRouteProp<'AuthenticationWebView'>>();
+  const eulaAccepted = route.params?.eulaAccepted === true;
 
   const [uri, setUri] = useState('');
   const [privateKey, setPrivateKey] = useState('');
+  const [setupError, setSetupError] = useState<string | null>(null);
 
-  const authRedirect = discourseHost + '/auth_redirect';
+  const authRedirect = getAuthRedirectUrl(discourseHost);
   const appName = Constants.expoConfig?.slug;
+  const isCompletingAuthRef = useRef(false);
+  const handledAuthUrlRef = useRef<string | null>(null);
+  const insets = useSafeAreaInsets();
+  const { isTablet } = useDevice();
+  const useFullScreenAuthModal = Platform.OS === 'ios' && (Platform.isPad || isTablet);
+
+  const discourseSessionPrefix = discourseHost.endsWith('/')
+    ? discourseHost
+    : `${discourseHost}/`;
+
   const injectedJavaScript = `(function() {
     const originalXhrOpen = window.XMLHttpRequest.prototype.open;
     window.XMLHttpRequest.prototype.open = function() {
       this.addEventListener('load', function() {
-        if (!this.responseURL.startsWith('${
-          discourseHost.endsWith('/') ? discourseHost : discourseHost + '/'
-        }session')) {
+        if (!this.responseURL.startsWith('${discourseSessionPrefix}session')) {
           return;
         }
         
@@ -61,26 +84,38 @@ export default function AuthenticationWebView() {
     };
   })();`;
 
+  const finishLoginNavigation = useCallback(() => {
+    reset({
+      index: 0,
+      routes: [
+        {
+          name: 'TabNav',
+          state: { routes: [{ name: 'Home' }] },
+        },
+      ],
+    });
+  }, [reset]);
+
   const { getSiteSettings } = useGetSiteSettings({
     onCompleted: ({ site }) => {
-      reset({
-        index: 0,
-        routes: [
-          {
-            name: 'TabNav',
-            state: { routes: [{ name: 'Home' }] },
-          },
-        ],
-      });
-
       if (site.enableLexiconPushNotifications) {
         syncToken();
       }
 
       if (redirectPath) {
+        finishLoginNavigation();
         handleRedirect();
         setRedirectPath('');
+        return;
       }
+
+      finishLoginNavigation();
+    },
+    onError: () => {
+      isCompletingAuthRef.current = false;
+      handledAuthUrlRef.current = null;
+      errorHandlerAlert('Something wrong when login please try again');
+      navigate('Welcome');
     },
     fetchPolicy: 'network-only',
   });
@@ -90,36 +125,130 @@ export default function AuthenticationWebView() {
     getSiteSettings();
   };
 
+  const onErrorAuth = useCallback(() => {
+    isCompletingAuthRef.current = false;
+    handledAuthUrlRef.current = null;
+    errorHandlerAlert('Something wrong when login please try again');
+    navigate('Welcome');
+  }, [navigate]);
+
+  const completeAuthFromRedirect = useCallback(
+    (url: string, options?: { allowInProgress?: boolean }) => {
+      if (!privateKey || isCompletingAuthRef.current) {
+        return false;
+      }
+
+      if (!isAuthRedirectUrl(url, authRedirect)) {
+        return false;
+      }
+
+      const payloadParam = extractAuthPayload(url);
+      if (!payloadParam) {
+        // iPad often navigates to /auth_redirect before ?payload= is present.
+        return options?.allowInProgress === true;
+      }
+
+      if (handledAuthUrlRef.current === url) {
+        return true;
+      }
+      handledAuthUrlRef.current = url;
+      isCompletingAuthRef.current = true;
+
+      (async () => {
+        try {
+          let encryptedPayload = payloadParam;
+          try {
+            encryptedPayload = decodeURIComponent(payloadParam);
+          } catch {
+            encryptedPayload = payloadParam;
+          }
+
+          const decrypted = await RSA.decrypt(encryptedPayload, privateKey);
+          const parsed = JSON.parse(decrypted) as { key?: string };
+          if (!parsed.key) {
+            throw new Error('Missing API key in auth payload');
+          }
+
+          onLoginCompleted(parsed.key);
+        } catch {
+          handledAuthUrlRef.current = null;
+          onErrorAuth();
+        }
+      })();
+
+      return true;
+    },
+    [authRedirect, onErrorAuth, privateKey],
+  );
+
   useEffect(() => {
+    if (!eulaAccepted) {
+      navigate('Welcome');
+      return;
+    }
+
     const getClientID = async () => {
       const deviceId = await getDeviceId();
       return `${deviceId}-${Crypto.randomUUID()}`;
     };
 
-    getClientID().then((clientID) => {
-      RSA.generateKeys(KEY_SIZE).then(
-        ({ public: publicKey, private: privateKey }) => {
+    getClientID()
+      .then((clientID) =>
+        RSA.generateKeys(KEY_SIZE).then(({ public: publicKey, private: privateKey }) => {
           const params = new URLSearchParams({
             public_key: publicKey,
             client_id: clientID,
             application_name: appName || '',
             scopes: 'read,write',
-            nonce: Crypto.getRandomBytes(16).toString(),
+            nonce: createNonce(),
             auth_redirect: authRedirect,
           });
-          const uri = `${discourseHost}/user-api-key/new?${params.toString()}`;
+          const authorizeUri = `${discourseHost}/user-api-key/new?${params.toString()}`;
 
-          setUri(uri);
+          setUri(authorizeUri);
           setPrivateKey(privateKey);
-        },
-      );
-    });
-  }, [appName, authRedirect]);
+        }),
+      )
+      .catch(() => {
+        setSetupError(
+          t(
+            'Login setup failed. This app needs a development build (not Expo Go) for secure sign-in, or RSA native modules are unavailable on this device.',
+          ),
+        );
+      });
+  }, [appName, authRedirect, eulaAccepted, navigate]);
 
-  const onErrorAuth = () => {
-    errorHandlerAlert('Something wrong when login please try again');
-    navigate('Welcome');
-  };
+  useEffect(() => {
+    if (!useFullScreenAuthModal) {
+      return;
+    }
+
+    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+
+    return () => {
+      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.DEFAULT);
+    };
+  }, [useFullScreenAuthModal]);
+
+  if (!eulaAccepted) {
+    return (
+      <View style={[styles.flex, styles.container, styles.center]}>
+        {ios ? <ModalHeader /> : <CustomHeader />}
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (setupError) {
+    return (
+      <View style={[styles.flex, styles.container]}>
+        {ios ? <ModalHeader /> : <CustomHeader />}
+        <View style={[styles.flex, styles.center, styles.errorPadding]}>
+          <Text style={styles.errorText}>{setupError}</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.flex, styles.container]}>
@@ -129,15 +258,21 @@ export default function AuthenticationWebView() {
           <ActivityIndicator size="large" />
         </View>
       ) : (
-        <WebView
-          style={styles.flex}
-          source={{ uri }}
-          incognito
-          originWhitelist={[discourseHost]}
-          sharedCookiesEnabled={false}
-          javaScriptEnabled={true}
+        <View
+          style={[
+            styles.flex,
+            useFullScreenAuthModal && { paddingBottom: insets.bottom },
+          ]}
+        >
+          <WebView
+            style={styles.flex}
+            source={{ uri }}
+          sharedCookiesEnabled
+          thirdPartyCookiesEnabled
+          javaScriptEnabled
+          domStorageEnabled
           injectedJavaScript={injectedJavaScript}
-          rend
+          originWhitelist={['https://*', 'http://*']}
           onMessage={(event) => {
             try {
               const data = JSON.parse(event.nativeEvent.data);
@@ -167,48 +302,48 @@ export default function AuthenticationWebView() {
               return;
             }
           }}
-          onShouldStartLoadWithRequest={({ url }) => {
-            if (!url.startsWith(authRedirect)) {
-              return true;
+          onShouldStartLoadWithRequest={(request) => {
+            if (
+              completeAuthFromRedirect(request.url, { allowInProgress: true })
+            ) {
+              return false;
             }
-
-            // The URL format is 'discourse://auth_redirect?payload=[apiKey]'
-            const apiKey = url.substring(url.indexOf('payload=') + 8);
-
-            (async () => {
-              let decrypted: string = '';
-
-              try {
-                decrypted = await RSA.decrypt(
-                  decodeURIComponent(apiKey),
-                  privateKey,
-                );
-              } catch (error) {
-                onErrorAuth();
-              }
-
-              try {
-                const { key } = JSON.parse(decrypted);
-                if (!key) {
-                  onErrorAuth();
-                }
-
-                onLoginCompleted(key);
-              } catch (error) {
-                onErrorAuth();
-              }
-            })();
-
-            return false;
+            return true;
+          }}
+          onNavigationStateChange={(navState) => {
+            if (!navState.url || navState.loading) {
+              return;
+            }
+            if (isAuthRedirectAwaitingPayload(navState.url, authRedirect)) {
+              return;
+            }
+            completeAuthFromRedirect(navState.url);
+          }}
+          onError={(event) => {
+            const { url, code } = event.nativeEvent;
+            if (
+              url &&
+              (isAuthRedirectUrl(url, authRedirect) ||
+                isAuthRedirectAwaitingPayload(url, authRedirect)) &&
+              Platform.OS === 'ios'
+            ) {
+              return;
+            }
+            if (code === -1002 && isCompletingAuthRef.current) {
+              return;
+            }
           }}
         />
+        </View>
       )}
     </View>
   );
 }
 
-const useStyles = makeStyles(({ colors }) => ({
+const useStyles = makeStyles(({ colors, spacing }) => ({
   flex: { flex: 1 },
   center: { justifyContent: 'center', alignItems: 'center' },
   container: { backgroundColor: colors.background },
+  errorPadding: { padding: spacing.xl },
+  errorText: { textAlign: 'center' },
 }));

@@ -12,6 +12,8 @@ import { Alert, Platform, SafeAreaView, TouchableOpacity } from 'react-native';
 import {
   ActionSheet,
   ActionSheetProps,
+  BlockedUserContent,
+  HiddenWordsContent,
   CustomFlatList,
   CustomFlatlistRefType,
   CustomHeader,
@@ -31,16 +33,25 @@ import {
 } from '../../constants';
 import { Text } from '../../core-ui';
 import {
+  canShowReportOption,
   checkDraftAlert,
   errorHandler,
   errorHandlerAlert,
   filterMarkdownContentPoll,
+  filterPostsByBlockedUsernames,
+  filterPostsByHiddenWords,
+  shouldHidePostByHiddenWords,
+  textContainsHiddenWord,
   handleUnsupportedMarkdown,
   LoginError,
   postDetailContentHandler,
   privateTopicAlert,
+  reportOptionLabel,
+  useBlockUserActions,
   useStorage,
 } from '../../helpers';
+import { navigate as rootNavigate } from '../../navigation/NavigationService';
+import { useBlockedUsers, useHiddenWords } from '../../utils';
 import {
   useDeletePostDraft,
   useLazyCheckPostDraft,
@@ -91,8 +102,17 @@ export default function PostDetail() {
 
   const storage = useStorage();
   const currentUserId = storage.getItem('user')?.id;
+  const currentUsername = storage.getItem('user')?.username;
 
   const channels = storage.getItem('channels');
+  const { blockedUsernames, isBlocked } = useBlockedUsers();
+  const { hiddenWords } = useHiddenWords();
+  const {
+    canBlockUsername,
+    toggleBlock,
+    promptUnblock,
+    isUpdating: isBlockUpdating,
+  } = useBlockUserActions();
 
   const customFlatListRef = useRef<CustomFlatlistRefType>(null);
 
@@ -106,7 +126,6 @@ export default function PostDetail() {
     useState<number>();
   const [lastLoadedCommentIndex, setLastLoadedCommentIndex] =
     useState<number>();
-  const [fromPost, setFromPost] = useState(false);
   const [author, setAuthor] = useState('');
   const [flaggedByCommunity, setFlaggedByCommunity] = useState(false);
   const [content, setContent] = useState(initialContent);
@@ -151,7 +170,14 @@ export default function PostDetail() {
          * But if user already login still get same error will redirect to home scene and show private post alert
          */
 
-        if (error.message.includes('Invalid Access')) {
+        const isAccessDenied =
+          error.message.includes('Invalid Access') ||
+          error.message.includes('403') ||
+          (error.networkError &&
+            'statusCode' in error.networkError &&
+            error.networkError.statusCode === 403);
+
+        if (isAccessDenied) {
           if (
             !useInitialLoadResult.loading &&
             !useInitialLoadResult.isLoggedIn
@@ -196,19 +222,66 @@ export default function PostDetail() {
 
   const { topic, postComments, firstPost, stream } = postDetailContent ?? {};
 
+  const visiblePostComments = useMemo(
+    () =>
+      filterPostsByHiddenWords(
+        filterPostsByBlockedUsernames(postComments ?? [], blockedUsernames),
+        hiddenWords,
+      ),
+    [blockedUsernames, hiddenWords, postComments],
+  );
+
+  const topicAuthorBlocked = firstPost
+    ? isBlocked(firstPost.username)
+    : false;
+
+  const topicHiddenByWords = useMemo(() => {
+    if (!hiddenWords.length) {
+      return false;
+    }
+    if (firstPost && shouldHidePostByHiddenWords(firstPost, hiddenWords)) {
+      return true;
+    }
+    return textContainsHiddenWord(topic?.title, hiddenWords);
+  }, [firstPost, hiddenWords, topic?.title]);
+
+  const firstPostAuthor = firstPost?.username;
+  const canBlockFirstPostAuthor = firstPostAuthor
+    ? canBlockUsername(firstPostAuthor)
+    : false;
+
+  const canReportFirstPost =
+    !!firstPost &&
+    canShowReportOption({
+      hidden: firstPost.hidden,
+      authorUsername: firstPost.username,
+      currentUsername,
+      canFlag: firstPost.canFlag,
+      isLoggedIn: !!currentUserId,
+    });
+
   const showOptions =
-    false ||
+    canBlockFirstPostAuthor ||
     !!(firstPost && firstPost.canEdit) ||
-    (!!firstPost && firstPost.canFlag && !firstPost.hidden);
+    canReportFirstPost;
 
   useEffect(() => {
     if (!firstPost) {
       return;
     }
-    // TODO: Optimize this to fetch the query only when needed #847
-    postRaw({ variables: { postId: firstPost.id } });
     setHidden(firstPost.hidden || false);
     setFirstPostId(firstPost.id);
+
+    if (firstPost.content?.trim()) {
+      setContent(firstPost.content);
+      if (firstPost.mentionedUsers?.length) {
+        setMentionedUsers(firstPost.mentionedUsers);
+      }
+      return;
+    }
+
+    // Fallback when topic detail did not include raw body (see #847).
+    postRaw({ variables: { postId: firstPost.id } });
   }, [firstPost, postRaw]);
 
   useEffect(() => {
@@ -335,15 +408,33 @@ export default function PostDetail() {
     [navigate],
   );
 
-  const navToFlag = (
-    postId = postIdOnFocus,
-    isPost = fromPost,
-    flaggedAuthor = author,
-  ) => {
-    if (postId) {
-      navigate('FlagPost', { postId, isPost, flaggedAuthor });
+  const navigateToReport = useCallback(() => {
+    if (!currentUserId) {
+      errorHandlerAlert(LoginError, navigate);
+      return;
     }
-  };
+
+    const reportPostId = postIdOnFocusRef.current ?? topic?.firstPostId;
+    if (!reportPostId || !topic) {
+      return;
+    }
+
+    const isTopicFlag = reportPostId === topic.firstPostId;
+
+    navigate('FlagPost', {
+      postId: reportPostId,
+      topicId,
+      isPost: isTopicFlag,
+      flaggedAuthor: author || firstPost?.username,
+    });
+  }, [
+    author,
+    currentUserId,
+    firstPost?.username,
+    navigate,
+    topic,
+    topicId,
+  ]);
 
   const navToPost = () => {
     if (!topic || !postIdOnFocus || !firstPost) {
@@ -441,49 +532,106 @@ export default function PostDetail() {
         canFlag = !!(firstPost && firstPost.canFlag),
         canEdit = !!(firstPost && firstPost.canEdit),
         flaggedByCommunity = !!(firstPost && firstPost.hidden),
-        fromPost = true,
-        author,
+        author: postAuthor,
       } = params ?? {};
-      if (currentUserId && topic) {
-        if (!id || typeof id !== 'number') {
-          id = topic.firstPostId;
-        }
-        postIdOnFocusRef.current = id;
-        setCanEditFocusPost(canEdit);
-        setCanFlagFocusPost(canFlag);
-        setFlaggedByCommunity(flaggedByCommunity);
-        setShowActionSheet(true);
-        if (author) {
-          setAuthor(author);
-        }
-        setFromPost(fromPost);
-      } else {
-        errorHandlerAlert(LoginError, navigate);
+
+      const blockTargetUsername = postAuthor ?? firstPost?.username;
+      if (!blockTargetUsername) {
+        return;
       }
+
+      const canBlockTarget = canBlockUsername(blockTargetUsername);
+
+      if (!currentUserId) {
+        if (!canBlockTarget) {
+          errorHandlerAlert(LoginError, navigate);
+          return;
+        }
+        postIdOnFocusRef.current = undefined;
+        setCanEditFocusPost(false);
+        setCanFlagFocusPost(false);
+        setFlaggedByCommunity(false);
+        setAuthor(blockTargetUsername);
+        setShowActionSheet(true);
+        return;
+      }
+
+      if (!topic) {
+        return;
+      }
+
+      if (!id || typeof id !== 'number') {
+        id = topic.firstPostId;
+      }
+      postIdOnFocusRef.current = id;
+      setCanEditFocusPost(canEdit);
+      setCanFlagFocusPost(canFlag);
+      setFlaggedByCommunity(flaggedByCommunity);
+      setAuthor(blockTargetUsername);
+      setShowActionSheet(true);
     },
-    [currentUserId, navigate, firstPost, topic],
+    [
+      canBlockUsername,
+      currentUserId,
+      currentUsername,
+      firstPost,
+      navigate,
+      topic,
+    ],
   );
 
   const actionItemOptions = () => {
     let options: ActionSheetProps['options'] = [];
-    ios && options.push({ label: t('Cancel') });
-    canEditFocusPost && options.push({ label: t('Edit Post') });
-    !flaggedByCommunity &&
-      options.push({
-        label: canFlagFocusPost ? t('Flag') : t('Flagged'),
-        disabled: !canFlagFocusPost,
+    const blockTargetUsername = author || firstPost?.username;
+
+    ios && options.push({ label: t('Cancel'), variant: 'cancel' });
+    if (currentUserId && canEditFocusPost) {
+      options.push({ label: t('Edit Post'), variant: 'default' });
+    }
+    if (
+      blockTargetUsername &&
+      canShowReportOption({
+        hidden: flaggedByCommunity,
+        authorUsername: blockTargetUsername,
+        currentUsername,
+        canFlag: canFlagFocusPost,
+        isLoggedIn: !!currentUserId,
+      })
+    ) {
+      const { label, disabled } = reportOptionLabel({
+        isLoggedIn: !!currentUserId,
+        canFlag: canFlagFocusPost,
       });
+      options.push({
+        label,
+        disabled,
+        variant: 'default',
+      });
+    }
+    if (blockTargetUsername && canBlockUsername(blockTargetUsername)) {
+      const blocked = isBlocked(blockTargetUsername);
+      options.push({
+        label: blocked ? t('Unblock user') : t('Block user'),
+        variant: blocked ? 'default' : 'destructive',
+      });
+    }
     return options;
   };
 
-  const actionItemOnPress = (btnIndex: number) => {
-    switch (btnIndex) {
-      case 0: {
-        return canEditFocusPost ? navToPost() : navToFlag();
-      }
-      case 1: {
-        return canEditFocusPost && !flaggedByCommunity && navToFlag();
-      }
+  const actionItemOnPress = (_btnIndex: number, label: string) => {
+    const blockTargetUsername = author || firstPost?.username;
+
+    if (label === t('Edit Post')) {
+      return navToPost();
+    }
+    if (label === t('Report') || label === t('Reported')) {
+      return navigateToReport();
+    }
+    if (
+      blockTargetUsername &&
+      (label === t('Block user') || label === t('Unblock user'))
+    ) {
+      return toggleBlock(blockTargetUsername);
     }
   };
 
@@ -568,6 +716,13 @@ export default function PostDetail() {
     { item }: PostReplyItem,
     { isItemLoading, onLayout }: RenderItemCustomOption,
   ) => {
+    if (
+      isBlocked(item.username) ||
+      shouldHidePostByHiddenWords(item, hiddenWords)
+    ) {
+      return null;
+    }
+
     const { replyToPostNumber, canEdit, canFlag, hidden, id } = item;
 
     const replyToPostId =
@@ -579,7 +734,18 @@ export default function PostDetail() {
     if (canEdit) {
       isItemValid = true;
     }
-    if (canFlag && !hidden) {
+    if (
+      canShowReportOption({
+        hidden,
+        authorUsername: item.username,
+        currentUsername,
+        canFlag,
+        isLoggedIn: !!currentUserId,
+      })
+    ) {
+      isItemValid = true;
+    }
+    if (canBlockUsername(item.username)) {
       isItemValid = true;
     }
     return (
@@ -620,6 +786,29 @@ export default function PostDetail() {
       />
     );
   }
+  if (topicAuthorBlocked && firstPost) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <CustomHeader title="" noShadow />
+        <BlockedUserContent
+          username={firstPost.username}
+          showUnblock={canBlockFirstPostAuthor}
+          onUnblock={() => promptUnblock(firstPost.username)}
+          isUpdating={isBlockUpdating}
+        />
+      </SafeAreaView>
+    );
+  }
+
+  if (topicHiddenByWords) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <CustomHeader title="" noShadow />
+        <HiddenWordsContent />
+      </SafeAreaView>
+    );
+  }
+
   return isLoading ? (
     <PostDetailSkeletonLoading isLoading={isLoading} />
   ) : (
@@ -639,7 +828,7 @@ export default function PostDetail() {
             setFlatListReady(true);
           }}
           ref={customFlatListRef}
-          data={postComments ?? []}
+          data={visiblePostComments}
           renderItem={renderItem}
           keyExtractor={keyExtractor}
           initialNumToRender={5}
@@ -676,10 +865,21 @@ export default function PostDetail() {
         />
         <TouchableOpacity
           style={styles.inputCommentContainer}
-          onPress={() => onPressReply()}
+          onPress={() =>
+            currentUserId ? onPressReply() : rootNavigate('Welcome')
+          }
           testID="PostDetail:Button:Reply"
         >
-          <Text style={styles.inputComment}>{t('Write your reply here')}</Text>
+          <Text
+            style={[
+              styles.inputComment,
+              !currentUserId && styles.inputCommentSignIn,
+            ]}
+          >
+            {currentUserId
+              ? t('Write your reply here')
+              : t('Sign in to reply')}
+          </Text>
         </TouchableOpacity>
       </SafeAreaView>
       <TouchableOpacity>
@@ -724,6 +924,10 @@ const useStyles = makeStyles(({ colors, spacing }) => ({
     backgroundColor: colors.backgroundDarker,
     borderRadius: 4,
     padding: spacing.m,
+  },
+  inputCommentSignIn: {
+    color: colors.primary,
+    fontWeight: '600',
   },
   inputCommentContainer: {
     backgroundColor: colors.background,

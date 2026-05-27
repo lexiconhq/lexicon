@@ -968,8 +968,8 @@ export default function MessageDetail() {
     return options;
   };
 
-  const actionItemOnPress = (btnIndex: number) => {
-    if (btnIndex === 0) {
+  const actionItemOnPress = (_btnIndex: number, label: string) => {
+    if (label === t('Leave Message')) {
       return Alert.alert(
         t('Leave Message?'),
         t('Are you sure you want to leave this message?'),

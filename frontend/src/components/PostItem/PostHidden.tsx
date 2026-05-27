@@ -1,10 +1,9 @@
 import React from 'react';
 import { StyleProp, View, ViewStyle } from 'react-native';
-import { useNavigation } from '@react-navigation/core';
 
+import { navigateToProfileTab } from '../../helpers/navigateInProfile';
 import { ActivityIndicator, Text } from '../../core-ui';
 import { makeStyles } from '../../theme';
-import { StackNavProp } from '../../types';
 
 type Props = {
   style?: StyleProp<ViewStyle>;
@@ -15,7 +14,6 @@ type Props = {
 };
 
 export function PostHidden(props: Props) {
-  const { navigate } = useNavigation<StackNavProp<'PostDetail'>>();
   const styles = useStyles();
 
   const { style, loading, author, numberOfLines, onPressViewIgnoredContent } =
@@ -28,14 +26,14 @@ export function PostHidden(props: Props) {
       <Text style={styles.spacingBottom} color="textLight">
         {author ? (
           <>
-            {t('Your post was flagged by the community. Please ')}
-            <Text color="primary" onPress={() => navigate('Messages')}>
+            {t('Your post was reported by the community. Please ')}
+            <Text color="primary" onPress={() => navigateToProfileTab('Messages')}>
               {t('see your messages')}
             </Text>
             {t('.')}
           </>
         ) : (
-          t('This post was flagged by the community and is temporarily hidden.')
+          t('This post was reported by the community and is temporarily hidden.')
         )}
       </Text>
       <Text

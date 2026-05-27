@@ -1,4 +1,8 @@
 import Activity from './Activity';
+import AdditionalResourceDetail from './AdditionalResources/AdditionalResourceDetail';
+import AdditionalResources from './AdditionalResources/AdditionalResources';
+import BlockedUsers from './BlockedUsers/BlockedUsers';
+import HiddenWords from './HiddenWords/HiddenWords';
 import AddEmail from './AddEmail';
 import AuthenticationWebView from './AuthenticationWebView';
 import ChangePassword from './ChangePassword';
@@ -31,6 +35,7 @@ import DarkMode from './Preferences/DarkMode';
 import Preferences from './Preferences/Preferences';
 import PushNotifications from './Preferences/PushNotifications';
 import Profile from './Profile/Profile';
+import ProfileGuest from './Profile/ProfileGuest';
 import Search from './Search';
 import SelectUser from './SelectUser/SelectUser';
 import StackAvatarModal from './StackAvatarModal';
@@ -41,6 +46,10 @@ import Welcome from './Welcome';
 
 export {
   Activity,
+  AdditionalResourceDetail,
+  AdditionalResources,
+  BlockedUsers,
+  HiddenWords,
   AddEmail,
   AuthenticationWebView,
   ChangePassword,
@@ -71,6 +80,7 @@ export {
   PostReply,
   Preferences,
   Profile,
+  ProfileGuest,
   PushNotifications,
   Search,
   SelectUser,

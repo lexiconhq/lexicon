@@ -3,7 +3,9 @@ import { TopicsQuery } from '../generatedAPI/server';
 import { Channel, PostWithoutId, User } from '../types';
 
 import { findChannelByCategoryId } from './findChannelByCategoryId';
+import { formatPostTitle } from './formatPostTitle';
 import { getImage } from './getUserImage';
+import { normalizeTopicTags } from './normalizeTopicTags';
 
 type Topic = NonNullable<
   NonNullable<TopicsQuery['topics']['topicList']>['topics']
@@ -58,7 +60,7 @@ let transformTopicToPost = ({
 
   return {
     topicId: id,
-    title,
+    title: formatPostTitle(title),
     content: excerpt || NO_EXCERPT_WORDING,
     hidden: !visible,
     username: authorUser?.username ?? '',
@@ -69,7 +71,7 @@ let transformTopicToPost = ({
     viewCount: views,
     isLiked: liked || false,
     channel: channel,
-    tags: tags || [],
+    tags: normalizeTopicTags(tags),
     createdAt,
     freqPosters: frequentUserArray,
     imageUrls: imageUrl ? [imageUrl] : undefined,

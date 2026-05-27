@@ -24,12 +24,13 @@ export default function MenuItem(props: Props) {
     indicator = false,
     loading,
     disabled,
+    style,
     ...otherProps
   } = props;
 
   return (
     <TouchableOpacity
-      style={styles.container}
+      style={[styles.container, style]}
       activeOpacity={0.2}
       disabled={disabled || loading}
       {...otherProps}

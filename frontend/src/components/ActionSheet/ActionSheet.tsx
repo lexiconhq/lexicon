@@ -1,10 +1,11 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useMemo } from 'react';
 import {
   Modal,
   ModalProps,
   Platform,
   StyleProp,
   TouchableWithoutFeedback,
+  View,
   ViewStyle,
   Animated,
 } from 'react-native';
@@ -13,12 +14,22 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ANIMATION_DURATION } from '../../constants/theme/animations';
 import { makeStyles } from '../../theme';
 
-import { ActionSheetItem, ActionSheetItemProps } from './ActionSheetItem';
+import {
+  ActionSheetItem,
+  ActionSheetItemProps,
+  ActionSheetItemVariant,
+} from './ActionSheetItem';
+
+export type ActionSheetOption = {
+  label: string;
+  disabled?: boolean;
+  variant?: ActionSheetItemVariant;
+};
 
 type Props = ModalProps & {
-  options: Array<Pick<ActionSheetItemProps, 'label' | 'disabled'>>;
+  options: Array<ActionSheetOption>;
   cancelButtonIndex?: number;
-  actionItemOnPress: (index: number) => void;
+  actionItemOnPress: (index: number, label: string) => void;
   onClose: () => void;
   style?: StyleProp<ViewStyle>;
 };
@@ -31,7 +42,7 @@ export function ActionSheet(props: Props) {
   const styles = useStyles();
 
   const {
-    options,
+    options: optionsProp,
     cancelButtonIndex,
     actionItemOnPress,
     onClose,
@@ -42,14 +53,18 @@ export function ActionSheet(props: Props) {
     ...otherProps
   } = props;
 
-  //reorder cancel item
-  const cancelOption =
-    cancelButtonIndex != null && options.splice(cancelButtonIndex, 1);
-  cancelOption && options.push(cancelOption[0]);
+  const displayOptions = useMemo(() => {
+    const options = optionsProp.map((option) => ({ ...option }));
+    if (cancelButtonIndex != null && options[cancelButtonIndex]) {
+      const [cancel] = options.splice(cancelButtonIndex, 1);
+      options.push({ ...cancel, variant: 'cancel' as const });
+    }
+    return options;
+  }, [cancelButtonIndex, optionsProp]);
 
   const firstItemIndex = 0;
-  const lastItemNoCancelIndex = options.length - (!cancelOption ? 1 : 2);
-  const lastItemIndex = cancelOption ? options.length - 1 : -1;
+  const lastItemNoCancelIndex = displayOptions.length - (ios ? 2 : 1);
+  const lastItemIndex = displayOptions.length - 1;
 
   const slideAnimation = useRef(new Animated.Value(0)).current;
 
@@ -78,22 +93,28 @@ export function ActionSheet(props: Props) {
   }, [visible, slideIn]);
 
   let renderOptions = () => (
-    <>
-      {options.map(({ label, disabled }, index) => (
-        <ActionSheetItem
-          key={`actionItem-${index}`}
-          label={label}
-          disabled={disabled}
-          onPress={() => {
-            !disabled && actionItemOnPress(index);
-            !disabled && slideOut();
-          }}
-          isTop={index === firstItemIndex}
-          isBottom={index === lastItemNoCancelIndex}
-          isCancelOption={index === lastItemIndex}
-        />
-      ))}
-    </>
+    <View style={styles.optionsGroup}>
+      {displayOptions.map(({ label, disabled, variant = 'default' }, index) => {
+        const isCancelOption = index === lastItemIndex && ios;
+        return (
+          <ActionSheetItem
+            key={`actionItem-${label}-${index}`}
+            label={label}
+            variant={variant}
+            disabled={disabled}
+            onPress={() => {
+              if (!disabled) {
+                actionItemOnPress(index, label);
+                slideOut();
+              }
+            }}
+            isTop={index === firstItemIndex && !isCancelOption}
+            isBottom={index === lastItemNoCancelIndex && !isCancelOption}
+            isCancelOption={isCancelOption}
+          />
+        );
+      })}
+    </View>
   );
 
   return (
@@ -107,17 +128,19 @@ export function ActionSheet(props: Props) {
         <SafeAreaView style={[styles.container, style]}>
           {ios ? (
             <Animated.View
-              style={{
-                width: '100%',
-                transform: [
-                  {
-                    translateY: slideAnimation.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [200, 0],
-                    }),
-                  },
-                ],
-              }}
+              style={[
+                styles.sheet,
+                {
+                  transform: [
+                    {
+                      translateY: slideAnimation.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [200, 0],
+                      }),
+                    },
+                  ],
+                },
+              ]}
             >
               {renderOptions()}
             </Animated.View>
@@ -135,8 +158,14 @@ const useStyles = makeStyles(({ spacing }) => ({
     flex: 1,
     justifyContent: ios ? 'flex-end' : 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    paddingHorizontal: spacing.m,
-    paddingBottom: ios ? spacing.xxxxl : 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    paddingHorizontal: spacing.l,
+    paddingBottom: ios ? spacing.xl : spacing.l,
+  },
+  sheet: {
+    width: '100%',
+  },
+  optionsGroup: {
+    width: '100%',
   },
 }));

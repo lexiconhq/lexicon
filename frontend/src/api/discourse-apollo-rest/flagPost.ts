@@ -1,13 +1,16 @@
 import { gql } from '@apollo/client';
 
 export const FLAG_POST = gql`
-  mutation FlagPost($flagPostInput: FlagPostInput!) {
+  mutation FlagPost(
+    $flagPostInput: FlagPostInput!
+    $flagPostBodyBuilder: BodyBuilder
+  ) {
     flagPost(flagPostInput: $flagPostInput)
       @rest(
         type: "Post"
         path: "/post_actions.json"
         method: "POST"
-        bodyKey: "flagPostInput"
+        bodyBuilder: $flagPostBodyBuilder
       ) {
       id
       name

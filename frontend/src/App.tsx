@@ -20,10 +20,14 @@ import {
   RedirectProvider,
 } from './utils';
 import { AuthProvider } from './utils/AuthProvider';
+import { BlockedUsersProvider } from './utils/BlockedUsersProvider';
+import { HiddenWordsProvider } from './utils/HiddenWordsProvider';
 
 if (__DEV__) {
   require('react-native-console-time-polyfill');
-  require('../reactotronConfig');
+  // Reactotron is disabled: it imports XHRInterceptor removed in RN 0.81+ (Expo SDK 54).
+  // To re-enable when using the desktop Reactotron app on a compatible setup, uncomment:
+  // require('../reactotronConfig');
   // Based on react-native-reanimated documentation about warning https://docs.swmansion.com/react-native-reanimated/docs/guides/troubleshooting#reduced-motion-setting-is-enabled-on-this-device
   LogBox.ignoreLogs([
     '[Reanimated] Reduced motion setting is enabled on this device.',
@@ -57,9 +61,13 @@ export default function App() {
                           <RedirectProvider>
                             <RequestError>
                               <AuthProvider>
-                                <FormProvider {...newPostMethods}>
-                                  <AppNavigator />
-                                </FormProvider>
+                                <BlockedUsersProvider>
+                                  <HiddenWordsProvider>
+                                    <FormProvider {...newPostMethods}>
+                                      <AppNavigator />
+                                    </FormProvider>
+                                  </HiddenWordsProvider>
+                                </BlockedUsersProvider>
                               </AuthProvider>
                             </RequestError>
                           </RedirectProvider>

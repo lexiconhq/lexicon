@@ -1,8 +1,7 @@
-import { HeaderBackButton } from '@react-navigation/elements';
 import { useNavigation, useNavigationState } from '@react-navigation/native';
 import { StatusBar, StatusBarStyle } from 'expo-status-bar';
 import React, { useLayoutEffect } from 'react';
-import { Platform, View } from 'react-native';
+import { View } from 'react-native';
 
 import { ActivityIndicator, Text } from '../../core-ui';
 import { IconName } from '../../icons';
@@ -75,31 +74,35 @@ export function CustomHeader(props: Props) {
       return null;
     }
 
+    const onPressBack = () => {
+      if (prevScreen) {
+        // TODO: Fix this type error more properly when there's time
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        navigation.navigate(prevScreen, { backToTop: false });
+        return;
+      }
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      }
+    };
+
     return (
-      <HeaderBackButton
-        label="Back"
-        labelVisible={Platform.OS === 'ios'}
-        tintColor={isLoading ? colors.grey : colors.primary}
-        style={isLoading && { opacity: 0.5 }}
-        labelStyle={[
-          {
-            color: isLoading ? colors.grey : colors.primary,
-            fontSize: fontSizes.m,
-          },
-        ]}
+      <HeaderItem
+        left
+        label={t('Back')}
+        onPressItem={onPressBack}
         disabled={isLoading}
-        onPress={() => {
-          prevScreen
-            ? // TODO: Fix this type error more properly when there's time
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              navigation.navigate(prevScreen, { backToTop: false })
-            : navigation.goBack();
-        }}
+        fontStyles={
+          isLoading
+            ? { color: colors.grey, fontSize: fontSizes.m }
+            : { fontSize: fontSizes.m }
+        }
+        style={[styles.headerLeft, isLoading && styles.headerLeftDisabled]}
         testID="HeaderBackButton"
       />
     );
-  }, [routesLength, isLoading, navigation, prevScreen, colors, fontSizes]);
+  }, [routesLength, isLoading, navigation, prevScreen, colors, fontSizes, styles]);
 
   const headerTitle = React.useMemo(() => {
     return (
@@ -119,6 +122,8 @@ export function CustomHeader(props: Props) {
   useLayoutEffect(() => {
     navigation.setOptions({
       ...navHeader,
+      headerTintColor: colors.primary,
+      headerLeftContainerStyle: styles.headerLeftContainer,
       headerStyle: {
         backgroundColor: colors[color],
         ...(noShadow && { shadowOpacity: 0, elevation: 0 }),
@@ -146,6 +151,15 @@ export function CustomHeader(props: Props) {
 const useStyles = makeStyles(({ spacing }) => ({
   headerRight: {
     paddingRight: spacing.xxl,
+  },
+  headerLeft: {
+    paddingLeft: spacing.m,
+  },
+  headerLeftContainer: {
+    paddingLeft: spacing.s,
+  },
+  headerLeftDisabled: {
+    opacity: 0.5,
   },
   headerTitle: { alignItems: 'center' },
   subtitle: { marginBottom: spacing.m, marginTop: spacing.xs },

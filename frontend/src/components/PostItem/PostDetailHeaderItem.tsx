@@ -9,6 +9,7 @@ import {
 } from '../../generatedAPI/server';
 import {
   getImage,
+  normalizeTopicTags,
   postDetailContentHandler,
   transformPostsToFrontendPost,
   transformTopicToPost,
@@ -186,7 +187,7 @@ const resolvePostItemProps = ({
           content: firstPost.content,
           avatar: firstPost.avatar,
           channel: firstPost.channel,
-          tags: topic.selectedTag,
+          tags: normalizeTopicTags(topic.selectedTag),
           createdAt: firstPost.createdAt,
           username: firstPost.username,
           isLiked: firstPost.isLiked,

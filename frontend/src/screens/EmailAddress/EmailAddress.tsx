@@ -1,8 +1,12 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
-import { FlatList, Platform, SafeAreaView } from 'react-native';
+import { FlatList, Platform } from 'react-native';
 
-import { CustomHeader, LoadingOrError } from '../../components';
+import {
+  CustomHeader,
+  LoadingOrError,
+  ProfileDrawerScene,
+} from '../../components';
 import { FloatingButton } from '../../core-ui';
 import { useStorage } from '../../helpers';
 import { useProfile } from '../../hooks';
@@ -72,7 +76,7 @@ export default function EmailAddress() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ProfileDrawerScene style={styles.container}>
       {ios && (
         <CustomHeader
           title={t('Email Address')}
@@ -95,7 +99,7 @@ export default function EmailAddress() {
           onPress={() => navigate('AddEmail')}
         />
       )}
-    </SafeAreaView>
+    </ProfileDrawerScene>
   );
 }
 

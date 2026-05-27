@@ -7,7 +7,14 @@ import {
   SearchTopicFragment,
   SearchTopicFragmentDoc,
 } from '../../generatedAPI/server';
-import { findChannelByCategoryId, getImage, useStorage } from '../../helpers';
+import { Icon } from '../../core-ui';
+import {
+  findChannelByCategoryId,
+  getImage,
+  useBlockUserActions,
+  useStorage,
+} from '../../helpers';
+import { useTheme } from '../../theme';
 
 import { PostItem, PostItemProps } from './PostItem';
 
@@ -63,6 +70,16 @@ function BaseSearchPostItem(props: Props) {
     channels,
   });
 
+  const postUsername = cacheSearchPost.username;
+  const authorActions = canBlockUsername(postUsername) ? (
+    <Icon
+      name="More"
+      color={colors.textLighter}
+      onPress={() => toggleBlock(postUsername)}
+      hitSlop={{ top: 15, right: 15, bottom: 15, left: 15 }}
+    />
+  ) : undefined;
+
   return (
     <PostItem
       topicId={topicId}
@@ -72,7 +89,8 @@ function BaseSearchPostItem(props: Props) {
       channel={channel}
       tags={cachedSearchTopic.tags ?? []}
       createdAt={cacheSearchPost.createdAt}
-      username={cacheSearchPost.username}
+      username={postUsername}
+      authorActions={authorActions}
       isLiked={cachedSearchTopic.liked ?? false}
       numberOfLines={5}
       testID={`Search:SearchPostItem:${topicId}`}

@@ -26,7 +26,8 @@ type ExpoPushTokenHandlerResult = Promise<
 
 export async function getExpoPushTokenHandler(): ExpoPushTokenHandlerResult {
   if (Platform.OS === 'android') {
-    Notifications.setNotificationChannelAsync(
+    // Android 13+ requires a channel before Expo can return a push token.
+    await Notifications.setNotificationChannelAsync(
       'default',
       DEFAULT_NOTIFICATION_CHANNEL_INPUT,
     );
