@@ -9,7 +9,6 @@ import React, {
 } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Dimensions, PixelRatio, Platform, View } from 'react-native';
-import { DrawerLayout } from 'react-native-gesture-handler';
 import Animated, {
   Extrapolate,
   interpolate,
@@ -46,6 +45,8 @@ import {
   clamp,
   errorHandler,
   errorHandlerAlert,
+  filterTopicsByBlockedUsernames,
+  filterTopicsByHiddenWords,
   transformTopicToPost,
   useStorage,
 } from '../../helpers';
@@ -65,10 +66,10 @@ import {
   TabNavProp,
   TabRouteProp,
 } from '../../types';
-import { useDevice } from '../../utils';
-import { ChannelSideBarContent, ChannelSideBarDrawer } from '../Channels';
+import { useBlockedUsers, useDevice, useHiddenWords } from '../../utils';
+import ChannelSideBarDrawer from '../Channels/ChannelSideBarDrawer';
 
-import { HomeNavBar, HomeTabletNavBar, SearchBar } from './components';
+import { HomeChannelPicker, HomeNavBar, HomeTabletNavBar, SearchBar } from './components';
 
 let sortTypes = {
   LATEST: { label: () => t('Latest') },
@@ -83,8 +84,6 @@ const NAV_BAR_TITLE_SIZE = 24;
 const IOS_BAR = 60;
 const ANDROID_BAR = 64;
 const MAX_SCROLL = 300; // at maximum 300 unit will be calculated for interpolation
-
-const SIDE_BAR_WIDTH = 320;
 
 /**
  * Ensure that the minimum scroll value is not greater than the minimum y value from the scroll when refreshing.
@@ -107,10 +106,10 @@ type SortOption = typeof sortOptionsArray[number];
 
 export default function Home() {
   const { refetch: siteRefetch } = useSiteSettings();
-  const { isTablet, isPortrait } = useDevice();
+  const { isTablet, isTabletLandscape } = useDevice();
   const styles = useStyles();
   const { setValue, reset: resetForm } = useFormContext<NewPostForm>();
-  const [openSideBar, setOpenSideBar] = useState(false);
+  const [openSideBar, setOpenSideBar] = useState(isTabletLandscape);
 
   const tabNavigation = useNavigation<TabNavProp<'Home'>>();
   const { addListener, navigate } = useNavigation<StackNavProp<'TabNav'>>();
@@ -118,6 +117,7 @@ export default function Home() {
   const { params } = useRoute<TabRouteProp<'Home'>>();
 
   const routeParams = params === undefined ? false : params.backToTop;
+  const channelIdParam = params?.channelId;
 
   const FIRST_PAGE = 0;
 
@@ -176,6 +176,9 @@ export default function Home() {
   const [selectedChannelId, setSelectedChannelId] = useState(
     NO_CHANNEL_FILTER.id,
   );
+  const [channelPickerVisible, setChannelPickerVisible] = useState(false);
+  const { blockedUsernames } = useBlockedUsers();
+  const { hiddenWords, hiddenWordsRevision } = useHiddenWords();
   const [topicsData, setTopicsData] = useState<Array<PostWithoutId> | null>(
     null,
   );
@@ -350,46 +353,62 @@ export default function Home() {
 
   /**
    * this function used when select channel using tablet side bar
+   * or when navigating from a post's category chip
    *
-   * @param id id of selected channel from sidebar
+   * @param id id of selected channel
    */
+  const applyHomeChannelFilter = useCallback(
+    (id: number) => {
+      storage.setItem('homeChannelId', id);
 
-  const onPressSideBarSelectedChannel = (id: number) => {
-    let currentPage = page;
+      let currentPage = page;
 
-    let categoryId: number | null = id;
-    categoryId = isNoChannelFilter(id) ? null : id;
+      let categoryId: number | null = id;
+      categoryId = isNoChannelFilter(id) ? null : id;
 
-    if (id !== selectedChannelId) {
-      currentPage = 0;
+      if (id !== selectedChannelId) {
+        currentPage = 0;
+      }
+
+      setSelectedChannelId(id);
+
+      const variables: TopicsQueryVariables = {
+        sort: sortState,
+        categoryId,
+        page: currentPage,
+      };
+      setPage(currentPage);
+      getData(variables);
+    },
+    [getData, page, selectedChannelId, sortState, storage],
+  );
+
+  const onPressSideBarSelectedChannel = applyHomeChannelFilter;
+
+  useLayoutEffect(() => {
+    if (channelIdParam == null) {
+      return;
     }
 
-    setSelectedChannelId(id);
-
-    const variables: TopicsQueryVariables = {
-      sort: sortState,
-      categoryId,
-      page: currentPage,
-    };
-    setPage(currentPage);
-    getData(variables);
-
-    isPortrait && setTimeout(() => drawerRef.current?.closeDrawer(), 300);
-  };
+    applyHomeChannelFilter(channelIdParam);
+    tabNavigation.setParams({
+      backToTop: params?.backToTop,
+      channelId: undefined,
+    });
+  }, [
+    applyHomeChannelFilter,
+    channelIdParam,
+    params?.backToTop,
+    tabNavigation,
+  ]);
 
   const toggleSideBar = () => {
-    isPortrait &&
-      setTimeout(
-        () =>
-          !openSideBar
-            ? drawerRef.current?.openDrawer()
-            : drawerRef.current?.closeDrawer(),
-        200,
-      );
-    setOpenSideBar(!openSideBar);
+    setOpenSideBar((open) => !open);
   };
 
-  const drawerRef = useRef<DrawerLayout>(null);
+  useEffect(() => {
+    setOpenSideBar(isTabletLandscape);
+  }, [isTabletLandscape]);
   const postListRef = useRef<PostListRef<PostWithoutId>>(null);
   if (routeParams) {
     postListRef.current?.scrollToIndex({
@@ -399,7 +418,7 @@ export default function Home() {
   }
 
   const onPressTitle = () => {
-    navigate('Channels', { prevScreen: 'Home' });
+    setChannelPickerVisible(true);
   };
 
   const onPressAdd = async () => {
@@ -593,13 +612,21 @@ export default function Home() {
     if (!topicsData || channelsLoading || loading) {
       return <LoadingOrError loading />;
     }
-    if (topicsData && topicsData.length < 1) {
+    const visibleTopics = topicsData
+      ? filterTopicsByHiddenWords(
+          filterTopicsByBlockedUsernames(topicsData, blockedUsernames),
+          hiddenWords,
+        )
+      : [];
+
+    if (visibleTopics.length < 1) {
       return <LoadingOrError message={t('No Posts available')} />;
     }
     return (
       <PostList
         postListRef={postListRef}
-        data={topicsData}
+        data={visibleTopics}
+        extraData={hiddenWordsRevision}
         contentInset={{
           // statusBarHeight ios phone device value from expo is bigger than tablet and android. when check android and tablet around 25-30 but ios phone show result 54
           top: headerViewHeight - (ios && !isTablet ? statusBarHeight / 3 : 0),
@@ -627,6 +654,7 @@ export default function Home() {
               topicId={item.topicId}
               prevScreen={'Home'}
               onPressReply={onPressReply}
+              hiddenWordsRevision={hiddenWordsRevision}
               style={isTablet ? styles.postItemCardTablet : undefined}
             />
           );
@@ -648,13 +676,20 @@ export default function Home() {
           setWidth(width);
         }}
       >
-        {isTablet ? (
+        {isTabletLandscape ? (
           <HomeTabletNavBar
             title={getChannelName()}
             onPressAdd={onPressAdd}
             onPressIconSideBar={toggleSideBar}
+            showSidebarToggle
             style={styles.navBar}
-            isShowIcon={!openSideBar}
+          />
+        ) : isTablet ? (
+          <HomeNavBar
+            title={getChannelName()}
+            onPressTitle={onPressTitle}
+            onPressAdd={onPressAdd}
+            style={styles.navBar}
           />
         ) : (
           <HomeNavBar
@@ -684,41 +719,24 @@ export default function Home() {
     </>
   );
 
-  return isTablet ? (
-    !isPortrait ? (
-      <ChannelSideBarDrawer
-        isShow={openSideBar}
-        setSelectedChannelId={onPressSideBarSelectedChannel}
-        hideSideBar={toggleSideBar}
-      >
-        {homeContent()}
-      </ChannelSideBarDrawer>
-    ) : (
-      <DrawerLayout
-        ref={drawerRef}
-        drawerWidth={SIDE_BAR_WIDTH}
-        drawerPosition={'left'}
-        drawerType="front"
-        drawerBackgroundColor={colors.background}
-        overlayColor={colors.backDrop}
-        onDrawerClose={() => {
-          setOpenSideBar(false);
-        }}
-        onDrawerOpen={() => {
-          setOpenSideBar(true);
-        }}
-        renderNavigationView={() => (
-          <ChannelSideBarContent
-            setSelectedChannelId={onPressSideBarSelectedChannel}
-            hideSideBar={toggleSideBar}
-          />
-        )}
-      >
-        {homeContent()}
-      </DrawerLayout>
-    )
+  return isTabletLandscape ? (
+    <ChannelSideBarDrawer
+      isShow={openSideBar}
+      setSelectedChannelId={onPressSideBarSelectedChannel}
+      hideSideBar={toggleSideBar}
+    >
+      {homeContent()}
+    </ChannelSideBarDrawer>
   ) : (
-    homeContent()
+    <>
+      {homeContent()}
+      <HomeChannelPicker
+        visible={channelPickerVisible}
+        selectedChannelId={selectedChannelId}
+        onSelectChannel={onPressSideBarSelectedChannel}
+        onClose={() => setChannelPickerVisible(false)}
+      />
+    </>
   );
 }
 

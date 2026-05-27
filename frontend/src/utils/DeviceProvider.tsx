@@ -1,3 +1,4 @@
+import { makeVar } from '@apollo/client';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import React, {
   createContext,
@@ -7,6 +8,9 @@ import React, {
   useState,
 } from 'react';
 import { Dimensions } from 'react-native';
+
+/** Synced layout flag for navigation helpers (avoids Dimensions/orientation mismatch). */
+export const isTabletLandscapeVar = makeVar(false);
 
 type Device = 'phone' | 'tablet';
 type DevicePosition = 'landscape' | 'portrait';
@@ -81,11 +85,18 @@ export const DeviceProvider = ({ children }: Props) => {
     };
   }, []);
 
+  const isTabletLandscape =
+    deviceType === 'tablet' && orientation === 'landscape';
+
+  useEffect(() => {
+    isTabletLandscapeVar(isTabletLandscape);
+  }, [isTabletLandscape]);
+
   const value = {
     orientation,
     isTablet: deviceType === 'tablet',
     isPortrait: orientation === 'portrait',
-    isTabletLandscape: deviceType === 'tablet' && orientation === 'landscape',
+    isTabletLandscape,
   };
 
   return (
